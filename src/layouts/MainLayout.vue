@@ -101,7 +101,7 @@
           <el-dropdown trigger="click" @command="handleCommand">
             <div class="user-info">
               <el-icon><UserFilled /></el-icon>
-              <span class="user-name">Admin</span>
+              <span class="user-name">测试用户</span>
             </div>
             <template #dropdown>
               <el-dropdown-menu>
