@@ -4,7 +4,7 @@
       <!-- Left Column -->
       <div class="left-column">
         <!-- Welcome Card -->
-        <el-card class="welcome-card" shadow="never">
+        <el-card class="welcome-card" shadow="never" >
           <div class="welcome-content">
             <el-avatar :size="60" class="avatar">
               <el-icon :size="36"><User /></el-icon>
@@ -18,7 +18,7 @@
         </el-card>
 
         <!-- Data Statistics Card -->
-        <el-card class="stats-card" shadow="never">
+        <el-card class="stats-card" shadow="never" >
           <template #header>
             <div class="card-header">数据统计</div>
           </template>
@@ -34,7 +34,7 @@
         </el-card>
 
         <!-- Message Notifications Card -->
-        <el-card class="messages-card" shadow="never">
+        <el-card class="messages-card" shadow="never" >
           <template #header>
             <div class="card-header">消息通知</div>
           </template>
@@ -57,7 +57,7 @@
         <div class="chart-section-title">统计报表</div>
 
         <!-- Activation Rate Chart -->
-        <el-card class="chart-card" shadow="never">
+        <el-card class="chart-card" shadow="never" >
           <template #header>
             <div class="chart-header">
               <span class="chart-title">激活率统计</span>
@@ -336,8 +336,6 @@ const handleViewMessage = (msg: MessageItem) => {
 .dashboard {
   display: flex;
   flex-direction: column;
-  background-color: #fff;
-  padding: 16px;
   height: 100%;
   overflow-y: auto;
   border-radius: 8px;
@@ -345,37 +343,40 @@ const handleViewMessage = (msg: MessageItem) => {
 
 .dashboard-content {
   display: flex;
-  gap: 20px;
-  max-width: 1400px;
-  margin: 0 auto;
+  height: 100%;
+  gap: 16px;
 }
 
 .left-column {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  min-width: 0;
+  gap: 16px;
+  min-width: 520px;
 }
 
 .right-column {
-  flex: 1.2;
+  flex: 1.5;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  min-width: 0;
+  background-color: #fff;
+  padding: 16px;
+  gap: 16px;
+  min-width: 560px;
+  border-radius: 4px;
+  // box-shadow: 0px 0px 12px #0000001f;
 }
 
 // Welcome Card
 .welcome-card {
   :deep(.el-card__body) {
-    padding: 24px;
+    padding: 16px;
   }
 
   .welcome-content {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 16px;
   }
 
   .avatar {
@@ -421,7 +422,6 @@ const handleViewMessage = (msg: MessageItem) => {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 16px;
-    padding: 20px;
   }
 
   .stat-item {
@@ -460,6 +460,7 @@ const handleViewMessage = (msg: MessageItem) => {
 
 // Messages Card
 .messages-card {
+  flex: 1;
   :deep(.el-card__header) {
     padding: 16px 20px;
     border-bottom: 1px solid #ebeef5;
@@ -469,10 +470,6 @@ const handleViewMessage = (msg: MessageItem) => {
     font-size: 16px;
     font-weight: 500;
     color: #303133;
-  }
-
-  .message-list {
-    padding: 0 20px 20px;
   }
 
   .message-item {
@@ -514,9 +511,10 @@ const handleViewMessage = (msg: MessageItem) => {
 }
 
 .chart-card {
+  border: none;
   :deep(.el-card__header) {
-    padding: 16px 20px;
-    border-bottom: 1px solid #ebeef5;
+    padding: 16px;
+    border-bottom: none;
   }
 
   .chart-header {
@@ -550,7 +548,7 @@ const handleViewMessage = (msg: MessageItem) => {
 
   .chart-container {
     position: relative;
-    height: 300px;
+    height: 240px;
   }
 
   .chart-label {
