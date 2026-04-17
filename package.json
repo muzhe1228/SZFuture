@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@types/mockjs": "^1.0.10",
+    "@types/node": "^25.6.0",
     "@vitejs/plugin-vue": "^5.2.0",
     "husky": "^9.1.7",
     "mockjs": "^1.1.0",

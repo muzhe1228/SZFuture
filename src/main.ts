@@ -10,10 +10,8 @@ import './styles/table.scss'
 import App from './App.vue'
 import router from './router'
 
-// Load mock data in development mode
-if (import.meta.env.DEV) {
-  import('./mock').then(({ setupMock }) => setupMock())
-}
+// Load mock data
+import('./mock').then(({ setupMock }) => setupMock())
 
 // Configure NProgress
 NProgress.configure({ showSpinner: false, easing: 'ease', speed: 500 })
