@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# 运行TypeScript类型检查
+npx vue-tsc -b
+
+# 运行构建检查
+npm run build
