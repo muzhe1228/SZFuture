@@ -1,6 +1,9 @@
 import Mock from 'mockjs'
 
 const Random = Mock.Random
+const Mocks = Mock.mock
+
+
 
 export function setupCustomerMock() {
   // Customer list
@@ -21,7 +24,7 @@ export function setupCustomerMock() {
         customerCode: 'CUST' + String(Random.integer(10000, 99999)),
         name: Random.cname() + Random.pick(['科技有限公司', '信息技术有限公司', '网络技术有限公司', '软件科技有限公司', '数据科技有限公司']),
         contact: Random.cname(),
-        phone: /^1[3-9]\d{9}$/,
+        phone: Mocks(/1[3-9]\d{9}/),
         contactEmail: Random.email(),
         industry: Random.pick(industries),
         customerLevel: Random.pick(customerLevels),

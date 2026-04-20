@@ -41,15 +41,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, reactive } from 'vue'
+import { ref, onMounted, reactive } from 'vue'
 import type { Message } from '@/types/index'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import SearchForm from '@/components/SearchForm.vue'
 import { DataTable } from '@/components/DataTable'
 import MessageDetail from '@/components/Dialog/Messages/MessageDetail.vue'
-import type { ColumnConfig, ActionButton } from '@/components/DataTable/types'
+import type { ActionButton } from '@/components/DataTable/types'
+import { messageColumns } from '@/config/common/columns'
+import { messageSearchFields } from '@/config/common/searchFields'
 import request from '@/utils/request'
-import type { SearchField } from '@/components/SearchForm/types'
 
 interface ExtendedMessage extends Message {
   receiveTime: string
@@ -59,40 +60,8 @@ interface ExtendedMessage extends Message {
 
 // ─── Search Form ──────────────────────────────────────────────────────
 
-const customerOptions = [
-  { label: '客户名称客户名称', value: '客户名称客户名称' },
-  { label: '测试客户A', value: '测试客户A' },
-  { label: '测试客户B', value: '测试客户B' },
-  { label: '华东科技有限公司', value: '华东科技有限公司' },
-  { label: '华中信息技术有限公司', value: '华中信息技术有限公司' },
-  { label: '深圳创新科技', value: '深圳创新科技' },
-  { label: '北京软件开发公司', value: '北京软件开发公司' },
-  { label: '上海信息技术公司', value: '上海信息技术公司' },
-  { label: '广州数字化公司', value: '广州数字化公司' }
-]
-
-const productOptions = [
-  { label: '产品A', value: '产品A' },
-  { label: '产品B', value: '产品B' },
-  { label: '产品C', value: '产品C' }
-]
-
-const searchFields = computed<SearchField[]>(() => [
-  { prop: 'customerName', label: '客户名称', type: 'select', placeholder: '请选择', options: customerOptions },
-  { prop: 'phone', label: '手机号', type: 'input', placeholder: '请输入' },
-  { prop: 'product', label: '产品', type: 'select', placeholder: '请选择', options: productOptions },
-  { prop: 'expiryDays', label: '到期时间', type: 'input', placeholder: '', suffix: '内' },
-  {
-    prop: 'status',
-    label: '处理状态',
-    type: 'select',
-    placeholder: '请选择',
-    options: [
-      { label: '未处理', value: '未处理' },
-      { label: '已处理', value: '已处理' }
-    ]
-  }
-])
+// 搜索字段配置已移至 @/config/common/searchFields.ts
+const searchFields = messageSearchFields
 
 const searchParams = ref<Record<string, any>>({})
 
@@ -111,14 +80,8 @@ const handleReset = () => {
 
 // ─── Table Config ──────────────────────────────────────────────────────
 
-const columns = ref<ColumnConfig[]>([
-  { key: 'customerName', label: '客户名称', prop: 'customerName', minWidth: '160', visible: true },
-  { key: 'phone', label: '手机号', prop: 'phone', minWidth: '130', visible: true },
-  { key: 'expiryTime', label: '到期时间', prop: 'expiryTime', width: '100', align: 'center', visible: true },
-  { key: 'status', label: '处理状态', prop: 'status', width: '100', align: 'center', visible: true, hasTemplate: true },
-  { key: 'startDate', label: '授权起始日期', prop: 'startDate', minWidth: '170', visible: true },
-  { key: 'endDate', label: '授权结束日期', prop: 'endDate', minWidth: '170', visible: true }
-])
+// 表格列配置已移至 @/config/common/columns.ts
+const columns = ref(messageColumns)
 
 const tableActions: ActionButton[] = [
   { key: 'view', label: '查看', type: 'primary' },

@@ -47,39 +47,21 @@
 
     <!-- Right Panel: Main Content -->
     <div class="main-panel">
-      <!-- Search Bar -->
-      <SearchForm
-        :fields="searchFields"
-        :search-loading="tableLoading"
-        :reset-loading="tableLoading"
-        storage-key="user-search"
-        @search="handleSearch"
-        @reset="handleReset"
-      />
-
-      <!-- Data Table -->
-      <DataTable
+      <!-- Base Table Page -->
+      <BaseTablePage
+        :search-fields="searchFields"
         :columns="columns"
-        :data="tableData"
-        :loading="tableLoading"
-        :total="pagination.total"
-        :current-page="pagination.currentPage"
-        :page-size="pagination.pageSize"
-        :page-sizes="[10, 20, 50, 100]"
+        :actions="tableActions"
+        :fetch-data="fetchData"
         title="用户管理"
-        storage-key="user-management-table"
+        storage-key="user-management"
         :show-column-settings="true"
         :show-selection="true"
-        :actions="tableActions"
-        row-key="id"
-        @page-change="handlePageChange"
-        @selection-change="handleSelectionChange"
         @action="handleTableAction"
+        @selection-change="handleSelectionChange"
       >
         <template #cell-status="{ row }">
-          <el-tag :type="row.status === '启用' ? 'success' : 'danger'" size="small">
-            {{ row.status }}
-          </el-tag>
+          <StatusTag :status="row.status" :status-map="statusMap" size="small" />
         </template>
         <template #extra-actions>
           <el-button type="warning" size="small" @click="handleBatchImport" :icon="Upload">
@@ -92,7 +74,7 @@
             删除用户
           </el-button>
         </template>
-      </DataTable>
+      </BaseTablePage>
     </div>
 
     <!-- Add/Edit User Modal -->
@@ -109,16 +91,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, reactive } from 'vue'
+import { ref } from 'vue'
 import { Plus, Upload, OfficeBuilding, Folder } from '@element-plus/icons-vue'
 import type { User, OrgTreeNode } from '@/types/index'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { ElTree } from 'element-plus'
-import SearchForm from '@/components/SearchForm.vue'
-import { DataTable } from '@/components/DataTable'
+import { BaseTablePage } from '@/components/BaseTablePage'
+import { StatusTag } from '@/components/StatusTag'
 import UserForm from '@/components/Dialog/UserManagement/UserForm.vue'
-import type { ColumnConfig, ActionButton } from '@/components/DataTable/types'
-import type { SearchField } from '@/components/SearchForm/types'
+import type { ActionButton } from '@/components/DataTable/types'
+import { userColumns } from '@/config/system/columns'
+import { userSearchFields } from '@/config/system/searchFields'
 import request from '@/utils/request'
 
 // ─── Organization Tree ────────────────────────────────────────────────
@@ -182,53 +165,26 @@ const filterNode = (value: string, data: OrgTreeNode) => {
 
 const handleNodeClick = (data: OrgTreeNode) => {
   selectedOrgNode.value = data
-  pagination.currentPage = 1
-  fetchData()
+  // 触发重新获取数据
+  fetchData({})
 }
 
 // ─── Search Form ──────────────────────────────────────────────────────
 
-const searchFields = computed<SearchField[]>(() => [
-  { prop: 'name', label: '姓名', type: 'input', placeholder: '请输入' },
-  { prop: 'phone', label: '手机号', type: 'input', placeholder: '请输入' },
-  { prop: 'username', label: '用户名', type: 'input', placeholder: '请输入' },
-  {
-    prop: 'status',
-    label: '状态',
-    type: 'select',
-    placeholder: '请选择',
-    options: [
-      { label: '启用', value: '启用' },
-      { label: '禁用', value: '禁用' }
-    ]
-  }
-])
+// 搜索字段配置已移至 @/config/system/searchFields.ts
+const searchFields = userSearchFields
 
-const searchParams = ref<Record<string, any>>({})
+// ─── Status Tag Type ──────────────────────────────────────────────────
 
-const handleSearch = (formData: Record<string, any>) => {
-  pagination.currentPage = 1
-  searchParams.value = { ...formData }
-  fetchData()
-}
-
-const handleReset = () => {
-  pagination.currentPage = 1
-  searchParams.value = {}
-  fetchData()
-  ElMessage.success('重置成功')
+const statusMap = {
+  '启用': 'success',
+  '禁用': 'danger'
 }
 
 // ─── Table Config ─────────────────────────────────────────────────────
 
-const columns = ref<ColumnConfig[]>([
-  { key: 'name', label: '姓名', prop: 'name', minWidth: '100', visible: true },
-  { key: 'username', label: '用户名', prop: 'username', minWidth: '120', visible: true },
-  { key: 'phone', label: '手机号', prop: 'phone', minWidth: '130', visible: true },
-  { key: 'email', label: '邮箱', prop: 'email', minWidth: '180', visible: true, showOverflowTooltip: true },
-  { key: 'createTime', label: '创建时间', prop: 'createTime', minWidth: '170', visible: true },
-  { key: 'status', label: '状态', prop: 'status', width: '90', align: 'center', visible: true, hasTemplate: true }
-])
+// 表格列配置已移至 @/config/system/columns.ts
+const columns = ref(userColumns)
 
 const tableActions: ActionButton[] = [
   { key: 'view', label: '查看', type: 'primary' },
@@ -240,28 +196,21 @@ const tableActions: ActionButton[] = [
 
 const tableLoading = ref(false)
 const selectedUsers = ref<User[]>([])
-const tableData = ref<User[]>([])
 
-const pagination = reactive({
-  currentPage: 1,
-  pageSize: 20,
-  total: 0
-})
-
-const fetchData = async () => {
+const fetchData = async (formData?: Record<string, any>, page: number = 1, pageSize: number = 20) => {
   tableLoading.value = true
   try {
     const params: Record<string, any> = {
-      page: pagination.currentPage,
-      pageSize: pagination.pageSize
+      page,
+      pageSize
     }
 
     // Build keyword from search params
     const keywordParts: string[] = []
-    if (searchParams.value.name) keywordParts.push(searchParams.value.name)
-    if (searchParams.value.phone) keywordParts.push(searchParams.value.phone)
-    if (searchParams.value.username) keywordParts.push(searchParams.value.username)
-    if (searchParams.value.status) keywordParts.push(searchParams.value.status)
+    if (formData?.name) keywordParts.push(formData.name)
+    if (formData?.phone) keywordParts.push(formData.phone)
+    if (formData?.username) keywordParts.push(formData.username)
+    if (formData?.status) keywordParts.push(formData.status)
 
     if (keywordParts.length > 0) {
       params.keyword = keywordParts.join(' ')
@@ -279,11 +228,15 @@ const fetchData = async () => {
     })
 
     if ((res as any).code === 200) {
-      tableData.value = (res as any).data.list
-      pagination.total = (res as any).data.total
+      return {
+        list: (res as any).data.list,
+        total: (res as any).data.total
+      }
     }
+    return { list: [], total: 0 }
   } catch (error) {
     ElMessage.error('获取用户列表失败')
+    return { list: [], total: 0 }
   } finally {
     tableLoading.value = false
   }
@@ -291,12 +244,6 @@ const fetchData = async () => {
 
 const handleSelectionChange = (selection: User[]) => {
   selectedUsers.value = selection
-}
-
-const handlePageChange = (page: number, size: number) => {
-  pagination.currentPage = page
-  pagination.pageSize = size
-  fetchData()
 }
 
 const handleTableAction = (action: string, row: User) => {
@@ -339,7 +286,7 @@ const handleBatchDelete = async () => {
       data: { ids }
     })
     ElMessage.success('删除成功')
-    fetchData()
+    fetchData({})
   } catch {
     // User cancelled
   }
@@ -373,7 +320,7 @@ const handleDelete = async (row: User) => {
       params: { id: row.id }
     })
     ElMessage.success('删除成功')
-    fetchData()
+    fetchData({})
   } catch {
     // User cancelled
   }
@@ -442,7 +389,7 @@ const handleUserSubmit = async (user: User, isEdit: boolean) => {
       ElMessage.success('新增成功')
     }
 
-    fetchData()
+    fetchData({})
   } catch {
     ElMessage.error('操作失败')
   }
@@ -453,12 +400,6 @@ const handleModalClose = () => {
   editingUserId.value = null
   currentUser.value = null
 }
-
-// ─── Lifecycle ────────────────────────────────────────────────────────
-
-onMounted(() => {
-  fetchData()
-})
 </script>
 
 <style lang="scss" scoped>
@@ -473,10 +414,9 @@ onMounted(() => {
 .org-tree-panel {
   width: 260px;
   min-width: 260px;
-  background-color: #fff;
+  background-color: var(--el-bg-color);
   display: flex;
   flex-direction: column;
-  border-right: 1px solid #ebeef5;
   border-radius: 8px;
 
   .panel-header {
@@ -486,7 +426,6 @@ onMounted(() => {
     .panel-title {
       font-size: 16px;
       font-weight: 500;
-      color: #303133;
     }
   }
 
@@ -514,7 +453,6 @@ onMounted(() => {
       font-size: 14px;
 
       .node-icon {
-        color: #909399;
         font-size: 14px;
       }
     }

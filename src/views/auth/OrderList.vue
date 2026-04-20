@@ -1,40 +1,24 @@
 <template>
   <div class="order-list">
-    <!-- Search Bar -->
-    <SearchForm
-      :fields="searchFields"
-      storage-key="order-list-search"
-      :search-loading="tableLoading"
-      :reset-loading="tableLoading"
-      @search="handleSearch"
-      @reset="handleReset"
-    />
-
-    <!-- Data Table -->
-    <DataTable
+    <!-- Base Table Page -->
+    <BaseTablePage
+      :search-fields="searchFields"
       :columns="columns"
-      :data="tableData"
-      :loading="tableLoading"
-      :total="pagination.total"
-      :current-page="pagination.currentPage"
-      :page-size="pagination.pageSize"
-      :page-sizes="[10, 20, 50, 100]"
+      :actions="tableActions"
+      :fetch-data="fetchOrderList"
       title="订单管理"
-      storage-key="order-list-table"
+      storage-key="order-list"
       :show-column-settings="true"
       :show-selection="true"
-      :actions="tableActions"
-      row-key="id"
-      @page-change="handlePageChange"
-      @selection-change="handleSelectionChange"
       @action="handleTableAction"
+      @selection-change="handleSelectionChange"
     >
       <template #extra-actions>
         <el-button type="primary" size="small" @click="handleAddOrder" :icon="Plus">
           新增订单
         </el-button>
       </template>
-    </DataTable>
+    </BaseTablePage>
 
 
     <!-- ==================== Modals ==================== -->
@@ -78,7 +62,8 @@
                 v-model="orderForm.authCount"
                 :min="1"
                 :max="9999"
-                controls-position="right"
+                :controls="false"
+                align="left"
                 style="width: 100%"
               />
             </el-form-item>
@@ -145,11 +130,12 @@
             <el-form-item label="浮动许可" prop="floatingLicense">
               <div class="floating-license-field">
                 <el-switch v-model="orderForm.floatingEnabled" />
-                <el-input
+                <el-input-number
                   v-if="orderForm.floatingEnabled"
                   v-model="orderForm.floatingLicense"
                   placeholder="请输入浮动许可数量"
-                  type="number"
+                  :controls="false"
+                  align="left"
                   :min="0"
                   style="width: 120px; margin-left: 8px"
                 />
@@ -196,7 +182,8 @@
                 :min="0"
                 :max="9999"
                 :disabled="!perm.checked"
-                controls-position="right"
+                :controls="false"
+                align="left"
                 size="small"
                 style="width: 90px"
               />
@@ -251,88 +238,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
 import type { Order } from '@/types/index'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import request from '@/utils/request'
-import SearchForm from '@/components/SearchForm.vue'
-import { DataTable } from '@/components/DataTable'
-
-import type { ColumnConfig, ActionButton } from '@/components/DataTable/types'
-import type { SearchField } from '@/components/SearchForm/types'
+import { BaseTablePage } from '@/components/BaseTablePage'
+import type { ActionButton } from '@/components/DataTable/types'
+import { orderColumns } from '@/config/auth/columns'
+import { orderSearchFields } from '@/config/auth/searchFields'
 
 // ─── Search Form ──────────────────────────────────────────────────────
 
-const searchFields = computed<SearchField[]>(() => [
-  {
-    prop: 'customerName',
-    label: '客户名称',
-    type: 'select',
-    placeholder: '请选择',
-    options: [
-      { label: 'xx科技有限公司', value: 'xx科技有限公司' },
-      { label: '测试客户A', value: '测试客户A' },
-      { label: '测试客户B', value: '测试客户B' }
-    ]
-  },
-  {
-    prop: 'orderNo',
-    label: '订单编号',
-    type: 'select',
-    placeholder: '请选择',
-    options: [
-      { label: 'SGZZ-20210906-001', value: 'SGZZ-20210906-001' },
-      { label: 'SGZZ-20210907-002', value: 'SGZZ-20210907-002' },
-      { label: 'SGZZ-20210908-003', value: 'SGZZ-20210908-003' }
-    ]
-  },
-  {
-    prop: 'product',
-    label: '产品',
-    type: 'select',
-    placeholder: '请选择',
-    options: [
-      { label: '产品A', value: '产品A' },
-      { label: '产品B', value: '产品B' },
-      { label: '产品C', value: '产品C' }
-    ]
-  },
-  {
-    prop: 'licenseType',
-    label: '许可类型',
-    type: 'select',
-    placeholder: '请选择',
-    options: [
-      { label: '永久许可', value: '永久许可' },
-      { label: '订阅许可', value: '订阅许可' },
-      { label: '试用许可', value: '试用许可' }
-    ]
-  }
-])
-
-const handleSearch = async (formData: Record<string, any>) => {
-  pagination.currentPage = 1
-  await fetchOrderList(formData)
-}
-
-const handleReset = async () => {
-  pagination.currentPage = 1
-  await fetchOrderList()
-  ElMessage.success('重置成功')
-}
+// 搜索字段配置已移至 @/config/auth/searchFields.ts
+const searchFields = orderSearchFields
 
 // ─── Table Config ─────────────────────────────────────────────────────
 
-const columns = ref<ColumnConfig[]>([
-  { key: 'orderNo', label: '订单编号', prop: 'orderNo', minWidth: '180', visible: true },
-  { key: 'createTime', label: '创建时间', prop: 'createTime', minWidth: '170', visible: true },
-  { key: 'customerName', label: '客户名称', prop: 'customerName', minWidth: '180', visible: true },
-  { key: 'authCount', label: '授权数量', prop: 'authCount', width: '100', align: 'center', visible: true },
-  { key: 'authStartDate', label: '授权起始日期', prop: 'authStartDate', minWidth: '170', visible: true },
-  { key: 'authEndDate', label: '授权结束日期', prop: 'authEndDate', minWidth: '170', visible: true }
-])
+// 表格列配置已移至 @/config/auth/columns.ts
+const columns = ref(orderColumns)
 
 const tableActions: ActionButton[] = [
   { key: 'view', label: '查看', type: 'primary' },
@@ -340,6 +265,44 @@ const tableActions: ActionButton[] = [
   { key: 'download', label: '下载', type: 'primary' },
   { key: 'delete', label: '删除', type: 'danger' }
 ]
+
+// ─── Table Data ───────────────────────────────────────────────────────
+
+const selectedOrders = ref<Order[]>([])
+
+const fetchOrderList = async (formData?: Record<string, any>, page: number = 1, pageSize: number = 20) => {
+  try {
+    const response: any = await request.get('/api/order/list', {
+      params: {
+        page,
+        pageSize,
+        ...formData
+      }
+    })
+    if (response.code === 200) {
+      const rawList = response.data.list || []
+      // Map API fields to local field names
+      const list = rawList.map((item: any) => ({
+        id: item.id,
+        orderNo: item.orderNo,
+        createTime: item.createTime,
+        customerName: item.customerName,
+        authCount: item.authCount,
+        authStartDate: item.authStartDate,
+        authEndDate: item.authEndDate
+      }))
+      return { list, total: response.data.total || 0 }
+    }
+    return { list: [], total: 0 }
+  } catch (error) {
+    ElMessage.error('获取订单列表失败')
+    return { list: [], total: 0 }
+  }
+}
+
+const handleSelectionChange = (selection: Order[]) => {
+  selectedOrders.value = selection
+}
 
 const handleTableAction = (action: string, row: Order) => {
   if (action === 'view') {
@@ -352,61 +315,6 @@ const handleTableAction = (action: string, row: Order) => {
     handleDelete(row)
   }
 }
-
-const handlePageChange = (page: number, size: number) => {
-  pagination.currentPage = page
-  pagination.pageSize = size
-  fetchOrderList()
-}
-
-// ─── Table Data ───────────────────────────────────────────────────────
-
-const tableLoading = ref(false)
-const selectedOrders = ref<Order[]>([])
-const tableData = ref<Order[]>([])
-
-const pagination = reactive({
-  currentPage: 1,
-  pageSize: 20,
-  total: 0
-})
-
-const fetchOrderList = async (formData?: Record<string, any>) => {
-  tableLoading.value = true
-  try {
-    const response: any = await request.get('/api/order/list', {
-      params: {
-        page: pagination.currentPage,
-        pageSize: pagination.pageSize,
-        ...formData
-      }
-    })
-    if (response.code === 200) {
-      const rawList = response.data.list || []
-      // Map API fields to local field names
-      tableData.value = rawList.map((item: any) => ({
-        id: item.id,
-        orderNo: item.orderNo,
-        createTime: item.createTime,
-        customerName: item.customerName,
-        authCount: item.authCount,
-        authStartDate: item.authStartDate,
-        authEndDate: item.authEndDate
-      }))
-      pagination.total = response.data.total || 0
-    }
-  } catch (error) {
-    ElMessage.error('获取订单列表失败')
-  } finally {
-    tableLoading.value = false
-  }
-}
-
-const handleSelectionChange = (selection: Order[]) => {
-  selectedOrders.value = selection
-}
-
-
 
 // ─── Current Order (for modals) ──────────────────────────────────────
 
@@ -435,7 +343,7 @@ const defaultPermissions: PermissionItem[] = [
   { name: '功能模块L', checked: false, limit: 0 }
 ]
 
-const permissionsList = ref<PermissionItem[]>([])
+const permissionsList = ref<PermissionItem[]>(defaultPermissions.map(p => ({ ...p })))
 
 const resetPermissions = () => {
   permissionsList.value = defaultPermissions.map(p => ({ ...p }))
@@ -558,38 +466,7 @@ const handleOrderSubmit = async () => {
     orderSubmitLoading.value = true
     await new Promise(resolve => setTimeout(resolve, 600))
 
-    if (isEditMode.value && currentOrder.value) {
-      const idx = tableData.value.findIndex(o => o.id === currentOrder.value!.id)
-      if (idx !== -1) {
-        tableData.value[idx].customerName = orderForm.account
-        tableData.value[idx].orderNo = orderForm.orderNo
-        tableData.value[idx].authCount = orderForm.authCount
-        tableData.value[idx].authStartDate = orderForm.authStartDate
-        tableData.value[idx].authEndDate = orderForm.authEndDate
-      }
-      ElMessage.success('订单修改成功')
-    } else {
-      const newOrder: Order = {
-        id: Date.now(),
-        orderNo: orderForm.orderNo,
-        createTime: new Date().toLocaleString('zh-CN', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit'
-        }).replace(/\//g, '-'),
-        customerName: orderForm.account,
-        authCount: orderForm.authCount,
-        authStartDate: orderForm.authStartDate,
-        authEndDate: orderForm.authEndDate
-      }
-      tableData.value.unshift(newOrder)
-      pagination.total += 1
-      ElMessage.success('订单新增成功')
-    }
-
+    ElMessage.success(isEditMode.value ? '订单修改成功' : '订单新增成功')
     orderModalVisible.value = false
     orderSubmitLoading.value = false
   })
@@ -609,13 +486,6 @@ const handleDeleteConfirm = async () => {
   if (!currentOrder.value) return
   deleteLoading.value = true
   await new Promise(resolve => setTimeout(resolve, 600))
-
-  const idx = tableData.value.findIndex(o => o.id === currentOrder.value!.id)
-  if (idx !== -1) {
-    tableData.value.splice(idx, 1)
-    pagination.total = Math.max(0, pagination.total - 1)
-  }
-
   ElMessage.success('订单删除成功')
   deleteModalVisible.value = false
   deleteLoading.value = false
@@ -632,13 +502,6 @@ const handleView = (row: Order) => {
 const handleDownload = (row: Order) => {
   ElMessage.success(`正在下载订单: ${row.orderNo}`)
 }
-
-// ─── Lifecycle ───────────────────────────────────────────────────────
-
-onMounted(() => {
-  resetPermissions()
-  fetchOrderList()
-})
 </script>
 
 <style lang="scss" scoped>
@@ -714,7 +577,7 @@ onMounted(() => {
     .delete-title {
       font-size: 18px;
       font-weight: 600;
-      color: #303133;
+      
     }
   }
 

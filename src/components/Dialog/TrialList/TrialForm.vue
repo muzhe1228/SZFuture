@@ -22,7 +22,8 @@
           v-model="trialForm.trialDuration"
           :min="1"
           :max="30"
-          controls-position="right"
+          :controls="false"
+          align="left"
           style="width: 100%"
         />
       </el-form-item>

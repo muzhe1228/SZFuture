@@ -1,6 +1,9 @@
 import Mock from 'mockjs'
 
 const Random = Mock.Random
+const Mocks = Mock.mock
+
+
 
 export function setupUserMock() {
   // User list
@@ -17,7 +20,7 @@ export function setupUserMock() {
         id,
         name: Random.cname(),
         username: Random.first().toLowerCase() + Random.last().toLowerCase(),
-        phone: '1' + Random.string('number',10),
+        phone: Mocks(/1[3-9]\d{9}/),
         email: Random.email('qq.com'),
         createTime: Random.datetime('yyyy-MM-dd HH:mm:ss'),
         updateTime: Random.datetime('yyyy-MM-dd HH:mm:ss'),
@@ -55,7 +58,7 @@ export function setupUserMock() {
         department: Random.pick(['华东分部-研发部', '华东分部-技术部', '华南分部-财务部']),
         gender: Random.pick(['男', '女', '保密']),
         position: Random.pick(['高级工程师', '产品经理', '设计师', '测试工程师']),
-        avatar: Random.image('100x100', '#409EFF', 'Avatar'),
+        avatar: Random.image('100x100', '#f59e0b', 'Avatar'),
         remark: Random.csentence(10, 30)
       }
     }

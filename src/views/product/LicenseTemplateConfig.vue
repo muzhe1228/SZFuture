@@ -86,28 +86,15 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import SearchForm from '@/components/SearchForm.vue'
 import { DataTable } from '@/components/DataTable'
 import TemplateForm from '@/components/Dialog/LicenseTemplateConfig/TemplateForm.vue'
-import type { ColumnConfig, ActionButton } from '@/components/DataTable/types'
-import type { SearchField } from '@/components/SearchForm/types'
+import type { ActionButton } from '@/components/DataTable/types'
+import { licenseTemplateColumns } from '@/config/product/columns'
+import { licenseTemplateSearchFields } from '@/config/product/searchFields'
 import request from '@/utils/request'
 
 // ─── Search Form ──────────────────────────────────────────────────────
 
-const searchFields = computed<SearchField[]>(() => [
-  { prop: 'name', label: '名称', type: 'input', placeholder: '请输入' },
-  { prop: 'productName', label: '产品名称', type: 'input', placeholder: '请输入' },
-  { prop: 'version', label: '版本号', type: 'input', placeholder: '请输入' },
-  { prop: 'licenseType', label: '许可类型', type: 'input', placeholder: '请输入' },
-  {
-    prop: 'status',
-    label: '状态',
-    type: 'select',
-    placeholder: '请选择',
-    options: [
-      { label: '启用', value: '启用' },
-      { label: '停用', value: '停用' }
-    ]
-  }
-])
+// 搜索字段配置已移至 @/config/product/searchFields.ts
+const searchFields = licenseTemplateSearchFields
 
 const currentFilters = ref<Record<string, any>>({})
 
@@ -126,13 +113,8 @@ const handleReset = () => {
 
 // ─── Table Config ─────────────────────────────────────────────────────
 
-const columns = ref<ColumnConfig[]>([
-  { key: 'name', label: '许可模版名称', prop: 'name', minWidth: '160', visible: true },
-  { key: 'productName', label: '产品名称', prop: 'productName', minWidth: '140', visible: true },
-  { key: 'licenseType', label: '许可类型', prop: 'licenseType', minWidth: '120', visible: true },
-  { key: 'status', label: '状态', prop: 'status', width: '100', align: 'center', visible: true, hasTemplate: true },
-  { key: 'createTime', label: '创建时间', prop: 'createTime', minWidth: '180', visible: true }
-])
+// 表格列配置已移至 @/config/product/columns.ts
+const columns = ref(licenseTemplateColumns)
 
 const tableActions: ActionButton[] = [
   { key: 'view', label: '查看', type: 'primary' },
@@ -369,7 +351,6 @@ onMounted(() => {
   border-radius: 8px;
 }
 
-
 // ─── Status Cell ─────────────────────────────────────────────────────
 
 .status-cell {
@@ -391,7 +372,7 @@ onMounted(() => {
 }
 
 .status-disabled {
-  background-color: #909399;
+  background-color: var(--el-text-color-secondary);
 }
 
 // ─── Modal ───────────────────────────────────────────────────────────
@@ -405,7 +386,7 @@ onMounted(() => {
   &-title {
     font-size: 14px;
     font-weight: 500;
-    color: #303133;
+    
     white-space: nowrap;
   }
 }
@@ -441,26 +422,19 @@ onMounted(() => {
       align-items: center;
       gap: 4px;
       padding: 8px 12px;
-      // border: 1px solid #dcdfe6;
       border-radius: 4px;
       width: 100%;
       justify-content: center;
       transition: border-color 0.2s;
-
-      // &:hover {
-      //   border-color: #409eff;
-      // }
     }
 
     &.is-checked .el-checkbox__label {
-      // border-color: #409eff;
       background-color: #ecf5ff;
     }
   }
 
   .function-name {
     font-size: 13px;
-    color: #303133;
     font-weight: 500;
   }
 }

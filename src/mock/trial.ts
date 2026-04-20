@@ -1,6 +1,7 @@
 import Mock from 'mockjs'
 
 const Random = Mock.Random
+const Mocks = Mock.mock
 
 export function setupTrialMock() {
   // Trial list
@@ -21,7 +22,7 @@ export function setupTrialMock() {
         trialNo: 'TRIAL' + String(Random.integer(10000, 99999)),
         customerName: Random.cname() + Random.pick(['科技有限公司', '信息技术有限公司', '网络技术有限公司']),
         contactPerson: Random.cname(),
-        phone: /^1[3-9]\d{9}$/,
+        phone: Mocks(/1[3-9]\d{9}/),
         contactEmail: Random.email(),
         productName: Random.pick(productNames),
         trialDuration: Random.pick(trialDurations),

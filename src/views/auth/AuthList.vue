@@ -1,33 +1,17 @@
 <template>
   <div class="auth-list">
-    <!-- Search Bar -->
-    <SearchForm
-      :fields="searchFields"
-      storage-key="auth-list-search"
-      :search-loading="tableLoading"
-      :reset-loading="tableLoading"
-      @search="handleSearch"
-      @reset="handleReset"
-    />
-
-    <!-- Data Table -->
-    <DataTable
+    <!-- Base Table Page -->
+    <BaseTablePage
+      :search-fields="searchFields"
       :columns="columns"
-      :data="tableData"
-      :loading="tableLoading"
-      :total="pagination.total"
-      :current-page="pagination.currentPage"
-      :page-size="pagination.pageSize"
-      :page-sizes="[10, 20, 50, 100]"
+      :actions="tableActions"
+      :fetch-data="fetchAuthList"
       title="授权管理"
-      storage-key="auth-list-table"
+      storage-key="auth-list"
       :show-column-settings="true"
       :show-selection="true"
-      :actions="tableActions"
-      row-key="id"
-      @page-change="handlePageChange"
-      @selection-change="handleSelectionChange"
       @action="handleTableAction"
+      @selection-change="handleSelectionChange"
     >
       <template #extra-actions>
         <el-button type="danger" size="small" @click="handleBatchImport" :icon="Upload">
@@ -44,14 +28,9 @@
         </el-button>
       </template>
       <template #cell-status="{ row }">
-        <el-tag
-          :type="getStatusType(row.status)"
-          size="small"
-        >
-          {{ row.status }}
-        </el-tag>
+        <StatusTag :status="row.status" size="small" />
       </template>
-    </DataTable>
+    </BaseTablePage>
 
     <!-- ==================== Modals ==================== -->
 
@@ -277,9 +256,7 @@
             {{ currentAuth.authEndDate }}
           </el-descriptions-item>
           <el-descriptions-item label="状态">
-            <el-tag :type="getStatusType(currentAuth.status)" size="small">
-              {{ currentAuth.status }}
-            </el-tag>
+            <StatusTag :status="currentAuth.status" size="small" />
           </el-descriptions-item>
           <el-descriptions-item label="产品" :span="2">
             {{ currentAuth.product || '-' }}
@@ -340,7 +317,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, reactive } from 'vue'
+import { ref, reactive } from 'vue'
 import {
   Upload,
   UploadFilled,
@@ -350,96 +327,21 @@ import type { Authorization } from '@/types/index'
 import { ElMessage } from 'element-plus'
 import type { UploadFile, UploadInstance } from 'element-plus'
 import request from '@/utils/request'
-import SearchForm from '@/components/SearchForm.vue'
-import { DataTable } from '@/components/DataTable'
-import type { ColumnConfig, ActionButton } from '@/components/DataTable/types'
-import type { SearchField } from '@/components/SearchForm/types'
+import { BaseTablePage } from '@/components/BaseTablePage'
+import { StatusTag } from '@/components/StatusTag'
+import type { ActionButton } from '@/components/DataTable/types'
+import { authColumns } from '@/config/auth/columns'
+import { authSearchFields } from '@/config/auth/searchFields'
 
 // ─── Search Form ──────────────────────────────────────────────────────
 
-const searchFields = computed<SearchField[]>(() => [
-  {
-    prop: 'customerName',
-    label: '客户名称',
-    type: 'select',
-    placeholder: '请选择',
-    options: [
-      { label: '客户名称客户名称', value: '客户名称客户名称' },
-      { label: '测试客户A', value: '测试客户A' },
-      { label: '测试客户B', value: '测试客户B' }
-    ]
-  },
-  { prop: 'orderNo', label: '订单编号', type: 'input', placeholder: '请输入' },
-  { prop: 'authNo', label: '授权编号', type: 'input', placeholder: '请输入' },
-  {
-    prop: 'product',
-    label: '产品',
-    type: 'select',
-    placeholder: '请选择',
-    options: [
-      { label: '产品A', value: '产品A' },
-      { label: '产品B', value: '产品B' },
-      { label: '产品C', value: '产品C' }
-    ]
-  },
-  {
-    prop: 'version',
-    label: '版本号',
-    type: 'select',
-    placeholder: '请选择',
-    options: [
-      { label: 'V1.0', value: 'V1.0' },
-      { label: 'V2.0', value: 'V2.0' },
-      { label: 'V3.0', value: 'V3.0' }
-    ]
-  },
-  {
-    prop: 'licenseType',
-    label: '许可类型',
-    type: 'select',
-    placeholder: '请选择',
-    options: [
-      { label: '永久许可', value: '永久许可' },
-      { label: '订阅许可', value: '订阅许可' },
-      { label: '试用许可', value: '试用许可' }
-    ]
-  },
-  {
-    prop: 'status',
-    label: '状态',
-    type: 'select',
-    placeholder: '请选择',
-    options: [
-      { label: '已激活', value: '已激活' },
-      { label: '未激活', value: '未激活' },
-      { label: '已冻结', value: '已冻结' },
-      { label: '已作废', value: '已作废' }
-    ]
-  },
-  { prop: 'dateRange', label: '授权起止时间', type: 'datetimerange' }
-])
-
-const handleSearch = async (formData: Record<string, any>) => {
-  pagination.currentPage = 1
-  await fetchAuthList(formData)
-}
-
-const handleReset = async () => {
-  pagination.currentPage = 1
-  await fetchAuthList()
-  ElMessage.success('重置成功')
-}
+// 搜索字段配置已移至 @/config/auth/searchFields.ts
+const searchFields = authSearchFields
 
 // ─── Table Config ─────────────────────────────────────────────────────
 
-const columns = ref<ColumnConfig[]>([
-  { key: 'customerName', label: '客户名称', prop: 'customerName', minWidth: '140', visible: true },
-  { key: 'authNo', label: '授权编号', prop: 'authNo', minWidth: '140', visible: true },
-  { key: 'bindDate', label: '绑定日期', prop: 'bindDate', minWidth: '170', visible: true },
-  { key: 'authStartDate', label: '授权起始日期', prop: 'authStartDate', minWidth: '170', visible: true },
-  { key: 'authEndDate', label: '授权结束日期', prop: 'authEndDate', minWidth: '170', visible: true },
-  { key: 'status', label: '状态', prop: 'status', minWidth: '100', align: 'center', visible: true, hasTemplate: true }
-])
+// 表格列配置已移至 @/config/auth/columns.ts
+const columns = ref(authColumns)
 
 const tableActions: ActionButton[] = [
   { key: 'view', label: '查看', type: 'primary' },
@@ -449,6 +351,48 @@ const tableActions: ActionButton[] = [
   { key: 'extend', label: '延期', type: 'danger', condition: (row: Authorization) => row.status !== '已作废' },
   { key: 'void', label: '作废', type: 'info', condition: (row: Authorization) => row.status !== '已作废' }
 ]
+
+// ─── Table Data ───────────────────────────────────────────────────────
+
+const selectedAuths = ref<Authorization[]>([])
+
+const fetchAuthList = async (formData?: Record<string, any>, page: number = 1, pageSize: number = 20) => {
+  try {
+    const response: any = await request.get('/api/auth/list', {
+      params: {
+        page,
+        pageSize,
+        ...formData
+      }
+    })
+    if (response.code === 200) {
+      const rawList = response.data.list || []
+      // Map API fields to local field names
+      const list = rawList.map((item: any) => ({
+        id: item.id,
+        customerName: item.customerName,
+        authNo: item.authNo,
+        bindDate: item.bindDate,
+        authStartDate: item.authStartDate,
+        authEndDate: item.authEndDate,
+        status: item.status,
+        product: item.productName,
+        version: item.licenseType,
+        licenseType: item.licenseType,
+        remarks: item.remark || ''
+      }))
+      return { list, total: response.data.total || 0 }
+    }
+    return { list: [], total: 0 }
+  } catch (error) {
+    ElMessage.error('获取授权列表失败')
+    return { list: [], total: 0 }
+  }
+}
+
+const handleSelectionChange = (selection: Authorization[]) => {
+  selectedAuths.value = selection
+}
 
 const handleTableAction = (action: string, row: Authorization) => {
   if (action === 'view') {
@@ -465,81 +409,6 @@ const handleTableAction = (action: string, row: Authorization) => {
     handleVoid(row)
   }
 }
-
-const handlePageChange = (page: number, size: number) => {
-  pagination.currentPage = page
-  pagination.pageSize = size
-  fetchAuthList()
-}
-
-// ─── Status Tag Type ──────────────────────────────────────────────────
-
-const getStatusType = (status: string) => {
-  const map: Record<string, string> = {
-    '已激活': 'warning',
-    '未激活': 'info',
-    '已冻结': 'danger',
-    '已作废': 'info',
-    '已授权': 'success',
-    '已过期': 'danger',
-    '未授权': 'info',
-    '已取消': 'info'
-  }
-  return (map[status] || 'info') as any
-}
-
-// ─── Table Data ───────────────────────────────────────────────────────
-
-const tableLoading = ref(false)
-const selectedAuths = ref<Authorization[]>([])
-const tableData = ref<Authorization[]>([])
-
-const pagination = reactive({
-  currentPage: 1,
-  pageSize: 20,
-  total: 0
-})
-
-const fetchAuthList = async (formData?: Record<string, any>) => {
-  tableLoading.value = true
-  try {
-    const response: any = await request.get('/api/auth/list', {
-      params: {
-        page: pagination.currentPage,
-        pageSize: pagination.pageSize,
-        ...formData
-      }
-    })
-    if (response.code === 200) {
-      const rawList = response.data.list || []
-      // Map API fields to local field names
-      tableData.value = rawList.map((item: any) => ({
-        id: item.id,
-        customerName: item.customerName,
-        authNo: item.authNo,
-        bindDate: item.bindDate,
-        authStartDate: item.authStartDate,
-        authEndDate: item.authEndDate,
-        status: item.status,
-        product: item.productName,
-        version: item.licenseType,
-        licenseType: item.licenseType,
-        remarks: item.remark || ''
-      }))
-      pagination.total = response.data.total || 0
-    }
-  } catch (error) {
-    ElMessage.error('获取授权列表失败')
-  } finally {
-    tableLoading.value = false
-  }
-}
-
-const handleSelectionChange = (selection: Authorization[]) => {
-  selectedAuths.value = selection
-}
-
-
 
 // ─── Current Auth (for modals) ────────────────────────────────────────
 
@@ -606,18 +475,6 @@ const handleFreezeSubmit = async () => {
   }
   freezeLoading.value = true
   await new Promise(resolve => setTimeout(resolve, 600))
-  if (currentAuth.value) {
-    const idx = tableData.value.findIndex(a => a.id === currentAuth.value!.id)
-    if (idx !== -1) {
-      tableData.value[idx].status = '已冻结'
-    }
-  }
-  selectedAuths.value.forEach(auth => {
-    const idx = tableData.value.findIndex(a => a.id === auth.id)
-    if (idx !== -1) {
-      tableData.value[idx].status = '已冻结'
-    }
-  })
   ElMessage.success('授权冻结成功')
   freezeModalVisible.value = false
   freezeLoading.value = false
@@ -642,12 +499,6 @@ const handleUnfreezeSubmit = async () => {
   }
   unfreezeLoading.value = true
   await new Promise(resolve => setTimeout(resolve, 600))
-  if (currentAuth.value) {
-    const idx = tableData.value.findIndex(a => a.id === currentAuth.value!.id)
-    if (idx !== -1) {
-      tableData.value[idx].status = '已激活'
-    }
-  }
   ElMessage.success('授权解冻成功')
   unfreezeModalVisible.value = false
   unfreezeLoading.value = false
@@ -679,18 +530,6 @@ const handleExtendSubmit = async () => {
   }
   extendLoading.value = true
   await new Promise(resolve => setTimeout(resolve, 600))
-  if (currentAuth.value) {
-    const idx = tableData.value.findIndex(a => a.id === currentAuth.value!.id)
-    if (idx !== -1) {
-      tableData.value[idx].authEndDate = extendForm.extendTo
-    }
-  }
-  selectedAuths.value.forEach(auth => {
-    const idx = tableData.value.findIndex(a => a.id === auth.id)
-    if (idx !== -1) {
-      tableData.value[idx].authEndDate = extendForm.extendTo
-    }
-  })
   ElMessage.success('授权延期成功')
   extendModalVisible.value = false
   extendLoading.value = false
@@ -728,18 +567,6 @@ const handleVoidSubmit = async () => {
   }
   voidLoading.value = true
   await new Promise(resolve => setTimeout(resolve, 600))
-  if (currentAuth.value) {
-    const idx = tableData.value.findIndex(a => a.id === currentAuth.value!.id)
-    if (idx !== -1) {
-      tableData.value[idx].status = '已作废'
-    }
-  }
-  selectedAuths.value.forEach(auth => {
-    const idx = tableData.value.findIndex(a => a.id === auth.id)
-    if (idx !== -1) {
-      tableData.value[idx].status = '已作废'
-    }
-  })
   ElMessage.success('授权作废成功')
   voidModalVisible.value = false
   voidLoading.value = false
@@ -778,22 +605,10 @@ const handleGenerateActivationCode = async () => {
   }
   activateLoading.value = true
   await new Promise(resolve => setTimeout(resolve, 800))
-  if (currentAuth.value) {
-    const idx = tableData.value.findIndex(a => a.id === currentAuth.value!.id)
-    if (idx !== -1) {
-      tableData.value[idx].status = '已激活'
-    }
-  }
   ElMessage.success('激活码生成成功，授权已激活')
   activateModalVisible.value = false
   activateLoading.value = false
 }
-
-// ─── Lifecycle ────────────────────────────────────────────────────────
-
-onMounted(() => {
-  fetchAuthList()
-})
 </script>
 
 <style lang="scss" scoped>
@@ -821,7 +636,7 @@ onMounted(() => {
 
     .step-item {
       font-size: 14px;
-      color: #303133;
+      
       margin-bottom: 8px;
       line-height: 1.6;
 
@@ -851,7 +666,7 @@ onMounted(() => {
 
     .file-name {
       font-size: 14px;
-      color: #303133;
+      
     }
   }
 }

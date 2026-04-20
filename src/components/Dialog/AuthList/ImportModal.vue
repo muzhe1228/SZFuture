@@ -124,7 +124,7 @@ const handleClose = () => {
     .step-num {
       font-size: 14px;
       font-weight: 500;
-      color: #303133;
+      
       min-width: 20px;
     }
   }

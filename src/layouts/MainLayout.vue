@@ -11,9 +11,6 @@
         :collapse="isCollapse"
         :collapse-transition="false"
         router
-        background-color="#3d4a5a"
-        text-color="#bfcbd9"
-        active-text-color="#409eff"
         class="sidebar-menu"
       >
         <el-menu-item index="/dashboard">
@@ -98,6 +95,12 @@
               <FullScreen />
             </el-icon>
           </el-tooltip>
+          <el-tooltip :content="isDark ? '切换到浅色模式' : '切换到深色模式'" placement="bottom">
+            <el-icon class="header-icon" @click="toggleTheme">
+              <Sunny v-if="isDark" />
+              <Moon v-else />
+            </el-icon>
+          </el-tooltip>
           <el-dropdown trigger="click" @command="handleCommand">
             <div class="user-info">
               <el-icon><UserFilled /></el-icon>
@@ -137,11 +140,41 @@ import {
   Expand,
   FullScreen,
   UserFilled,
+  Sunny,
+  Moon,
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
 const isCollapse = ref(false)
+const isDark = ref(false)
+
+// 切换主题
+const toggleTheme = () => {
+  isDark.value = !isDark.value
+  if (isDark.value) {
+    document.documentElement.classList.add('dark')
+    localStorage.setItem('theme', 'dark')
+  } else {
+    document.documentElement.classList.remove('dark')
+    localStorage.setItem('theme', 'light')
+  }
+}
+
+// 加载主题偏好
+const loadTheme = () => {
+  const savedTheme = localStorage.getItem('theme')
+  if (savedTheme === 'dark') {
+    isDark.value = true
+    document.documentElement.classList.add('dark')
+  } else {
+    isDark.value = false
+    document.documentElement.classList.remove('dark')
+  }
+}
+
+// 组件挂载时加载主题
+loadTheme()
 
 const activeMenu = computed(() => route.path)
 
@@ -189,7 +222,6 @@ const handleCommand = (command: string) => {
 }
 
 .sidebar {
-  background-color: #3d4a5a;
   overflow: hidden;
   transition: width 0.3s;
   height: 100%;
@@ -197,11 +229,11 @@ const handleCommand = (command: string) => {
   flex-direction: column;
 
   .logo {
+    background-color: var(--el-color-primary);
     height: 60px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #2b3542;
 
     .logo-text {
       color: #fff;
@@ -225,6 +257,24 @@ const handleCommand = (command: string) => {
     &:not(.el-menu--collapse) {
       width: 220px;
     }
+
+    // :deep(.el-menu-item.is-active) {
+    //   background-color: rgba(var(--el-color-primary-rgb), 0.2) !important;
+    //   color: var(--el-color-primary) !important;
+    // }
+
+    // :deep(.el-sub-menu__title.is-active) {
+    //   background-color: rgba(var(--el-color-primary-rgb), 0.2) !important;
+    //   color: var(--el-color-primary) !important;
+    // }
+
+    // :deep(.el-menu-item:hover) {
+    //   background-color: rgba(var(--el-color-primary-rgb), 0.1) !important;
+    // }
+
+    // :deep(.el-sub-menu__title:hover) {
+    //   background-color: rgba(var(--el-color-primary-rgb), 0.1) !important;
+    // }
   }
 }
 
@@ -239,8 +289,8 @@ const handleCommand = (command: string) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #fff;
-  border-bottom: 1px solid #e6e6e6;
+  background-color: var(--el-bg-color);
+  border-bottom: 1px solid var(--el-border-color);
   padding: 0 20px;
   height: 60px;
 
@@ -252,10 +302,10 @@ const handleCommand = (command: string) => {
     .collapse-btn {
       font-size: 20px;
       cursor: pointer;
-      color: #606266;
+      color: var(--el-text-color-regular);
 
       &:hover {
-        color: #409eff;
+        color: var(--el-color-primary);
       }
     }
   }
@@ -268,10 +318,10 @@ const handleCommand = (command: string) => {
     .header-icon {
       font-size: 20px;
       cursor: pointer;
-      color: #606266;
+      color: var(--el-text-color-regular);
 
       &:hover {
-        color: #409eff;
+        color: var(--el-color-primary);
       }
     }
 
@@ -280,7 +330,7 @@ const handleCommand = (command: string) => {
       align-items: center;
       gap: 6px;
       cursor: pointer;
-      color: #606266;
+      color: var(--el-text-color-regular);
 
       .user-name {
         font-size: 14px;
@@ -290,11 +340,13 @@ const handleCommand = (command: string) => {
 }
 
 .main-content {
-  background-color: #f0f2f5;
+  background-color: var(--el-bg-color-page);
   padding: 16px;
   flex: 1;
   overflow: auto;
   display: flex;
   flex-direction: column;
 }
+
+
 </style>

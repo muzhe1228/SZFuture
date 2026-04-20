@@ -12,7 +12,7 @@
       </el-form-item>
 
       <el-form-item label="部门排序" prop="sort">
-        <el-input-number v-model="deptForm.sort" :min="0" :max="9999" :step="1" controls-position="right" style="width: 100%" />
+        <el-input-number v-model="deptForm.sort" :min="0" :max="9999" :step="1" :controls="false" align="left" style="width: 100%" />
       </el-form-item>
 
       <el-form-item label="部门状态" prop="statusEnabled">

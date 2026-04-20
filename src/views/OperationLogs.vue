@@ -46,13 +46,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { Delete } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import SearchForm from '@/components/SearchForm.vue'
 import { DataTable } from '@/components/DataTable'
-import type { ColumnConfig, ActionButton } from '@/components/DataTable/types'
-import type { SearchField } from '@/components/SearchForm/types'
+import type { ActionButton } from '@/components/DataTable/types'
+import { operationLogColumns } from '@/config/audit/columns'
+import { operationLogSearchFields } from '@/config/audit/searchFields'
 import type { OperationLog } from '@/types/index'
 import request from '@/utils/request'
 
@@ -66,16 +67,8 @@ const searchParams = ref<Record<string, any>>({})
 
 // ─── Table Config ─────────────────────────────────────────────────────
 
-const columns = ref<ColumnConfig[]>([
-  { key: 'operator', label: '操作人', prop: 'operator', width: '150', visible: true },
-  { key: 'description', label: '操作描述', prop: 'description', width: '180', visible: true },
-  { key: 'duration', label: '耗时', prop: 'duration', width: '180', align: 'left', sortable: true, visible: true, hasTemplate: true },
-  { key: 'method', label: '操作方法', prop: 'method', width: '120', visible: true, hasTemplate: true, showOverflowTooltip: true },
-  { key: 'params', label: '方法参数', prop: 'params', width: '200', visible: true, hasTemplate: true, showOverflowTooltip: true },
-  { key: 'ipAddress', label: 'IP地址', prop: 'ipAddress', width: '160', visible: true },
-  { key: 'location', label: '操作地点', prop: 'location', minWidth: '200', visible: true, hasTemplate: true, showOverflowTooltip: true },
-  { key: 'createTime', label: '创建时间', prop: 'createTime', width: '240', sortable: true, visible: true }
-])
+// 表格列配置已移至 @/config/audit/columns.ts
+const columns = ref(operationLogColumns)
 
 const tableActions: ActionButton[] = [
   { key: 'delete', label: '删除', type: 'danger', icon: Delete }
@@ -93,11 +86,8 @@ const handlePageChange = (page: number, size: number) => {
   fetchData()
 }
 
-const searchFields = computed<SearchField[]>(() => [
-  { prop: 'operator', label: '操作人', type: 'input', placeholder: '请输入', width: '150px' },
-  { prop: 'description', label: '操作描述', type: 'input', placeholder: '请输入', width: '150px' },
-  { prop: 'dateRange', label: '操作时间', type: 'daterange', width: '260px' }
-])
+// 搜索字段配置已移至 @/config/audit/searchFields.ts
+const searchFields = operationLogSearchFields
 
 const fetchData = async () => {
   tableLoading.value = true
@@ -171,10 +161,6 @@ const handleDelete = async (row: OperationLog) => {
   }
 }
 
-
-
-
-
 onMounted(() => {
   fetchData()
 })
@@ -204,12 +190,6 @@ onMounted(() => {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-
-  .pagination-wrapper {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 20px;
   }
 }
 </style>

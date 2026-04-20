@@ -24,7 +24,8 @@
               v-model="orderForm.authCount"
               :min="1"
               :max="9999"
-              controls-position="right"
+              :controls="false"
+              align="left"
               style="width: 100%"
             />
           </el-form-item>
@@ -117,7 +118,8 @@
               v-model="orderForm.floatingLicense"
               :min="1"
               :max="9999"
-              controls-position="right"
+              :controls="false"
+              align="left"
               style="width: 100%"
             />
           </el-form-item>

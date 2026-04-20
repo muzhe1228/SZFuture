@@ -228,7 +228,7 @@ watch(() => props.module, (newModule) => {
   &-title {
     font-size: 14px;
     font-weight: 500;
-    color: #303133;
+    
     white-space: nowrap;
   }
 }

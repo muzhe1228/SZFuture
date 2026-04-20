@@ -1,6 +1,7 @@
 import Mock from 'mockjs'
 
 const Random = Mock.Random
+const Mocks = Mock.mock
 
 export function setupMessageMock() {
   // Message list
@@ -18,7 +19,8 @@ export function setupMessageMock() {
       list.push({
         id: (page - 1) * pageSize + i + 1,
         title: Random.cname() + Random.pick(['科技有限公司', '信息技术有限公司', '网络技术有限公司']),
-        phone: '1' + Random.pick(['3', '5', '6', '7', '8', '9']) + Random.string('number', 9),
+        // phone: Mock.mock('1@string("number", 10)'),
+        phone: Mocks(/1[3-9]\d{9}/),
         type: Random.pick(messageTypes),
         priority: Random.pick(messagePriorities),
         content: Random.cparagraph(2, 4),

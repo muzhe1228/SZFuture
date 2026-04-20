@@ -9,7 +9,7 @@
           <!-- Dashboard mockup -->
           <rect x="50" y="50" width="400" height="300" rx="8" fill="#ffffff" stroke="#e4e7ed" stroke-width="2" />
           <!-- Header bar -->
-          <rect x="50" y="50" width="400" height="50" rx="8" fill="#409EFF" />
+          <rect x="50" y="50" width="400" height="50" rx="8" fill="#f59e0b" />
           <circle cx="80" cy="75" r="15" fill="#fff" opacity="0.3" />
           <rect x="110" y="65" width="200" height="20" rx="10" fill="#fff" opacity="0.3" />
           <!-- Content lines -->
@@ -17,18 +17,18 @@
           <rect x="70" y="140" width="120" height="10" rx="5" fill="#e4e7ed" />
           <rect x="70" y="160" width="130" height="10" rx="5" fill="#e4e7ed" />
           <!-- Button -->
-          <rect x="70" y="190" width="100" height="30" rx="15" fill="#409EFF" />
+          <rect x="70" y="190" width="100" height="30" rx="15" fill="#f59e0b" />
           <!-- Chart area -->
-          <rect x="250" y="120" width="180" height="200" rx="4" fill="#f0f9ff" stroke="#409EFF" stroke-width="1" />
-          <path d="M 270 280 Q 310 220 350 240 Q 390 260 410 200" stroke="#409EFF" stroke-width="3" fill="none" />
+          <rect x="250" y="120" width="180" height="200" rx="4" fill="#f0f9ff" stroke="#f59e0b" stroke-width="1" />
+          <path d="M 270 280 Q 310 220 350 240 Q 390 260 410 200" stroke="#f59e0b" stroke-width="3" fill="none" />
           <!-- Person icon -->
-          <circle cx="420" cy="320" r="30" fill="#409EFF" />
-          <rect x="390" y="340" width="60" height="60" rx="4" fill="#409EFF" />
+          <circle cx="420" cy="320" r="30" fill="#f59e0b" />
+          <rect x="390" y="340" width="60" height="60" rx="4" fill="#f59e0b" />
           <!-- Floating notification -->
           <rect x="350" y="30" width="140" height="80" rx="6" fill="#ffffff" stroke="#e4e7ed" stroke-width="2" />
           <rect x="370" y="45" width="100" height="8" rx="4" fill="#e4e7ed" />
           <rect x="370" y="60" width="80" height="8" rx="4" fill="#e4e7ed" />
-          <rect x="370" y="80" width="60" height="16" rx="8" fill="#409EFF" />
+          <rect x="370" y="80" width="60" height="16" rx="8" fill="#f59e0b" />
         </svg>
       </div>
     </div>
@@ -354,7 +354,7 @@ onUnmounted(() => {
 .brand {
   font-size: 24px;
   font-weight: bold;
-  color: #409EFF;
+  color: #f59e0b;
   margin-bottom: 60px;
 }
 
@@ -392,14 +392,14 @@ onUnmounted(() => {
   margin-bottom: 12px;
   font-size: 22px;
   font-weight: 600;
-  color: #303133;
+  
 }
 
 .form-subtitle {
   text-align: center;
   margin-bottom: 30px;
   font-size: 14px;
-  color: #909399;
+  color: var(--el-text-color-secondary);
 }
 
 .code-actions {
@@ -411,7 +411,7 @@ onUnmounted(() => {
   font-size: 14px;
 
   .countdown-text {
-    color: #909399;
+    color: var(--el-text-color-secondary);
   }
 }
 
@@ -422,6 +422,93 @@ onUnmounted(() => {
 .form-footer {
   text-align: center;
   margin-top: 20px;
+}
+
+// 暗黑模式样式
+.dark {
+  .forgot-password-container {
+    background: #1a1a1a;
+  }
+  
+  .left-panel {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
+    
+    .illustration {
+      svg {
+        // 修改SVG中的白色元素为浅色
+        rect[fill="#ffffff"] {
+          fill: #2c2c2c;
+        }
+        
+        rect[fill="#f5f7fa"] {
+          fill: #1a1a1a;
+        }
+        
+        rect[fill="#f0f9ff"] {
+          fill: #2c2c2c;
+        }
+        
+        rect[stroke="#e4e7ed"] {
+          stroke: #333;
+        }
+      }
+    }
+  }
+  
+  .right-panel {
+    background: #1a1a1a;
+  }
+  
+  .form-card {
+    background-color: #2c2c2c;
+    border-color: #333;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.5);
+  }
+  
+  .form-title {
+    color: var(--el-text-color-primary);
+  }
+  
+  .form-subtitle {
+    color: var(--el-text-color-secondary);
+  }
+  
+  .countdown-text {
+    color: var(--el-text-color-secondary);
+  }
+  
+  // 确保表单在暗黑模式下的样式
+  :deep(.el-form) {
+    .el-form-item__label {
+      color: var(--el-text-color-primary);
+    }
+  }
+  
+  // 确保输入框在暗黑模式下的样式
+  :deep(.el-input__wrapper) {
+    --el-input-bg-color: var(--el-input-bg-color);
+    --el-input-border-color: var(--el-input-border-color);
+    --el-input-text-color: var(--el-input-text-color);
+    --el-input-placeholder-color: var(--el-input-placeholder-color);
+  }
+  
+  // 确保结果组件在暗黑模式下的样式
+  :deep(.el-result) {
+    .el-result__title {
+      color: var(--el-text-color-primary);
+    }
+    
+    .el-result__sub-title {
+      color: var(--el-text-color-regular);
+    }
+  }
+  
+  // 响应式调整
+  @media (max-width: 768px) {
+    .right-panel {
+      background: #1a1a1a;
+    }
+  }
 }
 
 @media (max-width: 768px) {

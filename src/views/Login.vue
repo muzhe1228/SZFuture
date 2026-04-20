@@ -8,31 +8,31 @@
           <!-- Background shapes -->
           <rect x="60" y="120" width="380" height="220" rx="12" fill="#E8F4FD" />
           <!-- Laptop -->
-          <rect x="130" y="180" width="240" height="140" rx="8" fill="#409EFF" />
+          <rect x="130" y="180" width="240" height="140" rx="8" fill="#f59e0b" />
           <rect x="140" y="190" width="220" height="110" rx="4" fill="#fff" />
           <!-- Screen content - charts -->
-          <rect x="155" y="205" width="60" height="8" rx="4" fill="#409EFF" opacity="0.6" />
-          <rect x="155" y="220" width="80" height="8" rx="4" fill="#409EFF" opacity="0.4" />
-          <rect x="155" y="235" width="50" height="8" rx="4" fill="#409EFF" opacity="0.5" />
+          <rect x="155" y="205" width="60" height="8" rx="4" fill="#f59e0b" opacity="0.6" />
+          <rect x="155" y="220" width="80" height="8" rx="4" fill="#f59e0b" opacity="0.4" />
+          <rect x="155" y="235" width="50" height="8" rx="4" fill="#f59e0b" opacity="0.5" />
           <!-- Bar chart -->
-          <rect x="260" y="260" width="18" height="30" rx="3" fill="#409EFF" opacity="0.7" />
-          <rect x="285" y="240" width="18" height="50" rx="3" fill="#409EFF" opacity="0.8" />
-          <rect x="310" y="220" width="18" height="70" rx="3" fill="#409EFF" />
-          <rect x="335" y="250" width="18" height="40" rx="3" fill="#409EFF" opacity="0.6" />
+          <rect x="260" y="260" width="18" height="30" rx="3" fill="#f59e0b" opacity="0.7" />
+          <rect x="285" y="240" width="18" height="50" rx="3" fill="#f59e0b" opacity="0.8" />
+          <rect x="310" y="220" width="18" height="70" rx="3" fill="#f59e0b" />
+          <rect x="335" y="250" width="18" height="40" rx="3" fill="#f59e0b" opacity="0.6" />
           <!-- Laptop base -->
-          <rect x="110" y="320" width="280" height="12" rx="6" fill="#337ECC" />
+          <rect x="110" y="320" width="280" height="12" rx="6" fill="#d97706" />
           <!-- Person silhouette -->
-          <circle cx="250" cy="100" r="35" fill="#409EFF" opacity="0.3" />
-          <path d="M210 150 Q250 130 290 150 L290 180 L210 180 Z" fill="#409EFF" opacity="0.3" />
+          <circle cx="250" cy="100" r="35" fill="#f59e0b" opacity="0.3" />
+          <path d="M210 150 Q250 130 290 150 L290 180 L210 180 Z" fill="#f59e0b" opacity="0.3" />
           <!-- Dashboard cards floating -->
           <rect x="30" y="80" width="80" height="60" rx="8" fill="#fff" opacity="0.9" />
-          <circle cx="55" cy="100" r="12" fill="#409EFF" opacity="0.5" />
+          <circle cx="55" cy="100" r="12" fill="#f59e0b" opacity="0.5" />
           <rect x="75" y="95" width="25" height="6" rx="3" fill="#ccc" />
           <rect x="75" y="107" width="20" height="6" rx="3" fill="#ddd" />
           <rect x="390" y="60" width="80" height="60" rx="8" fill="#fff" opacity="0.9" />
-          <rect x="405" y="75" width="50" height="8" rx="4" fill="#409EFF" opacity="0.6" />
-          <rect x="405" y="90" width="40" height="8" rx="4" fill="#409EFF" opacity="0.4" />
-          <rect x="405" y="105" width="30" height="8" rx="4" fill="#409EFF" opacity="0.5" />
+          <rect x="405" y="75" width="50" height="8" rx="4" fill="#f59e0b" opacity="0.6" />
+          <rect x="405" y="90" width="40" height="8" rx="4" fill="#f59e0b" opacity="0.4" />
+          <rect x="405" y="105" width="30" height="8" rx="4" fill="#f59e0b" opacity="0.5" />
         </svg>
       </div>
     </div>
@@ -172,7 +172,7 @@ if (rememberedUsername) {
 .brand-name {
   font-size: 28px;
   font-weight: 700;
-  color: #409EFF;
+  color: #f59e0b;
   letter-spacing: 2px;
 }
 
@@ -212,7 +212,7 @@ if (rememberedUsername) {
   text-align: center;
   font-size: 32px;
   font-weight: 700;
-  color: #303133;
+  
   margin-bottom: 36px;
 }
 
@@ -233,6 +233,76 @@ if (rememberedUsername) {
     height: 44px;
     font-size: 16px;
     font-weight: 500;
+  }
+}
+
+// 暗黑模式样式
+.dark {
+  .login-left {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
+    
+    .illustration {
+      svg {
+        // 修改SVG中的白色元素为浅色
+        rect[fill="#fff"] {
+          fill: #e0e0e0;
+        }
+        
+        rect[fill="#E8F4FD"] {
+          fill: #2c2c2c;
+        }
+      }
+    }
+  }
+  
+  .login-right {
+    background: #1a1a1a;
+  }
+  
+  .login-card {
+    background-color: #2c2c2c;
+    border-color: #333;
+    
+    :deep(.el-card__body) {
+      background-color: #2c2c2c;
+    }
+  }
+  
+  .login-title {
+    color: var(--el-text-color-primary);
+  }
+  
+  .forgot-link {
+    color: var(--el-color-primary);
+  }
+  
+  // 确保表单在暗黑模式下的样式
+  :deep(.el-form) {
+    .el-form-item__label {
+      color: var(--el-text-color-primary);
+    }
+  }
+  
+  // 确保输入框在暗黑模式下的样式
+  :deep(.el-input__wrapper) {
+    --el-input-bg-color: var(--el-input-bg-color);
+    --el-input-border-color: var(--el-input-border-color);
+    --el-input-text-color: var(--el-input-text-color);
+    --el-input-placeholder-color: var(--el-input-placeholder-color);
+  }
+  
+  // 确保复选框在暗黑模式下的样式
+  :deep(.el-checkbox) {
+    .el-checkbox__label {
+      color: var(--el-text-color-primary);
+    }
+  }
+  
+  // 响应式调整
+  @media (max-width: 768px) {
+    .login-right {
+      background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
+    }
   }
 }
 

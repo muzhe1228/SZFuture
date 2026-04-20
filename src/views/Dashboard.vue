@@ -359,12 +359,11 @@ const handleViewMessage = (msg: MessageItem) => {
   flex: 1.5;
   display: flex;
   flex-direction: column;
-  background-color: #fff;
+  background-color: var(--el-bg-color);
   padding: 16px;
   gap: 16px;
   min-width: 560px;
   border-radius: 4px;
-  // box-shadow: 0px 0px 12px #0000001f;
 }
 
 // Welcome Card
@@ -380,7 +379,7 @@ const handleViewMessage = (msg: MessageItem) => {
   }
 
   .avatar {
-    background-color: #409eff;
+    background-color: var(--el-color-primary);
     flex-shrink: 0;
   }
 
@@ -388,17 +387,16 @@ const handleViewMessage = (msg: MessageItem) => {
     h2 {
       font-size: 20px;
       font-weight: 500;
-      color: #303133;
       margin-bottom: 8px;
     }
 
     p {
       font-size: 14px;
-      color: #606266;
+      color: var(--el-text-color-regular);
       margin-bottom: 4px;
 
       &.last-login {
-        color: #909399;
+        color: var(--el-text-color-secondary);
         margin-top: 4px;
       }
     }
@@ -415,7 +413,6 @@ const handleViewMessage = (msg: MessageItem) => {
   .card-header {
     font-size: 16px;
     font-weight: 500;
-    color: #303133;
   }
 
   .stats-grid {
@@ -427,7 +424,7 @@ const handleViewMessage = (msg: MessageItem) => {
   .stat-item {
     text-align: center;
     padding: 16px 8px;
-    background-color: #f9fafb;
+    background-color: var(--el-bg-color);
     border-radius: 8px;
     transition: transform 0.2s;
 
@@ -439,7 +436,7 @@ const handleViewMessage = (msg: MessageItem) => {
   .stat-value {
     font-size: 28px;
     font-weight: 600;
-    color: #409eff;
+    color: var(--el-color-primary);
     margin-bottom: 8px;
     display: flex;
     align-items: center;
@@ -454,7 +451,6 @@ const handleViewMessage = (msg: MessageItem) => {
 
   .stat-label {
     font-size: 14px;
-    color: #606266;
   }
 }
 
@@ -469,7 +465,6 @@ const handleViewMessage = (msg: MessageItem) => {
   .card-header {
     font-size: 16px;
     font-weight: 500;
-    color: #303133;
   }
 
   .message-item {
@@ -493,12 +488,11 @@ const handleViewMessage = (msg: MessageItem) => {
 
   .message-text {
     font-size: 14px;
-    color: #303133;
   }
 
   .message-time {
     font-size: 12px;
-    color: #909399;
+    color: var(--el-text-color-secondary);
   }
 }
 
@@ -506,7 +500,6 @@ const handleViewMessage = (msg: MessageItem) => {
 .chart-section-title {
   font-size: 18px;
   font-weight: 500;
-  color: #303133;
   padding: 4px 0;
 }
 
@@ -528,7 +521,7 @@ const handleViewMessage = (msg: MessageItem) => {
   .chart-title {
     font-size: 16px;
     font-weight: 500;
-    color: #303133;
+    
   }
 
   .chart-filters {
@@ -557,7 +550,7 @@ const handleViewMessage = (msg: MessageItem) => {
     left: 10px;
     font-size: 14px;
     font-weight: 500;
-    color: #303133;
+    
     z-index: 10;
   }
 

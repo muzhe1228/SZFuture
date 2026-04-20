@@ -1,40 +1,22 @@
 <template>
   <div class="approval-list">
-    <!-- Search Bar -->
-    <SearchForm
-      :fields="searchFields"
-      storage-key="approval-list-search"
-      @search="handleSearch"
-      @reset="handleReset"
-      :search-loading="tableLoading"
-      :reset-loading="tableLoading"
-    />
-
-    <!-- Data Table -->
-    <DataTable
+    <!-- Base Table Page -->
+    <BaseTablePage
+      :search-fields="searchFields"
       :columns="columns"
-      :data="paginatedData"
-      :loading="tableLoading"
-      :total="pagination.total"
-      :current-page="pagination.currentPage"
-      :page-size="pagination.pageSize"
-      :page-sizes="[10, 20, 50, 100]"
+      :actions="tableActions"
+      :fetch-data="fetchData"
       title="审批列表"
-      storage-key="approval-list-table"
+      storage-key="approval-list"
       :show-column-settings="true"
       :show-selection="true"
-      :actions="tableActions"
-      row-key="id"
-      @page-change="handlePageChange"
-      @selection-change="handleSelectionChange"
       @action="handleTableAction"
+      @selection-change="handleSelectionChange"
     >
       <template #cell-status="{ row }">
-        <el-tag :type="getStatusType(row.status)" size="small">
-          {{ row.status }}
-        </el-tag>
+        <StatusTag :status="row.status" :status-map="statusMap" size="small" />
       </template>
-    </DataTable>
+    </BaseTablePage>
 
     <!-- Approval Drawer -->
     <el-drawer
@@ -175,13 +157,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive } from 'vue'
 import type { Approval } from '@/types/index'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import SearchForm from '@/components/SearchForm.vue'
-import { DataTable } from '@/components/DataTable'
-import type { ColumnConfig, ActionButton } from '@/components/DataTable/types'
-import type { SearchField } from '@/components/SearchForm/types'
+import { BaseTablePage } from '@/components/BaseTablePage'
+import { StatusTag } from '@/components/StatusTag'
+import type { ActionButton } from '@/components/DataTable/types'
+import { approvalColumns } from '@/config/approval/columns'
+import { approvalSearchFields } from '@/config/approval/searchFields'
 import request from '@/utils/request'
 
 // ─── Extended Types ──────────────────────────────────────────────────────
@@ -217,14 +200,8 @@ interface ExtendedApproval extends Approval {
 
 // ─── Table Config ─────────────────────────────────────────────────────
 
-const columns = ref<ColumnConfig[]>([
-  { key: 'item', label: '审批事项', prop: 'item', minWidth: '120', visible: true },
-  { key: 'authNo', label: '授权编号', prop: 'authNo', minWidth: '180', visible: true },
-  { key: 'customerName', label: '客户名称', prop: 'customerName', minWidth: '140', visible: true },
-  { key: 'operator', label: '操作人', prop: 'operator', minWidth: '100', visible: true },
-  { key: 'operateTime', label: '操作时间', prop: 'operateTime', minWidth: '170', visible: true },
-  { key: 'status', label: '审批状态', prop: 'status', width: '120', align: 'center', visible: true, hasTemplate: true }
-])
+// 表格列配置已移至 @/config/approval/columns.ts
+const columns = ref(approvalColumns)
 
 const tableActions: ActionButton[] = [
   { key: 'view', label: '查看', type: 'primary' },
@@ -233,133 +210,38 @@ const tableActions: ActionButton[] = [
 
 // ─── Search Form ──────────────────────────────────────────────────────
 
-const searchFields = computed<SearchField[]>(() => [
-  {
-    prop: 'item',
-    label: '审批事项',
-    type: 'select',
-    placeholder: '请选择',
-    options: [
-      { label: '授权激活', value: '授权激活' },
-      { label: '授权冻结', value: '授权冻结' },
-      { label: '授权解冻', value: '授权解冻' },
-      { label: '授权延期', value: '授权延期' },
-      { label: '授权作废', value: '授权作废' }
-    ]
-  },
-  {
-    prop: 'customerName',
-    label: '客户名称',
-    type: 'select',
-    placeholder: '请选择',
-    options: [
-      { label: '客户名称1111', value: '客户名称1111' },
-      { label: '客户名称2222', value: '客户名称2222' },
-      { label: '客户名称3333', value: '客户名称3333' }
-    ]
-  },
-  { prop: 'authNo', label: '授权编号', type: 'input', placeholder: '请输入' },
-  {
-    prop: 'status',
-    label: '审批状态',
-    type: 'select',
-    placeholder: '请选择',
-    options: [
-      { label: '待审核', value: '待审核' },
-      { label: '已通过', value: '已通过' },
-      { label: '已拒绝', value: '已拒绝' }
-    ]
-  }
-])
-
-const searchParams = ref<Record<string, any>>({})
-
-const handleSearch = (formData: Record<string, any>) => {
-  searchParams.value = { ...formData }
-  pagination.currentPage = 1
-  fetchData()
-}
-
-const handleReset = () => {
-  searchParams.value = {}
-  pagination.currentPage = 1
-  fetchData()
-  ElMessage.success('重置成功')
-}
+// 搜索字段配置已移至 @/config/approval/searchFields.ts
+const searchFields = approvalSearchFields
 
 // ─── Status Tag Type ──────────────────────────────────────────────────
 
-const getStatusType = (status: string) => {
-  const map: Record<string, string> = {
-    '待审核': 'success',
-    '已通过': 'primary',
-    '已拒绝': 'danger'
-  }
-  return (map[status] || 'info') as any
+const statusMap = {
+  '待审核': 'success',
+  '已通过': 'primary',
+  '已拒绝': 'danger'
 }
 
 // ─── Table Data ───────────────────────────────────────────────────────
 
-const tableLoading = ref(false)
 const selectedApprovals = ref<Approval[]>([])
-const fullData = ref<ExtendedApproval[]>([])
 
-const pagination = reactive({
-  currentPage: 1,
-  pageSize: 20,
-  total: 0
-})
-
-const fetchData = async () => {
-  tableLoading.value = true
+const fetchData = async (formData?: Record<string, any>, page: number = 1, pageSize: number = 20) => {
   try {
     const result = await request.get('/api/approval/list', {
       params: {
-        page: String(pagination.currentPage),
-        pageSize: String(pagination.pageSize),
-        ...searchParams.value
+        page: String(page),
+        pageSize: String(pageSize),
+        ...formData
       }
     })
     if (result.code === 200) {
-      fullData.value = result.data.list || []
-      pagination.total = result.data.total || 0
+      return { list: result.data.list || [], total: result.data.total || 0 }
     }
+    return { list: [], total: 0 }
   } catch (error) {
     ElMessage.error('加载数据失败')
-  } finally {
-    tableLoading.value = false
+    return { list: [], total: 0 }
   }
-}
-
-const filteredData = computed(() => {
-  let data = fullData.value
-
-  if (searchParams.value.item) {
-    data = data.filter(a => a.item === searchParams.value.item)
-  }
-  if (searchParams.value.customerName) {
-    data = data.filter(a => a.customerName === searchParams.value.customerName)
-  }
-  if (searchParams.value.authNo) {
-    data = data.filter(a => a.authNo.includes(searchParams.value.authNo))
-  }
-  if (searchParams.value.status) {
-    data = data.filter(a => a.status === searchParams.value.status)
-  }
-
-  return data
-})
-
-const paginatedData = computed(() => {
-  const start = (pagination.currentPage - 1) * pagination.pageSize
-  const end = start + pagination.pageSize
-  return filteredData.value.slice(start, end)
-})
-
-const handlePageChange = (page: number, size: number) => {
-  pagination.currentPage = page
-  pagination.pageSize = size
-  fetchData()
 }
 
 const handleSelectionChange = (selection: Approval[]) => {
@@ -489,12 +371,6 @@ const handleReject = async () => {
     rejectLoading.value = false
   }
 }
-
-// ─── Init ─────────────────────────────────────────────────────────────
-
-onMounted(() => {
-  fetchData()
-})
 </script>
 
 <style lang="scss" scoped>
@@ -524,7 +400,7 @@ onMounted(() => {
   .section-title {
     font-size: 15px;
     font-weight: 600;
-    color: #303133;
+    
     margin: 0 0 16px;
     padding-bottom: 8px;
     border-bottom: 1px solid #ebeef5;
@@ -544,12 +420,12 @@ onMounted(() => {
       .info-label {
         width: 120px;
         flex-shrink: 0;
-        color: #909399;
+        color: var(--el-text-color-secondary);
       }
 
       .info-value {
         flex: 1;
-        color: #303133;
+        
         word-break: break-all;
       }
     }
@@ -576,7 +452,7 @@ onMounted(() => {
 
   .timeline-operator {
     font-weight: 500;
-    color: #303133;
+    
   }
 
   .timeline-action {

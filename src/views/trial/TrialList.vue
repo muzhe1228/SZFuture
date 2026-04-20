@@ -1,32 +1,20 @@
 <template>
   <div class="trial-list">
-    <!-- Search Bar -->
-    <SearchForm :fields="searchFields" storage-key="trial-list-search" @search="handleSearch" @reset="handleReset"
-      :search-loading="tableLoading" :reset-loading="tableLoading" />
-
-    <!-- Data Table -->
-    <DataTable
+    <!-- Base Table Page -->
+    <BaseTablePage
+      :search-fields="searchFields"
       :columns="columns"
-      :data="tableData"
-      :loading="tableLoading"
-      :total="pagination.total"
-      :current-page="pagination.currentPage"
-      :page-size="pagination.pageSize"
-      :page-sizes="[10, 20, 50, 100]"
+      :actions="tableActions"
+      :fetch-data="fetchData"
       title="试用列表"
-      storage-key="trial-list-table"
+      storage-key="trial-list"
       :show-column-settings="true"
       :show-selection="true"
-      :actions="tableActions"
-      row-key="id"
-      @page-change="handlePageChange"
-      @selection-change="handleSelectionChange"
       @action="handleTableAction"
+      @selection-change="handleSelectionChange"
     >
       <template #cell-status="{ row }">
-        <el-tag :type="getStatusType(row.status)" size="small">
-          {{ row.status }}
-        </el-tag>
+        <StatusTag :status="row.status" :status-map="statusMap" size="small" />
       </template>
 
       <template #extra-actions>
@@ -40,7 +28,7 @@
           删除试用
         </el-button>
       </template>
-    </DataTable>
+    </BaseTablePage>
 
     <!-- ==================== Modals ==================== -->
 
@@ -64,9 +52,7 @@
             {{ currentTrial.authEndDate }}
           </el-descriptions-item>
           <el-descriptions-item label="状态">
-            <el-tag :type="getStatusType(currentTrial.status)" size="small">
-              {{ currentTrial.status }}
-            </el-tag>
+            <StatusTag :status="currentTrial.status" :status-map="statusMap" size="small" />
           </el-descriptions-item>
           <el-descriptions-item label="License Key" :span="2">
             {{ currentTrial.licenseKey || '-' }}
@@ -204,13 +190,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive } from 'vue'
 import type { Trial } from '@/types/index'
 import { ElMessage } from 'element-plus'
-import SearchForm from '@/components/SearchForm.vue'
-import { DataTable } from '@/components/DataTable'
-import type { ColumnConfig, ActionButton } from '@/components/DataTable/types'
-import type { SearchField } from '@/components/SearchForm/types'
+import { BaseTablePage } from '@/components/BaseTablePage'
+import { StatusTag } from '@/components/StatusTag'
+import type { ActionButton } from '@/components/DataTable/types'
+import { trialColumns } from '@/config/trial/columns'
+import { trialSearchFields } from '@/config/trial/searchFields'
 import request from '@/utils/request'
 
 // ─── Extended Types ──────────────────────────────────────────────────────
@@ -226,14 +213,8 @@ interface TrialExtended extends Trial {
 
 // ─── Table Config ─────────────────────────────────────────────────────
 
-const columns = ref<ColumnConfig[]>([
-  { key: 'customerName', label: '客户名称', prop: 'customerName', minWidth: '140', visible: true },
-  { key: 'phone', label: '手机号', prop: 'phone', minWidth: '130', visible: true },
-  { key: 'bindDate', label: '绑定日期', prop: 'bindDate', minWidth: '170', visible: true },
-  { key: 'authStartDate', label: '授权起始日期', prop: 'authStartDate', minWidth: '170', visible: true },
-  { key: 'authEndDate', label: '授权结束日期', prop: 'authEndDate', minWidth: '170', visible: true },
-  { key: 'status', label: '状态', prop: 'status', width: '100', align: 'center', visible: true, hasTemplate: true }
-])
+// 表格列配置已移至 @/config/trial/columns.ts
+const columns = ref(trialColumns)
 
 const tableActions: ActionButton[] = [
   { key: 'view', label: '查看', type: 'primary' },
@@ -244,130 +225,43 @@ const tableActions: ActionButton[] = [
 
 // ─── Search Form ──────────────────────────────────────────────────────
 
-const searchFields = computed<SearchField[]>(() => [
-  {
-    prop: 'customerName',
-    label: '客户名称',
-    type: 'select',
-    placeholder: '请选择',
-    options: [
-      { label: '客户名称客户名称', value: '客户名称客户名称' },
-      { label: '测试客户A', value: '测试客户A' },
-      { label: '测试客户B', value: '测试客户B' }
-    ]
-  },
-  { prop: 'phone', label: '手机号', type: 'input', placeholder: '请输入' },
-  {
-    prop: 'licenseKey',
-    label: 'License Key',
-    type: 'select',
-    placeholder: '请选择',
-    options: [
-      { label: 'LK-20260125-001', value: 'LK-20260125-001' },
-      { label: 'LK-20260201-002', value: 'LK-20260201-002' },
-      { label: 'LK-20260210-003', value: 'LK-20260210-003' }
-    ]
-  },
-  {
-    prop: 'product',
-    label: '产品',
-    type: 'select',
-    placeholder: '请选择',
-    options: [
-      { label: '产品A', value: '产品A' },
-      { label: '产品B', value: '产品B' },
-      { label: '产品C', value: '产品C' }
-    ]
-  },
-  {
-    prop: 'version',
-    label: '版本号',
-    type: 'select',
-    placeholder: '请选择',
-    options: [
-      { label: 'V1.0', value: 'V1.0' },
-      { label: 'V2.0', value: 'V2.0' },
-      { label: 'V3.0', value: 'V3.0' }
-    ]
-  },
-  {
-    prop: 'status',
-    label: '状态',
-    type: 'select',
-    placeholder: '请选择',
-    options: [
-      { label: '已激活', value: '已激活' },
-      { label: '未激活', value: '未激活' },
-      { label: '已过期', value: '已过期' }
-    ]
-  },
-  { prop: 'dateRange', label: '授权起止时间', type: 'datetimerange' }
-])
-
-const searchParams = ref<Record<string, any>>({})
-
-const handleSearch = (formData: Record<string, any>) => {
-  searchParams.value = { ...formData }
-  pagination.currentPage = 1
-  fetchData()
-}
-
-const handleReset = () => {
-  searchParams.value = {}
-  pagination.currentPage = 1
-  fetchData()
-  ElMessage.success('重置成功')
-}
+// 搜索字段配置已移至 @/config/trial/searchFields.ts
+const searchFields = trialSearchFields
 
 // ─── Status Tag Type ──────────────────────────────────────────────────
 
-const getStatusType = (status: string) => {
-  const map: Record<string, string> = {
-    '已激活': 'warning',
-    '未激活': 'info',
-    '已过期': 'info',
-    '已冻结': 'danger'
-  }
-  return (map[status] || 'info') as any
+const statusMap = {
+  '已激活': 'warning',
+  '未激活': 'info',
+  '已过期': 'info',
+  '已冻结': 'danger'
 }
 
 // ─── Table Data ───────────────────────────────────────────────────────
 
 const tableLoading = ref(false)
 const selectedTrials = ref<TrialExtended[]>([])
-const tableData = ref<TrialExtended[]>([])
 
-const pagination = reactive({
-  currentPage: 1,
-  pageSize: 20,
-  total: 0
-})
-
-const fetchData = async () => {
+const fetchData = async (formData?: Record<string, any>, page: number = 1, pageSize: number = 20) => {
   tableLoading.value = true
   try {
     const result = await request.get('/api/trial/list', {
       params: {
-        page: String(pagination.currentPage),
-        pageSize: String(pagination.pageSize),
-        ...searchParams.value
+        page: String(page),
+        pageSize: String(pageSize),
+        ...formData
       }
     })
     if (result.code === 200) {
-      tableData.value = result.data.list || []
-      pagination.total = result.data.total || 0
+      return { list: result.data.list || [], total: result.data.total || 0 }
     }
+    return { list: [], total: 0 }
   } catch (error) {
     ElMessage.error('加载数据失败')
+    return { list: [], total: 0 }
   } finally {
     tableLoading.value = false
   }
-}
-
-const handlePageChange = (page: number, size: number) => {
-  pagination.currentPage = page
-  pagination.pageSize = size
-  fetchData()
 }
 
 const handleSelectionChange = (selection: TrialExtended[]) => {
@@ -435,18 +329,6 @@ const handleFreezeSubmit = async () => {
     })
     const result = await response.json()
     if (result.code === 200) {
-      if (currentTrial.value) {
-        const idx = tableData.value.findIndex(t => t.id === currentTrial.value!.id)
-        if (idx !== -1) {
-          tableData.value[idx].status = '已冻结'
-        }
-      }
-      selectedTrials.value.forEach(trial => {
-        const idx = tableData.value.findIndex(t => t.id === trial.id)
-        if (idx !== -1) {
-          tableData.value[idx].status = '已冻结'
-        }
-      })
       ElMessage.success('试用授权冻结成功')
     }
   } catch {
@@ -483,12 +365,6 @@ const handleUnfreezeSubmit = async () => {
     })
     const result = await response.json()
     if (result.code === 200) {
-      if (currentTrial.value) {
-        const idx = tableData.value.findIndex(t => t.id === currentTrial.value!.id)
-        if (idx !== -1) {
-          tableData.value[idx].status = '已激活'
-        }
-      }
       ElMessage.success('试用授权更新成功')
     }
   } catch {
@@ -533,12 +409,6 @@ const handleActivateSubmit = async () => {
     })
     const result = await response.json()
     if (result.code === 200) {
-      if (currentTrial.value) {
-        const idx = tableData.value.findIndex(t => t.id === currentTrial.value!.id)
-        if (idx !== -1) {
-          tableData.value[idx].status = '已激活'
-        }
-      }
       ElMessage.success('激活码生成成功，试用已激活')
     }
   } catch {
@@ -585,12 +455,6 @@ const handleVoidSubmit = async () => {
     })
     const result = await response.json()
     if (result.code === 200) {
-      selectedTrials.value.forEach(trial => {
-        const idx = tableData.value.findIndex(t => t.id === trial.id)
-        if (idx !== -1) {
-          tableData.value[idx].status = '已过期'
-        }
-      })
       ElMessage.success('试用授权作废成功')
     }
   } catch {
@@ -623,7 +487,6 @@ const handleDeleteSubmit = async () => {
     if (result.code === 200) {
       ElMessage.success(`已成功删除 ${selectedTrials.value.length} 条试用记录`)
       selectedTrials.value = []
-      fetchData()
     }
   } catch {
     ElMessage.error('删除失败')
@@ -632,12 +495,6 @@ const handleDeleteSubmit = async () => {
     deleteLoading.value = false
   }
 }
-
-// ─── Lifecycle ────────────────────────────────────────────────────────
-
-onMounted(() => {
-  fetchData()
-})
 </script>
 
 <script lang="ts">

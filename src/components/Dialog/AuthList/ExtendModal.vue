@@ -7,7 +7,8 @@
             v-model="extendForm.extendDays"
             :min="1"
             :max="3650"
-            controls-position="right"
+            :controls="false"
+            align="left"
             style="width: 100%"
           />
         </el-form-item>

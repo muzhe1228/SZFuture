@@ -1,160 +1,65 @@
 <template>
-  <el-form
-    ref="formRef"
-    :model="formData"
-    :inline="inline"
-    :label-width="labelWidth"
-    class="search-form"
-    @submit.prevent="handleSearch"
-    @reset.prevent="handleReset"
-    @keyup.enter="handleSearch"
-  >
+  <el-form ref="formRef" :model="formData" :inline="inline" :label-width="labelWidth" class="search-form"
+    @submit.prevent="handleSearch" @reset.prevent="handleReset" @keyup.enter="handleSearch">
     <template v-for="field in visibleFields" :key="field.prop">
       <el-form-item :label="field.label" :prop="field.prop">
         <!-- Input -->
-        <el-input
-          v-if="field.type === 'input'"
-          v-model="formData[field.prop]"
-          :placeholder="field.placeholder || `请输入${field.label}`"
-          :clearable="field.clearable !== false"
-          :style="{ width: field.width || '200px' }"
-        />
+        <el-input v-if="field.type === 'input'" v-model="formData[field.prop]"
+          :placeholder="field.placeholder || `请输入${field.label}`" :clearable="field.clearable !== false"
+          :style="{ width: field.width || '200px' }" />
 
         <!-- Select -->
-        <el-select
-          v-else-if="field.type === 'select'"
-          v-model="formData[field.prop]"
-          :placeholder="field.placeholder || `请选择${field.label}`"
-          :clearable="field.clearable !== false"
-          :multiple="field.multiple"
-          :loading="loadingOptions[field.prop]"
-          :style="{ width: field.width || '200px' }"
-        >
-          <el-option
-            v-for="opt in fieldOptions[field.prop]"
-            :key="opt.value"
-            :label="opt.label"
-            :value="opt.value"
-          />
+        <el-select v-else-if="field.type === 'select'" v-model="formData[field.prop]"
+          :placeholder="field.placeholder || `请选择${field.label}`" :clearable="field.clearable !== false"
+          :multiple="field.multiple" :loading="loadingOptions[field.prop]" :style="{ width: field.width || '200px' }">
+          <el-option v-for="opt in fieldOptions[field.prop]" :key="opt.value" :label="opt.label" :value="opt.value" />
         </el-select>
 
         <!-- Date -->
-        <el-date-picker
-          v-else-if="field.type === 'date'"
-          v-model="formData[field.prop]"
-          type="date"
-          :placeholder="field.placeholder || `请选择${field.label}`"
-          :clearable="field.clearable !== false"
-          value-format="YYYY-MM-DD"
-          :style="{ width: field.width || '200px' }"
-        />
+        <el-date-picker v-else-if="field.type === 'date'" v-model="formData[field.prop]" type="date"
+          :placeholder="field.placeholder || `请选择${field.label}`" :clearable="field.clearable !== false"
+          value-format="YYYY-MM-DD" :style="{ width: field.width || '200px' }" />
 
         <!-- Date Range -->
-        <el-date-picker
-          v-else-if="field.type === 'daterange'"
-          v-model="formData[field.prop]"
-          type="daterange"
-          :placeholder="field.placeholder || `请选择${field.label}`"
-          :clearable="field.clearable !== false"
-          value-format="YYYY-MM-DD"
-          range-separator="至"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          :style="{ width: field.width || '320px' }"
-        />
+        <el-date-picker v-else-if="field.type === 'daterange'" v-model="formData[field.prop]" type="daterange"
+          :placeholder="field.placeholder || `请选择${field.label}`" :clearable="field.clearable !== false"
+          value-format="YYYY-MM-DD" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期"
+          :style="{ width: field.width || '320px' }" />
 
         <!-- DateTime -->
-        <el-date-picker
-          v-else-if="field.type === 'datetime'"
-          v-model="formData[field.prop]"
-          type="datetime"
-          :placeholder="field.placeholder || `请选择${field.label}`"
-          :clearable="field.clearable !== false"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          :style="{ width: field.width || '200px' }"
-        />
+        <el-date-picker v-else-if="field.type === 'datetime'" v-model="formData[field.prop]" type="datetime"
+          :placeholder="field.placeholder || `请选择${field.label}`" :clearable="field.clearable !== false"
+          value-format="YYYY-MM-DD HH:mm:ss" :style="{ width: field.width || '200px' }" />
 
         <!-- DateTime Range -->
-        <el-date-picker
-          v-else-if="field.type === 'datetimerange'"
-          v-model="formData[field.prop]"
-          type="datetimerange"
-          :placeholder="field.placeholder || `请选择${field.label}`"
-          :clearable="field.clearable !== false"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          range-separator="至"
-          start-placeholder="开始时间"
-          end-placeholder="结束时间"
-          :style="{ width: field.width || '320px' }"
-        />
+        <el-date-picker v-else-if="field.type === 'datetimerange'" v-model="formData[field.prop]" type="datetimerange"
+          :placeholder="field.placeholder || `请选择${field.label}`" :clearable="field.clearable !== false"
+          value-format="YYYY-MM-DD HH:mm:ss" range-separator="至" start-placeholder="开始时间" end-placeholder="结束时间"
+          :style="{ width: field.width || '320px' }" />
 
         <!-- Number -->
-        <el-input-number
-          v-else-if="field.type === 'number'"
-          v-model="formData[field.prop]"
-          :placeholder="field.placeholder"
-          :clearable="field.clearable"
-          :min="field.min"
-          :max="field.max"
-          :style="{ width: field.width || '200px' }"
-        />
+        <el-input-number v-else-if="field.type === 'number'" v-model="formData[field.prop]"
+          :placeholder="field.placeholder" :clearable="field.clearable" :min="field.min" :max="field.max"
+          :style="{ width: field.width || '200px' }" />
 
         <!-- Custom slot -->
-        <slot
-          v-else-if="field.type === 'custom'"
-          :name="field.prop"
-          :field="field"
-          :form-data="formData"
-        />
+        <slot v-else-if="field.type === 'custom'" :name="field.prop" :field="field" :form-data="formData" />
       </el-form-item>
     </template>
 
     <el-form-item class="search-form-actions">
-      <el-button
-        type="primary"
-        :icon="Search"
-        :loading="searchLoading"
-        :disabled="searchLoading"
-        @click="handleSearch"
-        v-if="showSearch"
-      >
-        查询
-      </el-button>
-      <el-button
-        :icon="Refresh"
-        :loading="resetLoading"
-        :disabled="resetLoading"
-        @click="handleReset"
-        v-if="showReset"
-      >
-        重置
-      </el-button>
-      <el-button
-        :icon="Setting"
-        @click="drawerVisible = true"
-        v-if="showColumnSettings"
-      >
-        列设置
-      </el-button>
+      <el-button type="primary" :icon="Search" :loading="searchLoading" :disabled="searchLoading" @click="handleSearch"
+        v-if="showSearch" />
+      <el-button :icon="Refresh" :loading="resetLoading" :disabled="resetLoading" @click="handleReset"
+        v-if="showReset" />
+      <el-button :icon="Setting" @click="drawerVisible = true" v-if="showColumnSettings" />
     </el-form-item>
 
     <!-- Column Settings Drawer -->
-    <el-drawer
-      v-model="drawerVisible"
-      title="列设置"
-      direction="rtl"
-      size="320px"
-    >
+    <el-drawer v-model="drawerVisible" title="列设置" direction="rtl" size="320px">
       <div class="column-settings">
-        <el-switch
-          v-for="field in fields"
-          :key="field.prop"
-          v-model="fieldVisibility[field.prop]"
-          :disabled="field.hidden"
-          :active-text="field.label"
-          class="column-toggle"
-          @change="handleColumnChange"
-        />
+        <el-switch v-for="field in fields" :key="field.prop" v-model="fieldVisibility[field.prop]"
+          :disabled="field.hidden" :active-text="field.label" class="column-toggle" @change="handleColumnChange" />
       </div>
       <template #footer>
         <el-button @click="drawerVisible = false">关闭</el-button>
@@ -353,7 +258,7 @@ defineExpose({
 
 <style lang="scss" scoped>
 .search-form {
-  background: #fff;
+  background-color: var(--el-bg-color);
   padding: 18px 18px 0;
   margin-bottom: 16px;
   border-radius: 4px;

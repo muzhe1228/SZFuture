@@ -9,6 +9,8 @@ export interface ColumnConfig {
   hasTemplate?: boolean
   sortable?: boolean
   showOverflowTooltip?: boolean
+  formatter?: (row: any, column: ColumnConfig) => string
+  [key: string]: any
 }
 
 export interface ActionButton {

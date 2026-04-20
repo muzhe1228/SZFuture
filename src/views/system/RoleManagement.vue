@@ -46,24 +46,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, reactive } from 'vue'
+import { ref, onMounted, reactive } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
 import type { Role } from '@/types/index'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import SearchForm from '@/components/SearchForm.vue'
 import { DataTable } from '@/components/DataTable'
 import RoleForm from '@/components/Dialog/RoleManagement/RoleForm.vue'
-import type { ColumnConfig, ActionButton } from '@/components/DataTable/types'
-import type { SearchField } from '@/components/SearchForm/types'
+import type { ActionButton } from '@/components/DataTable/types'
+import { roleColumns } from '@/config/system/columns'
+import { roleSearchFields } from '@/config/system/searchFields'
 import request from '@/utils/request'
-
-
 
 // ─── Search Form ──────────────────────────────────────────────────────
 
-const searchFields = computed<SearchField[]>(() => [
-  { prop: 'name', label: '角色名称', type: 'input', placeholder: '请输入' }
-])
+// 搜索字段配置已移至 @/config/system/searchFields.ts
+const searchFields = roleSearchFields
 
 const handleSearch = (formData: Record<string, any>) => {
   pagination.currentPage = 1
@@ -78,13 +76,8 @@ const handleReset = () => {
 
 // ─── Table Config ─────────────────────────────────────────────────────
 
-const columns = ref<ColumnConfig[]>([
-  { key: 'name', label: '角色名称', prop: 'name', minWidth: '140', visible: true },
-  { key: 'status', label: '状态', prop: 'status', width: '90', align: 'center', visible: true, hasTemplate: true },
-  { key: 'sort', label: '排序', prop: 'sort', width: '140', align: 'center', visible: true },
-  { key: 'description', label: '描述', prop: 'description', minWidth: '260', visible: true, showOverflowTooltip: true },
-  { key: 'createTime', label: '创建时间', prop: 'createTime', minWidth: '170', visible: true }
-])
+// 表格列配置已移至 @/config/system/columns.ts
+const columns = ref(roleColumns)
 
 const tableActions: ActionButton[] = [
   { key: 'view', label: '查看', type: 'primary' },
@@ -149,7 +142,6 @@ const fetchData = async (formData?: Record<string, any>) => {
     pagination.total = (res as any).data?.total ?? (res as any).total ?? 0
   } catch (error) {
     ElMessage.error('获取角色列表失败')
-    console.error('Failed to fetch role list:', error)
   } finally {
     tableLoading.value = false
   }
@@ -158,8 +150,6 @@ const fetchData = async (formData?: Record<string, any>) => {
 const handleSelectionChange = (selection: Role[]) => {
   selectedRoles.value = selection
 }
-
-
 
 // ─── Action Handlers ──────────────────────────────────────────────────
 
@@ -266,36 +256,5 @@ onMounted(() => {
   height: 100%;
   overflow-y: auto;
   border-radius: 8px;
-}
-
-
-// ─── Role Form Modal ─────────────────────────────────────────────────
-
-
-
-// ─── Responsive ──────────────────────────────────────────────────────
-
-@media (max-width: 992px) {
-  .search-fields {
-    flex-direction: column;
-    align-items: stretch;
-
-    .search-field {
-      width: 100%;
-
-      .el-input {
-        width: 100%;
-      }
-    }
-  }
-
-  .search-bar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .search-actions {
-    justify-content: flex-end;
-  }
 }
 </style>

@@ -71,7 +71,8 @@
                 v-model="form.passwordMinLength"
                 :min="1"
                 :max="99"
-                controls-position="right"
+                :controls="false"
+                align="left"
                 class="password-length-input"
               />
               <span class="complexity-separator">至</span>
@@ -79,7 +80,8 @@
                 v-model="form.passwordMaxLength"
                 :min="1"
                 :max="99"
-                controls-position="right"
+                :controls="false"
+                align="left"
                 class="password-length-input"
               />
             </div>
@@ -174,7 +176,8 @@
               v-model="form.alertTriggerThreshold"
               :min="1"
               :max="365"
-              controls-position="right"
+              :controls="false"
+              align="left"
               class="threshold-input"
             />
             <span class="threshold-suffix">天提醒</span>
@@ -456,7 +459,7 @@ onMounted(() => {
 // ─── Section Card ────────────────────────────────────────────────────
 
 .section-card {
-  background-color: #fff;
+  background-color: var(--el-bg-color);
   border-radius: 4px;
   padding: 20px 24px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
@@ -464,7 +467,7 @@ onMounted(() => {
   .section-title {
     font-size: 15px;
     font-weight: 500;
-    color: #303133;
+    
     margin-bottom: 20px;
     padding-bottom: 12px;
     border-bottom: 1px solid #ebeef5;
@@ -477,7 +480,7 @@ onMounted(() => {
       top: 0;
       bottom: 12px;
       width: 3px;
-      background-color: #409eff;
+      background-color: var(--el-color-primary);
       border-radius: 2px;
     }
   }
@@ -494,7 +497,7 @@ onMounted(() => {
     transition: all 0.3s;
 
     &:hover {
-      border-color: #409eff;
+      border-color: var(--el-color-primary);
     }
   }
 }
@@ -513,8 +516,8 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #fafafa;
-  color: #909399;
+  background-color: var(--el-bg-color);
+  color: var(--el-text-color-secondary);
   font-size: 13px;
 
   .upload-icon {
@@ -535,7 +538,7 @@ onMounted(() => {
     transition: all 0.3s;
 
     &:hover {
-      border-color: #409eff;
+      border-color: var(--el-color-primary);
     }
   }
 }
@@ -554,8 +557,7 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #fafafa;
-  color: #909399;
+  color: var(--el-text-color-secondary);
   font-size: 13px;
 
   .upload-icon {
@@ -581,7 +583,7 @@ onMounted(() => {
 
   .complexity-label {
     font-size: 14px;
-    color: #606266;
+    color: var(--el-text-color-regular);
     white-space: nowrap;
     min-width: 80px;
   }
@@ -592,7 +594,7 @@ onMounted(() => {
 
   .complexity-separator {
     font-size: 14px;
-    color: #909399;
+    color: var(--el-text-color-secondary);
   }
 }
 
@@ -612,13 +614,13 @@ onMounted(() => {
 
   .alert-threshold-label {
     font-size: 14px;
-    color: #606266;
+    color: var(--el-text-color-regular);
     white-space: nowrap;
   }
 
   .threshold-prefix {
     font-size: 14px;
-    color: #909399;
+    color: var(--el-text-color-secondary);
   }
 
   .threshold-input {
@@ -627,7 +629,7 @@ onMounted(() => {
 
   .threshold-suffix {
     font-size: 14px;
-    color: #909399;
+    color: var(--el-text-color-secondary);
   }
 }
 
@@ -654,7 +656,6 @@ onMounted(() => {
 }
 
 :deep(.el-input-group__append) {
-  background-color: #fafafa;
   padding: 0 12px;
 }
 

@@ -1,12 +1,14 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import ElementPlus from 'element-plus'
-import 'element-plus/dist/index.css'
+import 'element-plus/theme-chalk/dark/css-vars.css'
 import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
+import './styles/element/index.scss'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 import './styles/table.scss'
+import './styles/common.scss'
 import App from './App.vue'
 import router from './router'
 
@@ -21,11 +23,11 @@ NProgress.inc(0.2)
 const nprogressStyle = document.createElement('style')
 nprogressStyle.textContent = `
   #nprogress .bar {
-    background: #409EFF !important;
+    background: #f59e0b !important;
     height: 3px !important;
   }
   #nprogress .peg {
-    box-shadow: 0 0 10px #409EFF, 0 0 5px #409EFF !important;
+    box-shadow: 0 0 10px #f59e0b, 0 0 5px #f59e0b !important;
   }
 `
 document.head.appendChild(nprogressStyle)

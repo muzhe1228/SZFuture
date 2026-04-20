@@ -9,7 +9,7 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="排序">
-            <el-input-number v-model="roleForm.sort" :min="0" :max="999" controls-position="right" style="width: 100%" />
+            <el-input-number v-model="roleForm.sort" :min="0" :max="999" :controls="false" align="left" style="width: 100%" />
           </el-form-item>
         </el-col>
       </el-row>
@@ -244,7 +244,7 @@ initPermissionData()
   .section-title {
     font-size: 14px;
     font-weight: 500;
-    color: #303133;
+    
     margin-bottom: 12px;
     padding-left: 4px;
     border-left: 3px solid #409eff;
@@ -256,7 +256,7 @@ initPermissionData()
   :deep(.el-table__header-wrapper) {
     th {
       background-color: #fafafa;
-      color: #303133;
+      
       font-weight: 500;
     }
   }

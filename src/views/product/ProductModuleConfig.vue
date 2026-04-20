@@ -75,25 +75,15 @@ import SearchForm from '@/components/SearchForm.vue'
 import { DataTable } from '@/components/DataTable'
 import ModuleForm from '@/components/Dialog/ProductModuleConfig/ModuleForm.vue'
 import ModuleDetail from '@/components/Dialog/ProductModuleConfig/ModuleDetail.vue'
-import type { ColumnConfig, ActionButton } from '@/components/DataTable/types'
-import type { SearchField } from '@/components/SearchForm/types'
+import type { ActionButton } from '@/components/DataTable/types'
+import { productModuleColumns } from '@/config/product/columns'
+import { productModuleSearchFields } from '@/config/product/searchFields'
 import request from '@/utils/request'
 
 // ─── Search Form ──────────────────────────────────────────────────────
 
-const searchFields = computed<SearchField[]>(() => [
-  { prop: 'name', label: '名称', type: 'input', placeholder: '请输入' },
-  {
-    prop: 'status',
-    label: '状态',
-    type: 'select',
-    placeholder: '请选择',
-    options: [
-      { label: '启用', value: '启用' },
-      { label: '停用', value: '停用' }
-    ]
-  }
-])
+// 搜索字段配置已移至 @/config/product/searchFields.ts
+const searchFields = productModuleSearchFields
 
 const currentFilters = ref<Record<string, any>>({})
 
@@ -110,12 +100,8 @@ const handleReset = () => {
 
 // ─── Table Config ─────────────────────────────────────────────────────
 
-const columns = ref<ColumnConfig[]>([
-  { key: 'name', label: '名称', prop: 'name', minWidth: '200', visible: true, showOverflowTooltip: true },
-  { key: 'type', label: '类型', prop: 'type', width: '100', align: 'center', visible: true, hasTemplate: true },
-  { key: 'status', label: '状态', prop: 'status', width: '100', align: 'center', visible: true, hasTemplate: true },
-  { key: 'description', label: '说明', prop: 'description', minWidth: '180', visible: true, showOverflowTooltip: true }
-])
+// 表格列配置已移至 @/config/product/columns.ts
+const columns = ref(productModuleColumns)
 
 const tableActions: ActionButton[] = [
   { key: 'view', label: '查看', type: 'primary' },
@@ -414,6 +400,4 @@ onMounted(() => {
   overflow-y: auto;
   border-radius: 8px;
 }
-
-
 </style>

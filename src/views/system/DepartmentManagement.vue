@@ -60,25 +60,15 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import SearchForm from '@/components/SearchForm.vue'
 import { DataTable } from '@/components/DataTable'
 import DepartmentForm from '@/components/Dialog/DepartmentManagement/DepartmentForm.vue'
-import type { ColumnConfig, ActionButton } from '@/components/DataTable/types'
-import type { SearchField } from '@/components/SearchForm/types'
+import type { ActionButton } from '@/components/DataTable/types'
+import { departmentColumns } from '@/config/system/columns'
+import { departmentSearchFields } from '@/config/system/searchFields'
 import request from '@/utils/request'
 
 // ─── Search Form ──────────────────────────────────────────────────────
 
-const searchFields = computed<SearchField[]>(() => [
-  { prop: 'name', label: '部门名称', type: 'input', placeholder: '请输入' },
-  {
-    prop: 'status',
-    label: '状态',
-    type: 'select',
-    placeholder: '请选择',
-    options: [
-      { label: '启用', value: '启用' },
-      { label: '禁用', value: '禁用' }
-    ]
-  }
-])
+// 搜索字段配置已移至 @/config/system/searchFields.ts
+const searchFields = departmentSearchFields
 
 const handleSearch = (formData: Record<string, any>) => {
   currentFilters.value = { ...formData }
@@ -92,13 +82,8 @@ const handleReset = () => {
 
 // ─── Table Config ─────────────────────────────────────────────────────
 
-const columns = ref<ColumnConfig[]>([
-  { key: 'name', label: '部门名称', prop: 'name', minWidth: '180', visible: true },
-  { key: 'sort', label: '部门排序', prop: 'sort', width: '100', align: 'center', visible: true },
-  { key: 'createTime', label: '创建时间', prop: 'createTime', minWidth: '180', visible: true },
-  { key: 'status', label: '部门状态', prop: 'status', width: '110', align: 'center', visible: true, hasTemplate: true },
-  { key: 'remarks', label: '部门备注', prop: 'remarks', minWidth: '180', visible: true, showOverflowTooltip: true }
-])
+// 表格列配置已移至 @/config/system/columns.ts
+const columns = ref(departmentColumns)
 
 const tableActions: ActionButton[] = [
   { key: 'view', label: '查看', type: 'primary' },
@@ -127,7 +112,6 @@ const fetchDepartments = async () => {
   tableLoading.value = true
   try {
     const res = await request.get<Department[]>('/api/department/tree')
-    console.log(res)
     // 映射mock数据中的字段到Department类型
     const mapDepartment = (dept: any): Department => ({
       id: dept.id,
@@ -320,35 +304,5 @@ onMounted(() => {
   height: 100%;
   overflow-y: auto;
   border-radius: 8px;
-}
-
-
-
-
-// ─── Responsive ──────────────────────────────────────────────────────
-
-@media (max-width: 992px) {
-  .search-fields {
-    flex-direction: column;
-    align-items: stretch;
-
-    .search-field {
-      width: 100%;
-
-      .el-input,
-      .el-select {
-        width: 100%;
-      }
-    }
-  }
-
-  .search-bar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .search-actions {
-    justify-content: flex-end;
-  }
 }
 </style>

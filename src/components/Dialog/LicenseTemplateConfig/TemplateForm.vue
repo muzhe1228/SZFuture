@@ -245,7 +245,7 @@ watch(() => props.template, (newTemplate) => {
   &-title {
     font-size: 14px;
     font-weight: 500;
-    color: #303133;
+    
     white-space: nowrap;
   }
 }
@@ -292,7 +292,7 @@ watch(() => props.template, (newTemplate) => {
 
   .function-limit {
     font-size: 12px;
-    color: #909399;
+    color: var(--el-text-color-secondary);
   }
 }
 

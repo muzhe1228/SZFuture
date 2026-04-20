@@ -76,7 +76,7 @@ const handleConfirm = () => {
   .detail-body {
     .detail-label {
       font-size: 14px;
-      color: #303133;
+      
       font-weight: 500;
       margin-bottom: 12px;
     }
@@ -85,7 +85,7 @@ const handleConfirm = () => {
       min-height: 200px;
       padding: 16px;
       font-size: 14px;
-      color: #303133;
+      
       line-height: 1.8;
       background-color: #fff;
       border: 1px solid #ebeef5;

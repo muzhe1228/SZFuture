@@ -177,7 +177,7 @@ onMounted(() => {
   height: 100%;
   overflow-y: auto;
   border-radius: 8px;
-  background-color: #fff;
+  background-color: var(--el-card-bg-color);
 }
 
 .table-header {
@@ -185,7 +185,7 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-  background-color: #fff;
+  background-color: var(--el-bg-color);
 
   .table-title {
     display: flex;
@@ -195,13 +195,13 @@ onMounted(() => {
     h3 {
       font-size: 16px;
       font-weight: 500;
-      color: #303133;
+      color: var(--el-text-color-primary);
       margin: 0;
     }
 
     .total-count {
       font-size: 14px;
-      color: #909399;
+      color: var(--el-text-color-secondary);
     }
   }
 
@@ -213,7 +213,6 @@ onMounted(() => {
 
 .table-container {
   flex: 1;
-  padding: 0 16px;
 }
 
 .pagination-container {
@@ -235,28 +234,28 @@ onMounted(() => {
   }
 }
 
-:deep(.el-table) {
-  .el-table__header th {
-    background-color: #fafafa;
-    color: #303133;
-    font-weight: 500;
-    font-size: 14px;
-  }
+// :deep(.el-table) {
+//   .el-table__header th {
+//     background-color: var(--el-table-header-bg-color);
+//     color: var(--el-table-header-text-color);
+//     font-weight: 500;
+//     font-size: 14px;
+//   }
 
-  .el-table__body td {
-    font-size: 13px;
-    color: #606266;
-  }
-}
+//   .el-table__body td {
+//     font-size: 13px;
+//     color: var(--el-table-text-color);
+//   }
+// }
 
-:deep(.el-drawer__header) {
-  margin-bottom: 0;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #f0f0f0;
-}
+// :deep(.el-drawer__header) {
+//   margin-bottom: 0;
+//   padding-bottom: 16px;
+//   border-bottom: 1px solid var(--el-border-color);
+// }
 
-:deep(.el-drawer__footer) {
-  padding: 16px;
-  border-top: 1px solid #f0f0f0;
-}
+// :deep(.el-drawer__footer) {
+//   padding: 16px;
+//   border-top: 1px solid var(--el-border-color);
+// }
 </style>
