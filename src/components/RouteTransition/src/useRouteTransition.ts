@@ -1,5 +1,5 @@
-import { ref, computed, watch } from 'vue'
-import { useRoute, RouteLocationNormalized } from 'vue-router'
+import { ref, computed, watch, Ref, ComputedRef } from 'vue'
+import { useRoute } from 'vue-router'
 
 export interface UseRouteTransitionOptions {
   transitionName?: string
@@ -9,18 +9,18 @@ export interface UseRouteTransitionOptions {
 }
 
 export interface UseRouteTransitionReturn {
-  componentKey: ReturnType<typeof computed>
-  isAnimating: ReturnType<typeof ref<boolean>>
-  lastTransitionTime: ReturnType<typeof ref<number | null>>
-  transitionEnabled: ReturnType<typeof computed<boolean>>
+  componentKey: ComputedRef<string | number | symbol | undefined>
+  isAnimating: Ref<boolean>
+  lastTransitionTime: Ref<number | null>
+  transitionEnabled: ComputedRef<boolean>
   startAnimation: () => void
   endAnimation: () => void
 }
 
 export function useRouteTransition(options: UseRouteTransitionOptions = {}): UseRouteTransitionReturn {
   const {
-    transitionName = 'fade-transform',
-    transitionDuration = 300,
+    transitionName: _transitionName = 'fade-transform',
+    transitionDuration: _transitionDuration = 300,
     componentKeyType = 'path',
     disabled = false
   } = options
@@ -29,7 +29,7 @@ export function useRouteTransition(options: UseRouteTransitionOptions = {}): Use
   const isAnimating = ref(false)
   const lastTransitionTime = ref<number | null>(null)
 
-  const componentKey = computed(() => {
+  const componentKey = computed((): string | number | symbol | undefined => {
     if (componentKeyType === 'name') {
       return route.name
     }
@@ -39,7 +39,7 @@ export function useRouteTransition(options: UseRouteTransitionOptions = {}): Use
     return route.path
   })
 
-  const transitionEnabled = computed(() => {
+  const transitionEnabled = computed((): boolean => {
     if (disabled) return false
     return route.meta.noTransition !== true
   })
@@ -72,9 +72,9 @@ export function useRouteTransition(options: UseRouteTransitionOptions = {}): Use
 }
 
 export interface UseTransitionDurationReturn {
-  duration: ReturnType<typeof ref<number>>
-  unit: ReturnType<typeof ref<string>>
-  formattedDuration: ReturnType<typeof computed<string>>
+  duration: Ref<number>
+  unit: Ref<string>
+  formattedDuration: ComputedRef<string>
   setDuration: (value: number, unitType?: string) => void
 }
 
@@ -100,9 +100,9 @@ export function useTransitionDuration(): UseTransitionDurationReturn {
 }
 
 export interface UseTransitionControlReturn {
-  isDisabled: ReturnType<typeof ref<boolean>>
-  isPaused: ReturnType<typeof ref<boolean>>
-  currentTransition: ReturnType<typeof ref<string | null>>
+  isDisabled: Ref<boolean>
+  isPaused: Ref<boolean>
+  currentTransition: Ref<string | null>
   enable: () => void
   disable: () => void
   pause: () => void
@@ -148,8 +148,8 @@ export function useTransitionControl(): UseTransitionControlReturn {
 }
 
 export interface UseKeepAliveCacheReturn {
-  cachedViews: ReturnType<typeof ref<string[]>>
-  maxCacheSize: ReturnType<typeof ref<number>>
+  cachedViews: Ref<string[]>
+  maxCacheSize: Ref<number>
   addCache: (view: string) => void
   removeCache: (view: string) => void
   clearCache: () => void
@@ -279,7 +279,7 @@ export function useTransitionAnimations(): UseTransitionAnimationsReturn {
   }
 }
 
-export interface MetaTransition {
+export interface RouteMetaTransition {
   name?: string
   mode?: string
   duration?: number
@@ -287,34 +287,37 @@ export interface MetaTransition {
 }
 
 export interface UseRouteMetaTransitionReturn {
-  metaTransition: ReturnType<typeof computed<MetaTransition | null>>
-  shouldAnimate: ReturnType<typeof computed<boolean>>
+  metaTransition: ComputedRef<RouteMetaTransition | null>
+  shouldAnimate: ComputedRef<boolean>
 }
 
 export function useRouteMetaTransition(): UseRouteMetaTransitionReturn {
   const route = useRoute()
 
-  const metaTransition = computed(() => {
+  const metaTransition = computed((): RouteMetaTransition | null => {
     const meta = route.meta
     if (!meta) return null
 
-    if (typeof meta.transition === 'object') {
+    const transition = (meta as Record<string, unknown>).transition
+
+    if (typeof transition === 'object' && transition !== null) {
+      const t = transition as RouteMetaTransition
       return {
-        name: meta.transition.name || 'fade-transform',
-        mode: meta.transition.mode || 'out-in',
-        duration: meta.transition.duration || 300,
-        disabled: meta.transition.disabled || false
+        name: t.name || 'fade-transform',
+        mode: t.mode || 'out-in',
+        duration: t.duration || 300,
+        disabled: t.disabled || false
       }
     }
 
-    if (meta.transition === false) {
+    if (transition === false) {
       return { disabled: true }
     }
 
     return null
   })
 
-  const shouldAnimate = computed(() => {
+  const shouldAnimate = computed((): boolean => {
     if (!metaTransition.value) return true
     return !metaTransition.value.disabled
   })
