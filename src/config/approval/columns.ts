@@ -45,7 +45,6 @@ export const approvalColumns: ColumnConfig[] = [
     label: '审批状态',
     prop: 'status',
     width: '120', // 固定宽度
-    align: 'center', // 居中对齐
     visible: true,
     hasTemplate: true // 是否使用自定义模板
   }

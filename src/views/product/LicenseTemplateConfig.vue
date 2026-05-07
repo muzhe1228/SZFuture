@@ -1,33 +1,17 @@
 <template>
   <div class="license-template-config">
-    <!-- Search Bar -->
-    <SearchForm
-      :fields="searchFields"
-      storage-key="license-template-config-search"
-      @search="handleSearch"
-      @reset="handleReset"
-      :search-loading="tableLoading"
-      :reset-loading="tableLoading"
-    />
-
-    <!-- Data Table -->
-    <DataTable
+    <!-- Base Table Page -->
+    <BaseTablePage
+      :search-fields="searchFields"
       :columns="columns"
-      :data="filteredTableData"
-      :loading="tableLoading"
-      :total="pagination.total"
-      :current-page="pagination.currentPage"
-      :page-size="pagination.pageSize"
-      :page-sizes="[10, 20, 50, 100]"
+      :actions="tableActions"
+      :fetch-data="fetchData"
       title="许可模版配置"
-      storage-key="license-template-config-table"
+      storage-key="license-template-config"
       :show-column-settings="true"
       :show-selection="true"
-      :actions="tableActions"
-      row-key="id"
-      @page-change="handlePageChange"
-      @selection-change="handleSelectionChange"
       @action="handleTableAction"
+      @selection-change="handleSelectionChange"
     >
       <template #cell-status="{ row }">
         <span class="status-cell">
@@ -43,7 +27,7 @@
           删除模版
         </el-button>
       </template>
-    </DataTable>
+    </BaseTablePage>
 
     <!-- Add/Edit Template Modal -->
     <TemplateForm 
@@ -56,36 +40,21 @@
     />
 
     <!-- View Detail Dialog -->
-    <el-dialog
+    <TemplateDetail
       v-model="viewDialogVisible"
-      title="许可模版详情"
-      width="600px"
-      :close-on-click-modal="false"
-    >
-      <el-descriptions :column="1" border v-if="viewingTemplate">
-        <el-descriptions-item label="模版名称">{{ viewingTemplate.name }}</el-descriptions-item>
-        <el-descriptions-item label="产品名称">{{ viewingTemplate.productName }}</el-descriptions-item>
-        <el-descriptions-item label="版本号">{{ viewingTemplate.version }}</el-descriptions-item>
-        <el-descriptions-item label="状态">
-          <span class="status-cell">
-            <span class="status-dot" :class="viewingTemplate.status === '启用' ? 'status-enabled' : 'status-disabled'"></span>
-            {{ viewingTemplate.status }}
-          </span>
-        </el-descriptions-item>
-        <el-descriptions-item label="创建时间">{{ viewingTemplate.createTime }}</el-descriptions-item>
-      </el-descriptions>
-    </el-dialog>
+      :template="viewingTemplate"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref } from 'vue'
 import { Plus, Delete } from '@element-plus/icons-vue'
 import type { LicenseTemplate } from '@/types/index'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import SearchForm from '@/components/SearchForm.vue'
-import { DataTable } from '@/components/DataTable'
+import { BaseTablePage } from '@/components/BaseTablePage'
 import TemplateForm from '@/components/Dialog/LicenseTemplateConfig/TemplateForm.vue'
+import TemplateDetail from '@/components/Dialog/LicenseTemplateConfig/TemplateDetail.vue'
 import type { ActionButton } from '@/components/DataTable/types'
 import { licenseTemplateColumns } from '@/config/product/columns'
 import { licenseTemplateSearchFields } from '@/config/product/searchFields'
@@ -95,21 +64,6 @@ import request from '@/utils/request'
 
 // 搜索字段配置已移至 @/config/product/searchFields.ts
 const searchFields = licenseTemplateSearchFields
-
-const currentFilters = ref<Record<string, any>>({})
-
-const handleSearch = (formData: Record<string, any>) => {
-  currentFilters.value = { ...formData }
-  pagination.currentPage = 1
-  fetchData()
-}
-
-const handleReset = () => {
-  currentFilters.value = {}
-  pagination.currentPage = 1
-  fetchData()
-  ElMessage.success('重置成功')
-}
 
 // ─── Table Config ─────────────────────────────────────────────────────
 
@@ -121,38 +75,6 @@ const tableActions: ActionButton[] = [
   { key: 'edit', label: '修改', type: 'success' },
   { key: 'delete', label: '删除', type: 'danger' }
 ]
-
-// ─── Table Data ───────────────────────────────────────────────────────
-
-const tableLoading = ref(false)
-const tableData = ref<LicenseTemplate[]>([])
-
-// ─── Filtered Data ────────────────────────────────────────────────────
-
-const filteredTableData = computed(() => {
-  return tableData.value.filter((row) => {
-    const nameMatch = !currentFilters.value.name || row.name.includes(currentFilters.value.name)
-    const productNameMatch = !currentFilters.value.productName || row.productName.includes(currentFilters.value.productName)
-    const versionMatch = !currentFilters.value.version || (row.version && row.version.includes(currentFilters.value.version))
-    const licenseTypeMatch = !currentFilters.value.licenseType || (row.licenseType && row.licenseType === currentFilters.value.licenseType)
-    const statusMatch = !currentFilters.value.status || row.status === currentFilters.value.status
-    return nameMatch && productNameMatch && versionMatch && licenseTypeMatch && statusMatch
-  })
-})
-
-// ─── Pagination ───────────────────────────────────────────────────────
-
-const pagination = reactive({
-  currentPage: 1,
-  pageSize: 20,
-  total: 0
-})
-
-const handlePageChange = (page: number, size: number) => {
-  pagination.currentPage = page
-  pagination.pageSize = size
-  fetchData()
-}
 
 // ─── Selection ────────────────────────────────────────────────────────
 
@@ -182,19 +104,18 @@ const productModuleOptions = ref([
 
 // ─── Fetch Data ───────────────────────────────────────────────────────
 
-const fetchData = async () => {
-  tableLoading.value = true
+const fetchData = async (formData?: Record<string, any>, page: number = 1, pageSize: number = 20) => {
   try {
     const result = await request.get('/api/license-template/list', {
       params: {
-        page: String(pagination.currentPage),
-        pageSize: String(pagination.pageSize),
-        ...currentFilters.value
+        page: String(page),
+        pageSize: String(pageSize),
+        ...formData
       }
     })
     if (result.code === 200) {
       // 映射mock数据中的字段名称到LicenseTemplate类型的字段名称
-      tableData.value = (result.data.list || []).map((item: any) => ({
+      const list = (result.data.list || []).map((item: any) => ({
         id: item.id,
         name: item.templateName,
         productName: item.productName || '未设置',
@@ -203,12 +124,15 @@ const fetchData = async () => {
         status: item.templateStatus,
         createTime: item.createTime
       }))
-      pagination.total = result.data.total || 0
+      return {
+        list,
+        total: result.data.total || 0
+      }
     }
+    return { list: [], total: 0 }
   } catch (error) {
     ElMessage.error('加载数据失败')
-  } finally {
-    tableLoading.value = false
+    return { list: [], total: 0 }
   }
 }
 
@@ -250,11 +174,6 @@ const handleDelete = async (row: LicenseTemplate) => {
         type: 'warning'
       }
     )
-    const index = tableData.value.findIndex((t) => t.id === row.id)
-    if (index !== -1) {
-      tableData.value.splice(index, 1)
-      pagination.total = tableData.value.length
-    }
     ElMessage.success('删除成功')
   } catch {
     // User cancelled
@@ -276,10 +195,6 @@ const handleBatchDelete = async () => {
         type: 'warning'
       }
     )
-    const idsToDelete = new Set(selectedRows.value.map((r) => r.id))
-    tableData.value = tableData.value.filter((t) => !idsToDelete.has(t.id))
-    pagination.total = tableData.value.length
-    selectedRows.value = []
     ElMessage.success('批量删除成功')
   } catch {
     // User cancelled
@@ -295,36 +210,12 @@ const viewDialogVisible = ref(false)
 const viewingTemplate = ref<LicenseTemplate | null>(null)
 const currentTemplate = ref<LicenseTemplate | null>(null)
 
-
-
-const handleTemplateSubmit = async (template: LicenseTemplate, isEdit: boolean) => {
+const handleTemplateSubmit = async (_template: LicenseTemplate, isEdit: boolean) => {
   try {
     templateModalVisible.value = false
     await new Promise(resolve => setTimeout(resolve, 800))
     
-    const now = new Date()
-    const createTime = now.toISOString().replace('T', ' ').substring(0, 19)
-
-    if (isEdit && editingTemplateId.value !== null) {
-      const tpl = tableData.value.find((t) => t.id === editingTemplateId.value)
-      if (tpl) {
-        tpl.name = template.name
-        tpl.status = template.status
-      }
-      ElMessage.success('编辑成功')
-    } else {
-      const newTemplate: LicenseTemplate = {
-        id: Date.now(),
-        name: template.name,
-        productName: productModuleOptions.value.find((o) => o.value === template.productModuleId)?.label.split(' / ')[0] || '',
-        version: productModuleOptions.value.find((o) => o.value === template.productModuleId)?.label.split(' / ')[1] || '',
-        status: template.status,
-        createTime
-      }
-      tableData.value.push(newTemplate)
-      pagination.total = tableData.value.length
-      ElMessage.success('新增成功')
-    }
+    ElMessage.success(isEdit ? '编辑成功' : '新增成功')
   } catch {
     ElMessage.error('操作失败')
   }
@@ -334,12 +225,6 @@ const handleModalClose = () => {
   isEditMode.value = false
   editingTemplateId.value = null
 }
-
-// ─── Lifecycle ────────────────────────────────────────────────────────
-
-onMounted(() => {
-  fetchData()
-})
 </script>
 
 <style lang="scss" scoped>

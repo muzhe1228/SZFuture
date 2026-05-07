@@ -46,7 +46,6 @@ export const userColumns: ColumnConfig[] = [
     label: '状态',
     prop: 'status',
     width: '90', // 固定宽度
-    align: 'center', // 居中对齐
     visible: true,
     hasTemplate: true // 是否使用自定义模板
   }
@@ -69,7 +68,6 @@ export const departmentColumns: ColumnConfig[] = [
     label: '部门排序',
     prop: 'sort',
     width: '100', // 固定宽度
-    align: 'center', // 居中对齐
     visible: true
   },
   {
@@ -84,7 +82,6 @@ export const departmentColumns: ColumnConfig[] = [
     label: '部门状态',
     prop: 'status',
     width: '110', // 固定宽度
-    align: 'center', // 居中对齐
     visible: true,
     hasTemplate: true // 是否使用自定义模板
   },
@@ -115,7 +112,6 @@ export const roleColumns: ColumnConfig[] = [
     label: '状态',
     prop: 'status',
     width: '90', // 固定宽度
-    align: 'center', // 居中对齐
     visible: true,
     hasTemplate: true // 是否使用自定义模板
   },
@@ -124,7 +120,6 @@ export const roleColumns: ColumnConfig[] = [
     label: '排序',
     prop: 'sort',
     width: '140', // 固定宽度
-    align: 'center', // 居中对齐
     visible: true
   },
   {

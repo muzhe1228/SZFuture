@@ -28,10 +28,11 @@
 
     <!-- Base Table Page -->
     <BaseTablePage
-      :search-fields="searchFields"
+      ref="tablePageRef"
       :columns="columns"
       :actions="tableActions"
       :fetch-data="fetchData"
+      :loading="tableLoading"
       title="系统日志"
       storage-key="system-logs"
       :show-column-settings="true"
@@ -79,6 +80,7 @@ use([
 
 const tableLoading = ref(false)
 const selectedRows = ref<AccessLog[]>([])
+const tablePageRef = ref<any>(null)
 
 // 表格列配置已移至 @/config/audit/columns.ts
 const columns = ref(systemLogColumns)
@@ -209,13 +211,29 @@ const pieChartOption = computed(() => ({
   ]
 }))
 
-const handleSearch = (formData: Record<string, any>) => {
+const handleSearch = async (formData: Record<string, any>) => {
   searchParams.value = { ...formData }
+  if (tablePageRef.value) {
+    tableLoading.value = true
+    try {
+      await tablePageRef.value.reload(formData)
+    } finally {
+      tableLoading.value = false
+    }
+  }
 }
 
-const handleReset = () => {
+const handleReset = async () => {
   searchParams.value = {}
-  ElMessage.success('重置成功')
+  if (tablePageRef.value) {
+    tableLoading.value = true
+    try {
+      await tablePageRef.value.reload({})
+      ElMessage.success('重置成功')
+    } finally {
+      tableLoading.value = false
+    }
+  }
 }
 
 const fetchData = async (formData?: Record<string, any>, page: number = 1, pageSize: number = 10) => {

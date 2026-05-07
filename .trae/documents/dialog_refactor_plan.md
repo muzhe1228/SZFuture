@@ -2,7 +2,7 @@
 
 ## 项目现状分析
 
-经过分析，项目中共有 10 个页面使用了弹窗（el-dialog）：
+经过分析，项目中共有 11 个页面使用了弹窗（el-dialog 或 el-drawer）：
 
 1. `/src/views/system/RoleManagement.vue` - 角色管理弹窗
 2. `/src/views/system/DepartmentManagement.vue` - 部门管理弹窗
@@ -14,6 +14,7 @@
 8. `/src/views/auth/AuthList.vue` - 授权列表弹窗
 9. `/src/views/trial/TrialList.vue` - 试用列表弹窗
 10. `/src/views/Messages.vue` - 消息详情弹窗
+11. `/src/views/approval/ApprovalList.vue` - 审批列表抽屉
 
 ## 重构目标
 
@@ -43,6 +44,7 @@ components/
     AuthList/          # 授权列表弹窗
     TrialList/         # 试用列表弹窗
     Messages/          # 消息详情弹窗
+    ApprovalList/      # 审批列表抽屉
 ```
 
 ### 2. 为每个页面创建弹窗组件
@@ -71,7 +73,13 @@ components/
 - 将角色管理弹窗逻辑从 RoleManagement.vue 移到 RoleForm.vue
 - 修改 RoleManagement.vue 引入并使用 RoleForm 组件
 
-### 3. 处理其他页面的弹窗
+### 3. 处理 ApprovalList.vue 的审批列表抽屉
+
+- 创建 `components/Dialog/ApprovalList/ApprovalDrawer.vue`
+- 将审批列表抽屉逻辑从 ApprovalList.vue 移到 ApprovalDrawer.vue
+- 修改 ApprovalList.vue 引入并使用 ApprovalDrawer 组件
+
+### 4. 处理其他页面的弹窗
 
 按照同样的方式，为其他页面创建对应的弹窗组件。
 

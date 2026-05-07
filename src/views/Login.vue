@@ -93,10 +93,12 @@ import { useRouter } from 'vue-router'
 import { User, Lock } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
+import { useUserStore } from '@/store/user'
 
 const router = useRouter()
 const formRef = ref<FormInstance>()
 const loading = ref(false)
+const userStore = useUserStore()
 
 const loginForm = reactive({
   username: '',
@@ -125,7 +127,16 @@ const handleLogin = async () => {
       await new Promise((resolve) => setTimeout(resolve, 800))
 
       // Store token in localStorage
-      localStorage.setItem('token', 'mock-token-' + Date.now())
+      const token = 'mock-token-' + Date.now()
+      localStorage.setItem('token', token)
+      userStore.setToken(token)
+
+      // Save user info to store
+      userStore.setUserInfo({
+        username: loginForm.username,
+        avatar: 'https://img1.baidu.com/it/u=3423853670,1866145135&fm=253&fmt=auto&app=138&f=JPEG?w=800&h=800', // 默认头像
+        role: '管理员' // 默认角色
+      })
 
       // Remember password option
       if (loginForm.rememberMe) {

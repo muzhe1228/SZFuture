@@ -2,7 +2,7 @@
   <div class="base-table-page">
     <!-- Search Bar -->
     <SearchForm
-      v-if="searchFields.length > 0"
+      v-if="searchFields && searchFields.length > 0"
       :fields="searchFields"
       :storage-key="storageKey ? `${storageKey}-search` : undefined"
       :search-loading="loading"
@@ -30,18 +30,16 @@
       @selection-change="handleSelectionChange"
       @action="handleAction"
     >
-      <template #extra-actions>
-        <slot name="extra-actions"></slot>
-      </template>
-      <template #cell="{ row, column }">
-        <slot :name="`cell-${column.key}`" v-if="column.hasTemplate" v-bind="{ row, column }"></slot>
+      <!-- 传递所有插槽给 DataTable 组件 -->
+      <template v-for="(_, slotName) in $slots" :key="slotName" v-slot:[slotName]="scope">
+        <slot :name="slotName" v-bind="scope"></slot>
       </template>
     </DataTable>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import SearchForm from '../SearchForm.vue'
 import { DataTable } from '../DataTable'
 import type { ColumnConfig, ActionButton } from '../DataTable/types'
@@ -50,7 +48,7 @@ import type { SearchField } from '../SearchForm/types'
 // Props
 const props = defineProps<{
   // 搜索字段配置
-  searchFields: SearchField[]
+  searchFields?: SearchField[]
   // 表格列配置
   columns: ColumnConfig[]
   // 表格操作配置
@@ -69,6 +67,8 @@ const props = defineProps<{
   rowKey?: string
   // 分页大小选项
   pageSizes?: number[]
+  // 加载状态
+  loading?: boolean
 }>()
 
 // Emits
@@ -86,9 +86,11 @@ const emit = defineEmits<{
 }>()
 
 // Reactive data
-const loading = ref(false)
+const localLoading = ref(false)
 const data = ref<any[]>([])
 const selectedRows = ref<any[]>([])
+
+const loading = computed(() => props.loading ?? localLoading.value)
 
 const pagination = reactive({
   currentPage: 1,
@@ -97,6 +99,7 @@ const pagination = reactive({
 })
 
 // Defaults
+const searchFields = props.searchFields || []
 const pageSizes = props.pageSizes || [10, 20, 50, 100]
 const rowKey = props.rowKey || 'id'
 const showColumnSettings = props.showColumnSettings !== false
@@ -132,7 +135,9 @@ const handleAction = (action: string, row: any) => {
 }
 
 const loadData = async (formData?: Record<string, any>) => {
-  loading.value = true
+  if (!props.loading) {
+    localLoading.value = true
+  }
   try {
     const result = await props.fetchData(formData, pagination.currentPage, pagination.pageSize)
     data.value = result.list
@@ -140,7 +145,9 @@ const loadData = async (formData?: Record<string, any>) => {
   } catch (error) {
     console.error('加载数据失败:', error)
   } finally {
-    loading.value = false
+    if (!props.loading) {
+      localLoading.value = false
+    }
   }
 }
 
@@ -148,6 +155,11 @@ const loadData = async (formData?: Record<string, any>) => {
 const init = async () => {
   await loadData()
 }
+
+// Expose methods to parent component
+defineExpose({
+  reload: loadData
+})
 
 init()
 </script>

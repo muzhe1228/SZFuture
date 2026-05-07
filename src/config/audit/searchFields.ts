@@ -40,19 +40,16 @@ export const operationLogSearchFields: SearchField[] = [
     label: '操作人', // 字段显示名称
     type: 'input', // 字段类型
     placeholder: '请输入', // 占位符
-    width: '150px' // 字段宽度
   },
   {
     prop: 'description',
     label: '操作描述',
     type: 'input',
     placeholder: '请输入',
-    width: '150px'
   },
   {
     prop: 'dateRange',
     label: '操作时间',
     type: 'daterange',
-    width: '260px'
   }
 ]

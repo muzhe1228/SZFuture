@@ -1,111 +1,79 @@
 <template>
-  <Dialog v-model="dialogVisible" title="授权延期" width="520px" :close-on-click-modal="false" @close="handleClose">
+  <el-dialog v-model="dialogVisible" title="授权延期" width="520px" :close-on-click-modal="false">
     <div class="extend-modal">
-      <el-form ref="extendFormRef" :model="extendForm" :rules="extendFormRules" label-width="90px" label-position="right" class="modal-form">
-        <el-form-item label="延期天数" prop="extendDays">
-          <el-input-number
-            v-model="extendForm.extendDays"
-            :min="1"
-            :max="3650"
-            :controls="false"
-            align="left"
-            style="width: 100%"
-          />
-        </el-form-item>
-        <el-form-item label="延期原因" prop="reason">
-          <el-input
-            v-model="extendForm.reason"
-            type="textarea"
-            :rows="3"
-            placeholder="请输入延期原因"
-          />
-        </el-form-item>
-        <el-form-item label="审批人员" prop="approver">
-          <el-select v-model="extendForm.approver" placeholder="请选择审批人员" style="width: 100%">
-            <el-option label="张经理" value="张经理" />
-            <el-option label="李主管" value="李主管" />
-            <el-option label="王总监" value="王总监" />
-          </el-select>
+      <el-form label-width="120px" label-position="right">
+        <el-form-item label="授权延长至:">
+          <el-date-picker v-model="extendForm.extendTo" type="datetime" placeholder="选择日期时间"
+            value-format="YYYY-MM-DD HH:mm:ss" style="width: 100%" />
         </el-form-item>
       </el-form>
     </div>
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="handleCancel">取消</el-button>
-        <el-button type="primary" @click="handleExtendSubmit" :loading="extendLoading">确定</el-button>
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleExtendSubmit" :loading="extendLoading">
+          确定
+        </el-button>
       </div>
     </template>
-  </Dialog>
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
-import { Dialog } from '@/components/Dialog'
-import type { FormInstance, FormRules } from 'element-plus'
+import { ref, reactive } from 'vue'
+import { ElMessage } from 'element-plus'
 
-const props = defineProps<{
+// ─── Props ──────────────────────────────────────────────────────
+
+interface Props {
   modelValue: boolean
-  extendLoading: boolean
-}>()
+}
+
+const props = defineProps<Props>()
+
+// ─── Emits ──────────────────────────────────────────────────────
 
 const emit = defineEmits<{
-  'update:modelValue': [value: boolean]
-  'submit': [form: { extendDays: number; reason: string; approver: string }]
-  'close': []
+  (e: 'update:modelValue', value: boolean): void
+  (e: 'extend', extendTo: string): void
 }>()
 
-const dialogVisible = computed({
-  get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value)
+// ─── Reactive Data ─────────────────────────────────────────────
+
+const dialogVisible = ref(props.modelValue)
+const extendForm = reactive({ extendTo: '' })
+const extendLoading = ref(false)
+
+// ─── Watch ─────────────────────────────────────────────────────
+
+import { watch } from 'vue'
+
+watch(() => props.modelValue, (newValue) => {
+  dialogVisible.value = newValue
+  if (newValue) {
+    extendForm.extendTo = ''
+  }
 })
 
-const extendFormRef = ref<FormInstance>()
-
-const extendForm = reactive({
-  extendDays: 30,
-  reason: '',
-  approver: ''
-})
-
-const extendFormRules: FormRules = {
-  extendDays: [{ required: true, message: '请输入延期天数', trigger: 'blur' }],
-  reason: [{ required: true, message: '请输入延期原因', trigger: 'blur' }],
-  approver: [{ required: true, message: '请选择审批人员', trigger: 'change' }]
-}
+// ─── Methods ───────────────────────────────────────────────────
 
 const handleExtendSubmit = async () => {
-  if (!extendFormRef.value) return
-  try {
-    await extendFormRef.value.validate()
-    emit('submit', { ...extendForm })
-    dialogVisible.value = false
-  } catch {
-    // Form validation failed
+  if (!extendForm.extendTo) {
+    ElMessage.warning('请选择延长至的日期时间')
+    return
   }
-}
-
-const handleCancel = () => {
-  dialogVisible.value = false
-}
-
-const handleClose = () => {
-  extendForm.extendDays = 30
-  extendForm.reason = ''
-  extendForm.approver = ''
-  extendFormRef.value?.clearValidate()
-  emit('close')
+  extendLoading.value = true
+  await new Promise(resolve => setTimeout(resolve, 600))
+  ElMessage.success('授权延期成功')
+  emit('extend', extendForm.extendTo)
+  emit('update:modelValue', false)
+  extendLoading.value = false
 }
 </script>
 
 <style lang="scss" scoped>
 .extend-modal {
   padding: 20px 0;
-}
-
-.modal-form {
-  .el-form-item {
-    margin-bottom: 16px;
-  }
 }
 
 .dialog-footer {

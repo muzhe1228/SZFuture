@@ -31,7 +31,6 @@ export const licenseTemplateColumns: ColumnConfig[] = [
     label: '状态',
     prop: 'status',
     width: '100', // 固定宽度
-    align: 'center', // 居中对齐
     visible: true,
     hasTemplate: true // 是否使用自定义模板
   },
@@ -62,7 +61,6 @@ export const productModuleColumns: ColumnConfig[] = [
     label: '类型',
     prop: 'type',
     width: '100',
-    align: 'center',
     visible: true,
     hasTemplate: true
   },
@@ -71,7 +69,6 @@ export const productModuleColumns: ColumnConfig[] = [
     label: '状态',
     prop: 'status',
     width: '100',
-    align: 'center',
     visible: true,
     hasTemplate: true
   },

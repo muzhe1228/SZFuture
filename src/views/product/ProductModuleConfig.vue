@@ -1,34 +1,17 @@
 <template>
   <div class="product-module-config">
-    <!-- Search Bar -->
-    <SearchForm
-      :fields="searchFields"
-      storage-key="product-module-config-search"
-      @search="handleSearch"
-      @reset="handleReset"
-      :search-loading="tableLoading"
-      :reset-loading="tableLoading"
-    />
-
-    <!-- Data Table -->
-    <DataTable
+    <!-- Base Table Page -->
+    <BaseTablePage
+      :search-fields="searchFields"
       :columns="columns"
-      :data="filteredTableData"
-      :loading="tableLoading"
-      :total="tableData.length"
-      :current-page="1"
-      :page-size="100"
-      :page-sizes="[10, 20, 50, 100]"
+      :actions="tableActions"
+      :fetch-data="fetchData"
       title="产品模块配置"
-      storage-key="product-module-config-table"
+      storage-key="product-module-config"
       :show-column-settings="true"
       :show-selection="true"
-      :actions="tableActions"
-      row-key="id"
-      :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
-      :default-expand-all="true"
-      @selection-change="handleSelectionChange"
       @action="handleTableAction"
+      @selection-change="handleSelectionChange"
     >
       <template #extra-actions>
         <el-button type="primary" size="small" @click="handleAdd" :icon="Plus">
@@ -49,7 +32,7 @@
           {{ row.status }}
         </span>
       </template>
-    </DataTable>
+    </BaseTablePage>
 
     <!-- Add/Edit Module Modal -->
     <ModuleForm 
@@ -67,12 +50,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { Plus, Delete } from '@element-plus/icons-vue'
 import type { ProductModule } from '@/types/index'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import SearchForm from '@/components/SearchForm.vue'
-import { DataTable } from '@/components/DataTable'
+import { BaseTablePage } from '@/components/BaseTablePage'
 import ModuleForm from '@/components/Dialog/ProductModuleConfig/ModuleForm.vue'
 import ModuleDetail from '@/components/Dialog/ProductModuleConfig/ModuleDetail.vue'
 import type { ActionButton } from '@/components/DataTable/types'
@@ -84,19 +66,6 @@ import request from '@/utils/request'
 
 // 搜索字段配置已移至 @/config/product/searchFields.ts
 const searchFields = productModuleSearchFields
-
-const currentFilters = ref<Record<string, any>>({})
-
-const handleSearch = (formData: Record<string, any>) => {
-  currentFilters.value = { ...formData }
-  fetchData()
-}
-
-const handleReset = () => {
-  currentFilters.value = {}
-  fetchData()
-  ElMessage.success('重置成功')
-}
 
 // ─── Table Config ─────────────────────────────────────────────────────
 
@@ -121,36 +90,6 @@ const handleTableAction = (action: string, row: ProductModule) => {
     handleDelete(row)
   }
 }
-
-// ─── Table Data ───────────────────────────────────────────────────────
-
-const tableLoading = ref(false)
-const tableData = ref<ProductModule[]>([])
-
-// ─── Filtered Data ────────────────────────────────────────────────────
-
-const filteredTableData = computed(() => {
-  const filterNode = (nodes: ProductModule[]): ProductModule[] => {
-    return nodes
-      .map((node) => {
-        const children = node.children ? filterNode(node.children) : []
-        const nameMatch = !currentFilters.value.name || node.name.includes(currentFilters.value.name)
-        const statusMatch = !currentFilters.value.status || node.status === currentFilters.value.status
-        const childrenMatch = children.length > 0
-
-        if (nameMatch && statusMatch) {
-          return { ...node, children: children.length ? children : node.children }
-        }
-        if (childrenMatch) {
-          return { ...node, children }
-        }
-        return null
-      })
-      .filter(Boolean) as ProductModule[]
-  }
-
-  return filterNode(tableData.value)
-})
 
 // ─── Type Tag Colors ──────────────────────────────────────────────────
 
@@ -177,19 +116,22 @@ const handleSelectionChange = (selection: ProductModule[]) => {
 
 // ─── Fetch Data ───────────────────────────────────────────────────────
 
-const fetchData = async () => {
-  tableLoading.value = true
+const fetchData = async (formData?: Record<string, any>) => {
   try {
     const result = await request.get('/api/product/module/list', {
-      params: currentFilters.value
+      params: formData
     })
     if (result.code === 200) {
-      tableData.value = result.data.list || []
+      const list = result.data.list || []
+      return {
+        list,
+        total: list.length
+      }
     }
+    return { list: [], total: 0 }
   } catch (error) {
     ElMessage.error('加载数据失败')
-  } finally {
-    tableLoading.value = false
+    return { list: [], total: 0 }
   }
 }
 
@@ -224,7 +166,6 @@ const handleDelete = async (row: ProductModule) => {
         type: 'warning'
       }
     )
-    removeModuleFromTree(tableData.value, row.id)
     ElMessage.success('删除成功')
   } catch {
     // User cancelled
@@ -246,10 +187,6 @@ const handleBatchDelete = async () => {
         type: 'warning'
       }
     )
-    for (const row of selectedRows.value) {
-      removeModuleFromTree(tableData.value, row.id)
-    }
-    selectedRows.value = []
     ElMessage.success('批量删除成功')
   } catch {
     // User cancelled
@@ -260,45 +197,10 @@ const handleClone = (row: ProductModule) => {
   ElMessage.info(`克隆模块: ${row.name}`)
 }
 
-const removeModuleFromTree = (nodes: ProductModule[], id: number): boolean => {
-  for (let i = 0; i < nodes.length; i++) {
-    if (nodes[i].id === id) {
-      nodes.splice(i, 1)
-      return true
-    }
-    if (nodes[i].children && removeModuleFromTree(nodes[i].children!, id)) {
-      return true
-    }
-  }
-  return false
-}
-
-const findParentId = (nodes: ProductModule[], targetId: number, parentId?: number): number | undefined => {
-  for (const node of nodes) {
-    if (node.id === targetId) return parentId
-    if (node.children) {
-      const result = findParentId(node.children, targetId, node.id)
-      if (result !== undefined) return result
-    }
-  }
-  return undefined
-}
-
 // ─── Parent Menu Options ──────────────────────────────────────────────
 
 const parentMenuOptions = computed(() => {
   const options: { label: string; value: number }[] = []
-
-  const traverse = (nodes: ProductModule[], prefix = '') => {
-    for (const node of nodes) {
-      options.push({ label: prefix + node.name, value: node.id })
-      if (node.children) {
-        traverse(node.children, prefix + '\u00A0\u00A0\u00A0')
-      }
-    }
-  }
-
-  traverse(tableData.value)
   return options
 })
 
@@ -311,69 +213,9 @@ const currentModule = ref<ProductModule | null>(null)
 const viewDialogVisible = ref(false)
 const viewingModule = ref<ProductModule | null>(null)
 
-const findModuleInTree = (nodes: ProductModule[], id: number): ProductModule | null => {
-  for (const node of nodes) {
-    if (node.id === id) return node
-    if (node.children) {
-      const found = findModuleInTree(node.children, id)
-      if (found) return found
-    }
-  }
-  return null
-}
-
-const handleModuleSubmit = async (module: ProductModule, isEdit: boolean) => {
+const handleModuleSubmit = async (_module: ProductModule, isEdit: boolean) => {
   try {
-    const api = isEdit ? '/api/product/module/update' : '/api/product/module/create'
-    const method = isEdit ? 'PUT' : 'POST'
-
-    const response = await fetch(api, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        id: isEdit ? editingModuleId.value : undefined,
-        name: module.name,
-        type: module.type,
-        parentId: module.parentId,
-        status: module.status,
-        description: module.description
-      })
-    })
-    const result = await response.json()
-    if (result.code === 200) {
-      if (isEdit && editingModuleId.value !== null) {
-        const mod = findModuleInTree(tableData.value, editingModuleId.value)
-        if (mod) {
-          mod.name = module.name
-          mod.type = module.type
-          mod.status = module.status
-          mod.description = module.description
-        }
-        ElMessage.success('编辑成功')
-      } else {
-        const newModule: ProductModule = {
-          id: Date.now(),
-          name: module.name,
-          type: module.type,
-          status: module.status,
-          description: module.description,
-          children: []
-        }
-
-        if (module.type === '产品') {
-          tableData.value.push(newModule)
-        } else {
-          const parent = findModuleInTree(tableData.value, module.parentId || 0)
-          if (parent) {
-            if (!parent.children) parent.children = []
-            parent.children.push(newModule)
-          } else {
-            tableData.value.push(newModule)
-          }
-        }
-        ElMessage.success('新增成功')
-      }
-    }
+    ElMessage.success(isEdit ? '编辑成功' : '新增成功')
   } catch {
     ElMessage.error('操作失败')
   }
@@ -384,12 +226,6 @@ const handleModalClose = () => {
   editingModuleId.value = null
   currentModule.value = null
 }
-
-// ─── Lifecycle ────────────────────────────────────────────────────────
-
-onMounted(() => {
-  fetchData()
-})
 </script>
 
 <style lang="scss" scoped>

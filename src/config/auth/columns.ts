@@ -31,7 +31,6 @@ export const orderColumns: ColumnConfig[] = [
     label: '授权数量',
     prop: 'authCount',
     width: '100', // 固定宽度
-    align: 'center', // 居中对齐
     visible: true
   },
   {
@@ -81,7 +80,6 @@ export const customerColumns: ColumnConfig[] = [
     label: '账户状态',
     prop: 'accountStatus',
     width: '100',
-    align: 'center',
     visible: true,
     hasTemplate: true
   },
@@ -139,7 +137,6 @@ export const authColumns: ColumnConfig[] = [
     label: '状态',
     prop: 'status',
     minWidth: '100',
-    align: 'center',
     visible: true,
     hasTemplate: true
   }

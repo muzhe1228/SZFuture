@@ -4,7 +4,7 @@
     :size="size"
     :effect="effect"
   >
-    {{ status }}
+    {{ status || '未知' }}
   </el-tag>
 </template>
 
@@ -14,7 +14,7 @@ import { computed } from 'vue'
 // Props
 const props = defineProps<{
   // 状态值
-  status: string
+  status: string | undefined
   // 状态类型映射
   statusMap?: Record<string, string>
   // 标签大小
@@ -45,7 +45,7 @@ const defaultStatusMap: Record<string, string> = {
 // Computed properties
 const tagType = computed(() => {
   const map = props.statusMap || defaultStatusMap
-  return map[props.status] || 'info'
+  return map[props.status || ''] || 'info'
 })
 </script>
 

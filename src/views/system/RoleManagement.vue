@@ -1,27 +1,17 @@
 <template>
   <div class="role-management">
-    <!-- Search Bar -->
-    <SearchForm :fields="searchFields" storage-key="role-management-search" :search-loading="tableLoading"
-      :reset-loading="tableLoading" @search="handleSearch" @reset="handleReset" />
-
-    <!-- Data Table -->
-    <DataTable
+    <!-- Base Table Page -->
+    <BaseTablePage
+      :search-fields="searchFields"
       :columns="columns"
-      :data="tableData"
-      :loading="tableLoading"
-      :total="pagination.total"
-      :current-page="pagination.currentPage"
-      :page-size="pagination.pageSize"
-      :page-sizes="[10, 20, 50, 100]"
+      :actions="tableActions"
+      :fetch-data="fetchData"
       title="角色管理"
-      storage-key="role-management-table"
+      storage-key="role-management"
       :show-column-settings="true"
       :show-selection="true"
-      :actions="tableActions"
-      row-key="id"
-      @page-change="handlePageChange"
-      @selection-change="handleSelectionChange"
       @action="handleTableAction"
+      @selection-change="handleSelectionChange"
     >
       <template #cell-status="{ row }">
         <el-tag :type="row.status === '启用' ? 'success' : 'danger'" size="small">
@@ -32,7 +22,7 @@
         <el-button type="primary" size="small" @click="handleAddRole" :icon="Plus">新增角色</el-button>
         <el-button type="danger" size="small" plain @click="handleBatchDelete" :disabled="selectedRoles.length === 0">删除角色</el-button>
       </template>
-    </DataTable>
+    </BaseTablePage>
 
     <!-- Add/Edit Role Modal -->
     <RoleForm 
@@ -46,12 +36,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive } from 'vue'
+import { ref } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
 import type { Role } from '@/types/index'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import SearchForm from '@/components/SearchForm.vue'
-import { DataTable } from '@/components/DataTable'
+import { BaseTablePage } from '@/components/BaseTablePage'
 import RoleForm from '@/components/Dialog/RoleManagement/RoleForm.vue'
 import type { ActionButton } from '@/components/DataTable/types'
 import { roleColumns } from '@/config/system/columns'
@@ -62,17 +51,6 @@ import request from '@/utils/request'
 
 // 搜索字段配置已移至 @/config/system/searchFields.ts
 const searchFields = roleSearchFields
-
-const handleSearch = (formData: Record<string, any>) => {
-  pagination.currentPage = 1
-  fetchData(formData)
-}
-
-const handleReset = () => {
-  pagination.currentPage = 1
-  fetchData()
-  ElMessage.success('重置成功')
-}
 
 // ─── Table Config ─────────────────────────────────────────────────────
 
@@ -95,30 +73,15 @@ const handleTableAction = (action: string, row: Role) => {
   }
 }
 
-const handlePageChange = (page: number, size: number) => {
-  pagination.currentPage = page
-  pagination.pageSize = size
-  fetchData()
-}
-
 // ─── Table Data ───────────────────────────────────────────────────────
 
-const tableLoading = ref(false)
 const selectedRoles = ref<Role[]>([])
-const tableData = ref<Role[]>([])
 
-const pagination = reactive({
-  currentPage: 1,
-  pageSize: 20,
-  total: 0
-})
-
-const fetchData = async (formData?: Record<string, any>) => {
-  tableLoading.value = true
+const fetchData = async (formData?: Record<string, any>, page: number = 1, pageSize: number = 20) => {
   try {
     const params: Record<string, any> = {
-      page: pagination.currentPage,
-      pageSize: pagination.pageSize
+      page,
+      pageSize
     }
     if (formData?.name) {
       params.name = formData.name
@@ -131,7 +94,7 @@ const fetchData = async (formData?: Record<string, any>) => {
     })
 
     // 映射mock数据中的字段到Role类型
-    tableData.value = ((res as any).data?.list || (res as any).list || []).map((item: any) => ({
+    const list = ((res as any).data?.list || (res as any).list || []).map((item: any) => ({
       id: item.id,
       name: item.name,
       status: item.status === '禁用' ? '停用' : item.status, // 映射status值
@@ -139,11 +102,13 @@ const fetchData = async (formData?: Record<string, any>) => {
       description: item.description,
       createTime: item.createTime
     }))
-    pagination.total = (res as any).data?.total ?? (res as any).total ?? 0
+    return {
+      list,
+      total: (res as any).data?.total ?? (res as any).total ?? 0
+    }
   } catch (error) {
     ElMessage.error('获取角色列表失败')
-  } finally {
-    tableLoading.value = false
+    return { list: [], total: 0 }
   }
 }
 
@@ -170,9 +135,6 @@ const handleBatchDelete = async () => {
         type: 'warning'
       }
     )
-    const ids = selectedRoles.value.map(r => r.id)
-    tableData.value = tableData.value.filter(r => !ids.includes(r.id))
-    pagination.total = Math.max(0, pagination.total - ids.length)
     ElMessage.success('删除成功')
   } catch {
     // User cancelled
@@ -201,8 +163,6 @@ const handleDelete = async (row: Role) => {
         type: 'warning'
       }
     )
-    tableData.value = tableData.value.filter(r => r.id !== row.id)
-    pagination.total = Math.max(0, pagination.total - 1)
     ElMessage.success('删除成功')
   } catch {
     // User cancelled
@@ -216,24 +176,8 @@ const isEditMode = ref(false)
 const editingRoleId = ref<number | null>(null)
 const currentRole = ref<Role | null>(null)
 
-const handleRoleSubmit = (role: Role, isEdit: boolean) => {
-  if (isEdit && editingRoleId.value) {
-    const index = tableData.value.findIndex(r => r.id === editingRoleId.value)
-    if (index !== -1) {
-      tableData.value[index] = {
-        ...tableData.value[index],
-        name: role.name,
-        description: role.description,
-        status: role.status,
-        sort: role.sort
-      }
-    }
-    ElMessage.success('编辑成功')
-  } else {
-    tableData.value.unshift(role)
-    pagination.total += 1
-    ElMessage.success('新增成功')
-  }
+const handleRoleSubmit = (_role: Role, isEdit: boolean) => {
+  ElMessage.success(isEdit ? '编辑成功' : '新增成功')
 }
 
 const handleModalClose = () => {
@@ -241,12 +185,6 @@ const handleModalClose = () => {
   editingRoleId.value = null
   currentRole.value = null
 }
-
-// ─── Lifecycle ────────────────────────────────────────────────────────
-
-onMounted(() => {
-  fetchData()
-})
 </script>
 
 <style lang="scss" scoped>

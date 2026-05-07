@@ -1,91 +1,85 @@
 <template>
-  <Dialog v-model="dialogVisible" title="授权冻结" width="520px" :close-on-click-modal="false" @close="handleClose">
+  <el-dialog v-model="dialogVisible" title="授权冻结" width="520px" :close-on-click-modal="false">
     <div class="freeze-modal">
-      <el-alert
-        title="冻结后该授权将无法使用，冻结期间不计入授权有效期内"
-        type="warning"
-        :closable="false"
-        show-icon
-      />
+      <el-alert title="冻结后该授权暂时无法使用，可解冻" type="warning" :closable="false" show-icon />
       <el-form label-width="90px" label-position="right" class="modal-form">
         <el-form-item label="冻结原因">
-          <el-input
-            v-model="freezeForm.reason"
-            type="textarea"
-            :rows="3"
-            placeholder="请输入冻结原因"
-          />
-        </el-form-item>
-        <el-form-item label="审批人员">
-          <el-select v-model="freezeForm.approver" placeholder="请选择审批人员" style="width: 100%">
-            <el-option label="张经理" value="张经理" />
-            <el-option label="李主管" value="李主管" />
-            <el-option label="王总监" value="王总监" />
-          </el-select>
+          <el-input v-model="freezeForm.reason" type="textarea" :rows="4" placeholder="请输入冻结原因" />
         </el-form-item>
       </el-form>
     </div>
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="handleCancel">取消</el-button>
-        <el-button type="primary" @click="handleFreezeSubmit" :loading="freezeLoading">确定</el-button>
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleFreezeSubmit" :loading="freezeLoading">
+          确定
+        </el-button>
       </div>
     </template>
-  </Dialog>
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
-import { reactive, computed } from 'vue'
-import { Dialog } from '@/components/Dialog'
+import { ref, reactive } from 'vue'
+import { ElMessage } from 'element-plus'
 
-const props = defineProps<{
+// ─── Props ──────────────────────────────────────────────────────
+
+interface Props {
   modelValue: boolean
-  freezeLoading: boolean
-}>()
+}
+
+const props = defineProps<Props>()
+
+// ─── Emits ──────────────────────────────────────────────────────
 
 const emit = defineEmits<{
-  'update:modelValue': [value: boolean]
-  'submit': [form: { reason: string; approver: string }]
-  'close': []
+  (e: 'update:modelValue', value: boolean): void
+  (e: 'freeze', reason: string): void
 }>()
 
-const dialogVisible = computed({
-  get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value)
+// ─── Reactive Data ─────────────────────────────────────────────
+
+const dialogVisible = ref(props.modelValue)
+const freezeForm = reactive({ reason: '' })
+const freezeLoading = ref(false)
+
+// ─── Watch ─────────────────────────────────────────────────────
+
+import { watch } from 'vue'
+
+watch(() => props.modelValue, (newValue) => {
+  dialogVisible.value = newValue
+  if (newValue) {
+    freezeForm.reason = ''
+  }
 })
 
-const freezeForm = reactive({
-  reason: '',
-  approver: ''
-})
+// ─── Methods ───────────────────────────────────────────────────
 
-const handleFreezeSubmit = () => {
-  emit('submit', { ...freezeForm })
-  dialogVisible.value = false
-}
-
-const handleCancel = () => {
-  dialogVisible.value = false
-}
-
-const handleClose = () => {
-  freezeForm.reason = ''
-  freezeForm.approver = ''
-  emit('close')
+const handleFreezeSubmit = async () => {
+  if (!freezeForm.reason.trim()) {
+    ElMessage.warning('请填写冻结原因')
+    return
+  }
+  freezeLoading.value = true
+  await new Promise(resolve => setTimeout(resolve, 600))
+  ElMessage.success('授权冻结成功')
+  emit('freeze', freezeForm.reason)
+  emit('update:modelValue', false)
+  freezeLoading.value = false
 }
 </script>
 
 <style lang="scss" scoped>
 .freeze-modal {
-  padding: 20px 0;
+  .el-alert {
+    margin-bottom: 20px;
+  }
 }
 
 .modal-form {
-  margin-top: 20px;
-
-  .el-form-item {
-    margin-bottom: 16px;
-  }
+  margin-top: 16px;
 }
 
 .dialog-footer {

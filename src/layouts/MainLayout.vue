@@ -6,26 +6,27 @@
         <span v-if="!isCollapse" class="logo-text">深圳未来</span>
         <span v-else class="logo-text-short">未来</span>
       </div>
-      <el-menu
-        :default-active="activeMenu"
-        :collapse="isCollapse"
-        :collapse-transition="false"
-        router
-        class="sidebar-menu"
-      >
+      <el-menu :default-active="activeMenu" :collapse="isCollapse" :collapse-transition="false" router
+        class="sidebar-menu">
         <el-menu-item index="/dashboard">
-          <el-icon><HomeFilled /></el-icon>
+          <el-icon>
+            <HomeFilled />
+          </el-icon>
           <template #title>工作台</template>
         </el-menu-item>
 
         <el-menu-item index="/messages">
-          <el-icon><ChatDotRound /></el-icon>
+          <el-icon>
+            <ChatDotRound />
+          </el-icon>
           <template #title>消息</template>
         </el-menu-item>
 
         <el-sub-menu index="auth">
           <template #title>
-            <el-icon><Key /></el-icon>
+            <el-icon>
+              <Key />
+            </el-icon>
             <span>授权管理</span>
           </template>
           <el-menu-item index="/auth/trials">试用列表</el-menu-item>
@@ -36,7 +37,9 @@
 
         <el-sub-menu index="product">
           <template #title>
-            <el-icon><Box /></el-icon>
+            <el-icon>
+              <Box />
+            </el-icon>
             <span>产品管理</span>
           </template>
           <el-menu-item index="/product/modules">产品模块配置</el-menu-item>
@@ -45,7 +48,9 @@
 
         <el-sub-menu index="system">
           <template #title>
-            <el-icon><Setting /></el-icon>
+            <el-icon>
+              <Setting />
+            </el-icon>
             <span>系统管理</span>
           </template>
           <el-menu-item index="/system/users">用户管理</el-menu-item>
@@ -56,7 +61,9 @@
 
         <el-sub-menu index="audit">
           <template #title>
-            <el-icon><Document /></el-icon>
+            <el-icon>
+              <Document />
+            </el-icon>
             <span>运维管理</span>
           </template>
           <el-menu-item index="/audit/operations">操作日志</el-menu-item>
@@ -64,7 +71,9 @@
         </el-sub-menu>
 
         <el-menu-item index="/approval/list">
-          <el-icon><Checked /></el-icon>
+          <el-icon>
+            <Checked />
+          </el-icon>
           <template #title>审批列表</template>
         </el-menu-item>
       </el-menu>
@@ -80,11 +89,8 @@
             <Expand v-else />
           </el-icon>
           <el-breadcrumb separator="/">
-            <el-breadcrumb-item
-              v-for="item in breadcrumbs"
-              :key="item.path"
-              :to="item.path ? { path: item.path } : undefined"
-            >
+            <el-breadcrumb-item v-for="item in breadcrumbs" :key="item.path"
+              :to="item.path ? { path: item.path } : undefined">
               {{ item.title }}
             </el-breadcrumb-item>
           </el-breadcrumb>
@@ -103,8 +109,11 @@
           </el-tooltip>
           <el-dropdown trigger="click" @command="handleCommand">
             <div class="user-info">
-              <el-icon><UserFilled /></el-icon>
-              <span class="user-name">测试用户</span>
+              <!-- <el-icon><UserFilled /></el-icon> -->
+              <el-avatar :size="24" class="avatar">
+                <img :src="userStore.userInfo?.avatar">
+              </el-avatar>
+              <span class="user-name">{{ userStore.userInfo?.username || '测试用户' }}</span>
             </div>
             <template #dropdown>
               <el-dropdown-menu>
@@ -116,9 +125,12 @@
         </div>
       </el-header>
 
+      <!-- Tab Bar -->
+      <TabBar />
+
       <!-- Content -->
       <el-main class="main-content">
-        <router-view />
+        <RouteTransition />
       </el-main>
     </el-container>
   </el-container>
@@ -139,16 +151,19 @@ import {
   Fold,
   Expand,
   FullScreen,
-  UserFilled,
   Sunny,
   Moon,
 } from '@element-plus/icons-vue'
+import { useUserStore } from '@/store/user'
+import TabBar from '@/components/TabBar'
+import RouteTransition from '@/components/RouteTransition'
 
 const route = useRoute()
 const router = useRouter()
 const isCollapse = ref(false)
 const isDark = ref(false)
-
+// Get user info from store
+const userStore = useUserStore()
 // 切换主题
 const toggleTheme = () => {
   isDark.value = !isDark.value
@@ -179,11 +194,74 @@ loadTheme()
 const activeMenu = computed(() => route.path)
 
 const breadcrumbs = computed(() => {
-  const matched = route.matched.filter((item) => item.meta?.title)
-  return matched.map((item) => ({
-    path: item.path,
-    title: item.meta.title as string,
-  }))
+  const breadcrumbList = []
+
+  // Add home breadcrumb
+  breadcrumbList.push({
+    path: '/',
+    title: '首页'
+  })
+
+  // Add parent menu breadcrumbs based on route path
+  const pathSegments = route.path.split('/').filter(Boolean)
+  let currentPath = ''
+
+  pathSegments.forEach((segment) => {
+    currentPath += `/${segment}`
+
+    // Map segment to menu name based on full path
+    let menuName = segment
+
+    // Handle specific paths
+    if (currentPath === '/auth') {
+      menuName = '授权管理'
+    } else if (currentPath === '/auth/trials') {
+      menuName = '试用列表'
+    } else if (currentPath === '/auth/list') {
+      menuName = '授权列表'
+    } else if (currentPath === '/auth/orders') {
+      menuName = '订单列表'
+    } else if (currentPath === '/auth/customers') {
+      menuName = '客户列表'
+    } else if (currentPath === '/product') {
+      menuName = '产品管理'
+    } else if (currentPath === '/product/modules') {
+      menuName = '产品模块配置'
+    } else if (currentPath === '/product/templates') {
+      menuName = '许可模版配置'
+    } else if (currentPath === '/system') {
+      menuName = '系统管理'
+    } else if (currentPath === '/system/users') {
+      menuName = '用户管理'
+    } else if (currentPath === '/system/roles') {
+      menuName = '角色管理'
+    } else if (currentPath === '/system/departments') {
+      menuName = '部门管理'
+    } else if (currentPath === '/system/config') {
+      menuName = '系统配置'
+    } else if (currentPath === '/audit') {
+      menuName = '运维管理'
+    } else if (currentPath === '/audit/operations') {
+      menuName = '操作日志'
+    } else if (currentPath === '/audit/system') {
+      menuName = '系统日志'
+    } else if (currentPath === '/approval') {
+      menuName = '审批管理'
+    } else if (currentPath === '/approval/list') {
+      menuName = '审批列表'
+    } else if (currentPath === '/dashboard') {
+      menuName = '工作台'
+    } else if (currentPath === '/messages') {
+      menuName = '消息'
+    }
+
+    breadcrumbList.push({
+      path: currentPath,
+      title: menuName
+    })
+  })
+
+  return breadcrumbList
 })
 
 const toggleCollapse = () => {
@@ -208,7 +286,7 @@ const handleCommand = (command: string) => {
       localStorage.removeItem('token')
       router.push('/login')
       ElMessage.success('已退出登录')
-    }).catch(() => {})
+    }).catch(() => { })
   } else if (command === 'profile') {
     ElMessage.info('个人中心开发中')
   }
@@ -347,6 +425,4 @@ const handleCommand = (command: string) => {
   display: flex;
   flex-direction: column;
 }
-
-
 </style>

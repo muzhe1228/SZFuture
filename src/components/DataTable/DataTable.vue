@@ -109,8 +109,8 @@ const visibleActions = computed(() => {
 })
 
 const actionsWidth = computed(() => {
-  const count = visibleActions.value.length
-  return Math.max(120, count * 80)
+  const count = visibleActions.value.length > 4 ? 4 : visibleActions.value.length
+  return Math.max(80, count * 50)
 })
 
 const handleSelectionChange = (selection: any[]) => {
@@ -257,5 +257,4 @@ onMounted(() => {
 // :deep(.el-drawer__footer) {
 //   padding: 16px;
 //   border-top: 1px solid var(--el-border-color);
-// }
-</style>
+// }</style>

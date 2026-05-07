@@ -17,6 +17,7 @@ const routes: RouteRecordRaw[] = [
     path: '/',
     component: MainLayout,
     redirect: '/dashboard',
+    meta: { title: '首页' },
     children: [
       {
         path: 'dashboard',

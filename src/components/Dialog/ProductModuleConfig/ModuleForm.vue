@@ -1,5 +1,5 @@
 <template>
-  <Dialog v-model="dialogVisible" :title="isEditMode ? '编辑模块' : '新增模块'" width="600px" :close-on-click-modal="false" @close="handleClose">
+  <Dialog v-model="dialogVisible" :title="isEditMode ? '编辑模块' : '新增模块'" width="750px" :close-on-click-modal="false" @close="handleClose">
     <div class="modal-header">
       <span class="modal-header-title">基本设置</span>
       <div class="divider" />
@@ -14,6 +14,7 @@
           <el-radio-button label="模块" value="模块" />
         </el-radio-group>
       </el-form-item>
+      
 
       <!-- Product Name (shown when type is '产品') -->
       <el-form-item label="*产品名称:" prop="name" v-if="moduleForm.type === '产品'">
@@ -228,7 +229,6 @@ watch(() => props.module, (newModule) => {
   &-title {
     font-size: 14px;
     font-weight: 500;
-    
     white-space: nowrap;
   }
 }
@@ -249,7 +249,6 @@ watch(() => props.module, (newModule) => {
     .el-radio-button {
       .el-radio-button__inner {
         padding: 8px 20px;
-        border-radius: 4px;
 
         &.is-active {
           background-color: #409eff;

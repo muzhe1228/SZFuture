@@ -1,31 +1,15 @@
 <template>
   <div class="department-management">
-    <!-- Search Bar -->
-    <SearchForm
-      :fields="searchFields"
-      :loading="tableLoading"
-      storage-key="department-management-search"
-      @search="handleSearch"
-      @reset="handleReset"
-    />
-
-    <!-- Data Table -->
-    <DataTable
+    <!-- Base Table Page -->
+    <BaseTablePage
+      :search-fields="searchFields"
       :columns="columns"
-      :data="filteredTableData"
-      :loading="tableLoading"
-      :total="tableData.length"
-      :current-page="1"
-      :page-size="100"
-      :page-sizes="[10, 20, 50, 100]"
+      :actions="tableActions"
+      :fetch-data="fetchData"
       title="部门管理"
-      storage-key="department-management-table"
+      storage-key="department-management"
       :show-column-settings="true"
       :show-selection="false"
-      :actions="tableActions"
-      row-key="id"
-      :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
-      :default-expand-all="true"
       @action="handleTableAction"
     >
       <template #extra-actions>
@@ -38,7 +22,7 @@
           {{ row.status }}
         </el-tag>
       </template>
-    </DataTable>
+    </BaseTablePage>
 
     <!-- Add/Edit Department Modal -->
     <DepartmentForm 
@@ -53,12 +37,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
 import type { Department } from '@/types/index'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import SearchForm from '@/components/SearchForm.vue'
-import { DataTable } from '@/components/DataTable'
+import { BaseTablePage } from '@/components/BaseTablePage'
 import DepartmentForm from '@/components/Dialog/DepartmentManagement/DepartmentForm.vue'
 import type { ActionButton } from '@/components/DataTable/types'
 import { departmentColumns } from '@/config/system/columns'
@@ -69,16 +52,6 @@ import request from '@/utils/request'
 
 // 搜索字段配置已移至 @/config/system/searchFields.ts
 const searchFields = departmentSearchFields
-
-const handleSearch = (formData: Record<string, any>) => {
-  currentFilters.value = { ...formData }
-}
-
-const handleReset = () => {
-  currentFilters.value = {}
-  fetchDepartments()
-  ElMessage.success('重置成功')
-}
 
 // ─── Table Config ─────────────────────────────────────────────────────
 
@@ -101,15 +74,9 @@ const handleTableAction = (action: string, row: Department) => {
   }
 }
 
-// ─── Table Data ───────────────────────────────────────────────────────
+// ─── Fetch Data ───────────────────────────────────────────────────────
 
-const tableLoading = ref(false)
-const tableData = ref<Department[]>([])
-
-// ─── API Calls ────────────────────────────────────────────────────────
-
-const fetchDepartments = async () => {
-  tableLoading.value = true
+const fetchData = async (_formData?: Record<string, any>) => {
   try {
     const res = await request.get<Department[]>('/api/department/tree')
     // 映射mock数据中的字段到Department类型
@@ -125,40 +92,16 @@ const fetchDepartments = async () => {
     })
     
     const data = Array.isArray(res) ? res : (res as any).data || (res as any).list || []
-    tableData.value = data.map((item: any) => mapDepartment(item))
+    const list = data.map((item: any) => mapDepartment(item))
+    return {
+      list,
+      total: list.length
+    }
   } catch (error) {
     ElMessage.error('获取部门数据失败')
-  } finally {
-    tableLoading.value = false
+    return { list: [], total: 0 }
   }
 }
-
-// ─── Filtered Data ────────────────────────────────────────────────────
-
-const currentFilters = ref<Record<string, any>>({})
-
-const filteredTableData = computed(() => {
-  const filterNode = (nodes: Department[]): Department[] => {
-    return nodes
-      .map((node) => {
-        const children = node.children ? filterNode(node.children) : []
-        const nameMatch = !currentFilters.value.name || node.name.includes(currentFilters.value.name)
-        const statusMatch = !currentFilters.value.status || node.status === currentFilters.value.status
-        const childrenMatch = children.length > 0
-
-        if (nameMatch && statusMatch) {
-          return { ...node, children: children.length ? children : node.children }
-        }
-        if (childrenMatch) {
-          return { ...node, children }
-        }
-        return null
-      })
-      .filter(Boolean) as Department[]
-  }
-
-  return filterNode(tableData.value)
-})
 
 // ─── Parent Department Options for Modal ──────────────────────────────
 
@@ -166,17 +109,6 @@ const parentDeptOptions = computed(() => {
   const options: { label: string; value: number }[] = [
     { label: '顶级部门', value: 0 }
   ]
-
-  const traverse = (nodes: Department[]) => {
-    for (const node of nodes) {
-      options.push({ label: node.name, value: node.id })
-      if (node.children) {
-        traverse(node.children)
-      }
-    }
-  }
-
-  traverse(tableData.value)
   return options
 })
 
@@ -210,24 +142,10 @@ const handleDelete = async (row: Department) => {
         type: 'warning'
       }
     )
-    removeDeptFromTree(tableData.value, row.id)
     ElMessage.success('删除成功')
   } catch {
     // User cancelled
   }
-}
-
-const removeDeptFromTree = (nodes: Department[], id: number): boolean => {
-  for (let i = 0; i < nodes.length; i++) {
-    if (nodes[i].id === id) {
-      nodes.splice(i, 1)
-      return true
-    }
-    if (nodes[i].children && removeDeptFromTree(nodes[i].children!, id)) {
-      return true
-    }
-  }
-  return false
 }
 
 // ─── Department Modal ─────────────────────────────────────────────────
@@ -237,49 +155,10 @@ const isEditMode = ref(false)
 const editingDeptId = ref<number | null>(null)
 const currentDepartment = ref<Department | null>(null)
 
-const findDeptInTree = (nodes: Department[], id: number): Department | null => {
-  for (const node of nodes) {
-    if (node.id === id) return node
-    if (node.children) {
-      const found = findDeptInTree(node.children, id)
-      if (found) return found
-    }
-  }
-  return null
-}
-
-const handleDepartmentSubmit = (department: Department, isEdit: boolean) => {
-  if (isEdit && editingDeptId.value !== null) {
-    // Update existing department
-    const dept = findDeptInTree(tableData.value, editingDeptId.value)
-    if (dept) {
-      dept.name = department.name
-      dept.parentId = department.parentId
-      dept.sort = department.sort
-      dept.status = department.status
-      dept.remarks = department.remarks
-    }
+const handleDepartmentSubmit = (_department: Department, isEdit: boolean) => {
+  if (isEdit) {
     ElMessage.success('编辑成功')
   } else {
-    // Add new department
-    const newDept: Department = {
-      ...department,
-      children: []
-    }
-
-    if (department.parentId === 0) {
-      // Top-level department
-      tableData.value.push(newDept)
-    } else {
-      // Child department
-      const parent = findDeptInTree(tableData.value, department.parentId)
-      if (parent) {
-        if (!parent.children) parent.children = []
-        parent.children.push(newDept)
-      } else {
-        tableData.value.push(newDept)
-      }
-    }
     ElMessage.success('新增成功')
   }
 }
@@ -289,12 +168,6 @@ const handleModalClose = () => {
   editingDeptId.value = null
   currentDepartment.value = null
 }
-
-// ─── Lifecycle ────────────────────────────────────────────────────────
-
-onMounted(() => {
-  fetchDepartments()
-})
 </script>
 
 <style lang="scss" scoped>

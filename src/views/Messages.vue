@@ -1,27 +1,17 @@
 <template>
   <div class="messages-page">
-    <!-- Search Bar -->
-    <SearchForm :fields="searchFields" storage-key="messages-search" @search="handleSearch" @reset="handleReset"
-      :search-loading="tableLoading" :reset-loading="tableLoading" />
-
-    <!-- Data Table -->
-    <DataTable
+    <!-- Base Table Page -->
+    <BaseTablePage
+      :search-fields="searchFields"
       :columns="columns"
-      :data="tableData"
-      :loading="tableLoading"
-      :total="pagination.total"
-      :current-page="pagination.currentPage"
-      :page-size="pagination.pageSize"
-      :page-sizes="[10, 20, 50, 100]"
+      :actions="tableActions"
+      :fetch-data="fetchData"
       title="消息列表"
-      storage-key="messages-table"
+      storage-key="messages"
       :show-column-settings="true"
       :show-selection="true"
-      :actions="tableActions"
-      row-key="id"
-      @page-change="handlePageChange"
-      @selection-change="handleSelectionChange"
       @action="handleTableAction"
+      @selection-change="handleSelectionChange"
     >
       <template #cell-status="{ row }">
         <el-tag :type="row.status === '未处理' ? 'danger' : 'success'" size="small" effect="light">
@@ -33,7 +23,7 @@
           批量删除
         </el-button>
       </template>
-    </DataTable>
+    </BaseTablePage>
 
     <!-- Message Detail Modal -->
     <MessageDetail v-model="detailModalVisible" :message="currentMessage" @confirm="handleMessageConfirm" />
@@ -41,11 +31,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive } from 'vue'
+import { ref } from 'vue'
 import type { Message } from '@/types/index'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import SearchForm from '@/components/SearchForm.vue'
-import { DataTable } from '@/components/DataTable'
+import { BaseTablePage } from '@/components/BaseTablePage'
 import MessageDetail from '@/components/Dialog/Messages/MessageDetail.vue'
 import type { ActionButton } from '@/components/DataTable/types'
 import { messageColumns } from '@/config/common/columns'
@@ -63,21 +52,6 @@ interface ExtendedMessage extends Message {
 // 搜索字段配置已移至 @/config/common/searchFields.ts
 const searchFields = messageSearchFields
 
-const searchParams = ref<Record<string, any>>({})
-
-const handleSearch = (formData: Record<string, any>) => {
-  searchParams.value = { ...formData }
-  pagination.currentPage = 1
-  fetchData()
-}
-
-const handleReset = () => {
-  searchParams.value = {}
-  pagination.currentPage = 1
-  fetchData()
-  ElMessage.success('重置成功')
-}
-
 // ─── Table Config ──────────────────────────────────────────────────────
 
 // 表格列配置已移至 @/config/common/columns.ts
@@ -90,23 +64,14 @@ const tableActions: ActionButton[] = [
 
 // ─── Table Data ───────────────────────────────────────────────────────
 
-const tableLoading = ref(false)
 const selectedMessages = ref<ExtendedMessage[]>([])
-const tableData = ref<ExtendedMessage[]>([])
 
-const pagination = reactive({
-  currentPage: 1,
-  pageSize: 20,
-  total: 0
-})
-
-const fetchData = async () => {
-  tableLoading.value = true
+const fetchData = async (formData?: Record<string, any>, page: number = 1, pageSize: number = 20) => {
   try {
     const params = {
-      page: String(pagination.currentPage),
-      pageSize: String(pagination.pageSize),
-      ...searchParams.value
+      page: String(page),
+      pageSize: String(pageSize),
+      ...formData
     }
     const result = await request({
       url: '/api/message/list',
@@ -115,20 +80,16 @@ const fetchData = async () => {
     })
 
     if (result.code === 200) {
-      tableData.value = result.data.list || []
-      pagination.total = result.data.total || 0
+      return {
+        list: result.data.list || [],
+        total: result.data.total || 0
+      }
     }
+    return { list: [], total: 0 }
   } catch (error) {
     ElMessage.error('加载数据失败')
-  } finally {
-    tableLoading.value = false
+    return { list: [], total: 0 }
   }
-}
-
-const handlePageChange = (page: number, pageSize: number) => {
-  pagination.currentPage = page
-  pagination.pageSize = pageSize
-  fetchData()
 }
 
 const handleSelectionChange = (selection: ExtendedMessage[]) => {
@@ -173,11 +134,6 @@ const handleDelete = (row: ExtendedMessage) => {
       try {
         const result = await request.delete(`/api/message/delete`, { params: { id: row.id } })
         if (result.code === 200) {
-          const idx = tableData.value.findIndex(m => m.id === row.id)
-          if (idx !== -1) {
-            tableData.value.splice(idx, 1)
-            pagination.total = Math.max(0, pagination.total - 1)
-          }
           ElMessage.success('删除成功')
         }
       } catch {
@@ -205,9 +161,6 @@ const handleBatchDelete = () => {
         const ids = selectedMessages.value.map(m => m.id)
         const result = await request.delete(`/api/message/delete`, { params: { ids: ids.join(',') } })
         if (result.code === 200) {
-          tableData.value = tableData.value.filter(m => !ids.includes(m.id))
-          pagination.total = Math.max(0, pagination.total - ids.length)
-          selectedMessages.value = []
           ElMessage.success('批量删除成功')
         }
       } catch {
@@ -218,12 +171,6 @@ const handleBatchDelete = () => {
       // User cancelled
     })
 }
-
-// ─── Lifecycle ────────────────────────────────────────────────────────
-
-onMounted(() => {
-  fetchData()
-})
 </script>
 
 <style lang="scss" scoped>

@@ -1,5 +1,5 @@
 <template>
-  <el-form ref="formRef" :model="formData" :inline="inline" :label-width="labelWidth" class="search-form"
+  <el-form ref="formRef" :model="formData" :inline="inline" class="search-form"
     @submit.prevent="handleSearch" @reset.prevent="handleReset" @keyup.enter="handleSearch">
     <template v-for="field in visibleFields" :key="field.prop">
       <el-form-item :label="field.label" :prop="field.prop">
@@ -265,6 +265,7 @@ defineExpose({
 
   :deep(.el-form-item) {
     margin-bottom: 18px;
+    margin-right: 18px;
   }
 
   :deep(.el-input__wrapper) {

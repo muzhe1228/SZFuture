@@ -7,7 +7,8 @@
         <el-card class="welcome-card" shadow="never" >
           <div class="welcome-content">
             <el-avatar :size="60" class="avatar">
-              <el-icon :size="36"><User /></el-icon>
+              <img :src="currentUser.avatar">
+              <!-- <el-icon :size="36"><User /></el-icon> -->
             </el-avatar>
             <div class="welcome-text">
               <h2>Hi, {{ currentUser.name }}, 开始您一天的工作吧!</h2>
@@ -128,7 +129,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { User, ArrowUp } from '@element-plus/icons-vue'
+import { ArrowUp } from '@element-plus/icons-vue'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { LineChart } from 'echarts/charts'
@@ -140,6 +141,7 @@ import {
 } from 'echarts/components'
 import VChart from 'vue-echarts'
 import type { Message } from '@/types/index'
+import { useUserStore } from '@/store/user'
 
 use([
   CanvasRenderer,
@@ -160,15 +162,18 @@ interface MessageItem extends Message {
   time: string
 }
 
-// Mock current user data
+// Get user info from store
+const userStore = useUserStore()
+
+// Mock current user data as fallback
 const currentUser = ref({
-  name: '张三',
+  name: userStore.userInfo?.username || '张三',
   department: '研发部',
-  role: '系统管理员',
-  avatar: ''
+  role: userStore.userInfo?.role || '系统管理员',
+  avatar: userStore.userInfo?.avatar || ''
 })
 
-const lastLoginTime = ref('2026-03-26 10:39:19')
+const lastLoginTime = ref(userStore.userInfo?.lastLoginTime || '2026-03-26 10:39:19')
 
 // Mock statistics data
 const statistics = ref<StatItem[]>([

@@ -24,7 +24,6 @@ export const messageColumns: ColumnConfig[] = [
     label: '到期时间',
     prop: 'expiryTime',
     width: '100', // 固定宽度
-    align: 'center', // 居中对齐
     visible: true
   },
   {
@@ -32,7 +31,6 @@ export const messageColumns: ColumnConfig[] = [
     label: '处理状态',
     prop: 'status',
     width: '100',
-    align: 'center',
     visible: true,
     hasTemplate: true // 是否使用自定义模板
   },
