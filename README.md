@@ -33,16 +33,31 @@
 src/
 ├── api/            # API接口定义
 ├── components/     # 公共组件
-│   └── SearchForm/ # 搜索表单组件
+│   ├── BaseModal/       # 基础模态框组件
+│   ├── BaseTablePage/   # 基础表格页面组件
+│   ├── DataTable/       # 数据表格组件
+│   ├── Dialog/          # 业务对话框组件
+│   │   ├── AuthList/    # 授权列表相关对话框
+│   │   ├── TrialList/   # 试用列表相关对话框
+│   │   ├── OrderList/   # 订单列表相关对话框
+│   │   └── ...
+│   ├── RouteTransition/ # 路由过渡动画组件
+│   ├── SearchForm/      # 搜索表单组件
+│   ├── StatusTag/       # 状态标签组件
+│   └── TabBar/          # 标签栏组件
+├── config/         # 表格列和搜索字段配置
 ├── layouts/        # 布局组件
-│   └── MainLayout.vue # 主布局
+│   └── MainLayout.vue   # 主布局
 ├── mock/           # 模拟数据
 ├── router/         # 路由配置
 ├── store/          # 状态管理
+├── stores/         # Pinia状态管理
+├── styles/         # 全局样式
 ├── types/          # TypeScript类型定义
 ├── utils/          # 工具函数
 │   ├── auth.ts     # 认证相关
-│   └── request.ts  # HTTP请求配置
+│   ├── request.ts  # HTTP请求配置
+│   └── ...
 ├── views/          # 页面组件
 │   ├── approval/   # 审批管理
 │   ├── audit/      # 审计日志
@@ -58,6 +73,45 @@ src/
 ├── App.vue         # 根组件
 └── main.ts         # 入口文件
 ```
+
+## 公共组件
+
+项目提供了一系列公共组件，位于 `src/components/` 目录下：
+
+### 基础组件
+
+| 组件 | 说明 | 路径 |
+|------|------|------|
+| BaseModal | 基础模态框组件 | `components/BaseModal/` |
+| BaseTablePage | 基础表格页面组件 | `components/BaseTablePage/` |
+| DataTable | 数据表格组件 | `components/DataTable/` |
+| SearchForm | 搜索表单组件 | `components/SearchForm.vue` |
+| StatusTag | 状态标签组件 | `components/StatusTag/` |
+| TabBar | 标签栏组件 | `components/TabBar/` |
+
+### RouteTransition 路由过渡动画组件
+
+用于路由切换时的平滑过渡动画效果，支持多种动画效果。
+
+详细文档请参考：[RouteTransition 组件文档](./src/components/RouteTransition/README.md)
+
+### Dialog 业务对话框组件
+
+位于 `components/Dialog/` 目录下，按业务模块组织：
+
+| 目录 | 说明 |
+|------|------|
+| `AuthList/` | 授权列表相关对话框（激活、冻结、解冻、延期、作废、查看、导入） |
+| `TrialList/` | 试用列表相关对话框（激活、冻结、解冻、延期、作废、查看、删除） |
+| `OrderList/` | 订单列表相关对话框（删除、订单表单） |
+| `CustomerList/` | 客户列表相关对话框（详情、表单、删除确认） |
+| `ProductModuleConfig/` | 产品模块配置相关对话框（详情、表单） |
+| `LicenseTemplateConfig/` | 许可模版配置相关对话框（详情、表单） |
+| `RoleManagement/` | 角色管理相关对话框（表单） |
+| `DepartmentManagement/` | 部门管理相关对话框（表单） |
+| `UserManagement/` | 用户管理相关对话框（表单） |
+| `Messages/` | 消息相关对话框（详情） |
+| `ApprovalList/` | 审批列表相关对话框（抽屉） |
 
 ## 功能模块
 
@@ -146,6 +200,7 @@ yarn preview
 8. **完整的授权管理**：支持激活、冻结、解冻、延期、作废等操作
 9. **产品管理**：实现产品模块和许可模版的增删改查功能
 10. **UI交互对齐**：与uiPage交互稿保持一致的设计风格
+11. **路由过渡动画**：支持多种平滑的页面切换动画效果
 
 ## 注意事项
 
