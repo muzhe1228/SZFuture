@@ -18,20 +18,20 @@ export const loginApi = (data: LoginParams) => {
   return request<LoginResult>({
     url: '/auth/login',
     method: 'post',
-    data
+    data,
   })
 }
 
 export const logoutApi = () => {
   return request({
     url: '/auth/logout',
-    method: 'post'
+    method: 'post',
   })
 }
 
 export const getUserInfo = () => {
   return request({
     url: '/auth/user-info',
-    method: 'get'
+    method: 'get',
   })
 }

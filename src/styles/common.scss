@@ -1,3 +1,19 @@
+// Dialog styles
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.dialog-content {
+  margin-bottom: 20px;
+}
+
+.modal-form {
+  margin-top: 16px;
+}
+
+// Input number styles
 .el-input-number.is-without-controls .el-input__wrapper{
    padding: 1px 11px !important;
 }

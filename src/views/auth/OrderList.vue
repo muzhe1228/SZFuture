@@ -14,12 +14,9 @@
       @selection-change="handleSelectionChange"
     >
       <template #extra-actions>
-        <el-button type="primary" size="small" @click="handleAddOrder" :icon="Plus">
-          新增订单
-        </el-button>
+        <el-button type="primary" size="small" @click="handleAddOrder" :icon="Plus"> 新增订单 </el-button>
       </template>
     </BaseTablePage>
-
 
     <!-- ==================== Modals ==================== -->
 
@@ -31,154 +28,153 @@
       @submit="handleOrderSubmit"
     />
 
-    <!-- 2. 删除确认 Modal -->
-    <DeleteModal
-      v-model="deleteModalVisible"
-      @delete="handleDeleteConfirm"
-    />
+    
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Plus } from '@element-plus/icons-vue'
-import type { Order } from '@/types/index'
-import { ElMessage } from 'element-plus'
-import request from '@/utils/request'
-import { BaseTablePage } from '@/components/BaseTablePage'
-import OrderFormModal from '@/components/Dialog/OrderList/OrderFormModal.vue'
-import DeleteModal from '@/components/Dialog/OrderList/DeleteModal.vue'
-import type { ActionButton } from '@/components/DataTable/types'
-import { orderColumns } from '@/config/auth/columns'
-import { orderSearchFields } from '@/config/auth/searchFields'
+  import { ref } from 'vue'
+  import { Plus } from '@element-plus/icons-vue'
+  import type { Order } from '@/types/index'
+  import { ElMessage, ElMessageBox } from 'element-plus'
+  import request from '@/utils/request'
+  import { BaseTablePage } from '@/components/BaseTablePage'
+  import OrderFormModal from '@/components/Dialog/OrderList/OrderFormModal.vue'
+  import type { ActionButton } from '@/components/DataTable/types'
+  import { orderColumns } from '@/config/auth/columns'
+  import { orderSearchFields } from '@/config/auth/searchFields'
 
-// ─── Search Form ──────────────────────────────────────────────────────
+  // ─── Search Form ──────────────────────────────────────────────────────
 
-// 搜索字段配置已移至 @/config/auth/searchFields.ts
-const searchFields = orderSearchFields
+  // 搜索字段配置已移至 @/config/auth/searchFields.ts
+  const searchFields = orderSearchFields
 
-// ─── Table Config ─────────────────────────────────────────────────────
+  // ─── Table Config ─────────────────────────────────────────────────────
 
-// 表格列配置已移至 @/config/auth/columns.ts
-const columns = ref(orderColumns)
+  // 表格列配置已移至 @/config/auth/columns.ts
+  const columns = ref(orderColumns)
 
-const tableActions: ActionButton[] = [
-  { key: 'view', label: '查看', type: 'primary' },
-  { key: 'edit', label: '修改', type: 'success' },
-  { key: 'download', label: '下载', type: 'primary' },
-  { key: 'delete', label: '删除', type: 'danger' }
-]
+  const tableActions: ActionButton[] = [
+    { key: 'view', label: '查看', type: 'primary' },
+    { key: 'edit', label: '修改', type: 'success' },
+    { key: 'download', label: '下载', type: 'primary' },
+    { key: 'delete', label: '删除', type: 'danger' },
+  ]
 
-// ─── Table Data ───────────────────────────────────────────────────────
+  // ─── Table Data ───────────────────────────────────────────────────────
 
-const selectedOrders = ref<Order[]>([])
+  const selectedOrders = ref<Order[]>([])
 
-const fetchOrderList = async (formData?: Record<string, any>, page: number = 1, pageSize: number = 20) => {
-  try {
-    const response: any = await request.get('/api/order/list', {
-      params: {
-        page,
-        pageSize,
-        ...formData
+  const fetchOrderList = async (formData?: Record<string, any>, page: number = 1, pageSize: number = 20) => {
+    try {
+      const response: any = await request.get('/api/order/list', {
+        params: {
+          page,
+          pageSize,
+          ...formData,
+        },
+      })
+      if (response.code === 200) {
+        const rawList = response.data.list || []
+        // Map API fields to local field names
+        const list = rawList.map((item: any) => ({
+          id: item.id,
+          orderNo: item.orderNo,
+          createTime: item.createTime,
+          customerName: item.customerName,
+          authCount: item.authCount,
+          authStartDate: item.authStartDate,
+          authEndDate: item.authEndDate,
+        }))
+        return { list, total: response.data.total || 0 }
       }
-    })
-    if (response.code === 200) {
-      const rawList = response.data.list || []
-      // Map API fields to local field names
-      const list = rawList.map((item: any) => ({
-        id: item.id,
-        orderNo: item.orderNo,
-        createTime: item.createTime,
-        customerName: item.customerName,
-        authCount: item.authCount,
-        authStartDate: item.authStartDate,
-        authEndDate: item.authEndDate
-      }))
-      return { list, total: response.data.total || 0 }
+      return { list: [], total: 0 }
+    } catch {
+      ElMessage.error('获取订单列表失败')
+      return { list: [], total: 0 }
     }
-    return { list: [], total: 0 }
-  } catch (error) {
-    ElMessage.error('获取订单列表失败')
-    return { list: [], total: 0 }
   }
-}
 
-const handleSelectionChange = (selection: Order[]) => {
-  selectedOrders.value = selection
-}
-
-const handleTableAction = (action: string, row: Order) => {
-  if (action === 'view') {
-    handleView(row)
-  } else if (action === 'edit') {
-    handleEdit(row)
-  } else if (action === 'download') {
-    handleDownload(row)
-  } else if (action === 'delete') {
-    handleDelete(row)
+  const handleSelectionChange = (selection: Order[]) => {
+    selectedOrders.value = selection
   }
-}
 
-// ─── Current Order (for modals) ──────────────────────────────────────
+  const handleTableAction = (action: string, row: Order) => {
+    if (action === 'view') {
+      handleView(row)
+    } else if (action === 'edit') {
+      handleEdit(row)
+    } else if (action === 'download') {
+      handleDownload(row)
+    } else if (action === 'delete') {
+      handleDelete(row)
+    }
+  }
 
-const currentOrder = ref<Order | null>(null)
+  // ─── Current Order (for modals) ──────────────────────────────────────
 
-// ─── Modal Visibility ─────────────────────────────────────────────────
+  const currentOrder = ref<Order | null>(null)
 
-const orderModalVisible = ref(false)
-const isEditMode = ref(false)
-const deleteModalVisible = ref(false)
+  // ─── Modal Visibility ─────────────────────────────────────────────────
 
-// ─── Add / Edit Order ────────────────────────────────────────────────
+  const orderModalVisible = ref(false)
+  const isEditMode = ref(false)
 
-const handleAddOrder = () => {
-  isEditMode.value = false
-  currentOrder.value = null
-  orderModalVisible.value = true
-}
+  // ─── Add / Edit Order ────────────────────────────────────────────────
 
-const handleEdit = (row: Order) => {
-  isEditMode.value = true
-  currentOrder.value = row
-  orderModalVisible.value = true
-}
+  const handleAddOrder = () => {
+    isEditMode.value = false
+    currentOrder.value = null
+    orderModalVisible.value = true
+  }
 
-const handleOrderSubmit = (_order: any) => {
-  // 处理订单提交逻辑
-  ElMessage.success(isEditMode.value ? '订单修改成功' : '订单新增成功')
-}
+  const handleEdit = (row: Order) => {
+    isEditMode.value = true
+    currentOrder.value = row
+    orderModalVisible.value = true
+  }
 
-// ─── Delete Order ─────────────────────────────────────────────────────
+  const handleOrderSubmit = (_order: any) => {
+    // 处理订单提交逻辑
+    ElMessage.success(isEditMode.value ? '订单修改成功' : '订单新增成功')
+  }
 
-const handleDelete = (row: Order) => {
-  currentOrder.value = row
-  deleteModalVisible.value = true
-}
+  // ─── Delete Order ─────────────────────────────────────────────────────
 
-const handleDeleteConfirm = () => {
-  // 处理删除逻辑
-  ElMessage.success('订单删除成功')
-}
+  const handleDelete = (row: Order) => {
+    ElMessageBox.confirm(`确定要删除订单【${row.orderNo}】吗？`, '确认删除', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+      .then(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 600))
+        ElMessage.success('订单删除成功')
+      })
+      .catch(() => {
+        // User cancelled
+      })
+  }
 
-// ─── View ────────────────────────────────────────────────────────────
+  // ─── View ────────────────────────────────────────────────────────────
 
-const handleView = (row: Order) => {
-  ElMessage.info(`查看订单: ${row.orderNo}`)
-}
+  const handleView = (row: Order) => {
+    ElMessage.info(`查看订单: ${row.orderNo}`)
+  }
 
-// ─── Download ────────────────────────────────────────────────────────
+  // ─── Download ────────────────────────────────────────────────────────
 
-const handleDownload = (row: Order) => {
-  ElMessage.success(`正在下载订单: ${row.orderNo}`)
-}
+  const handleDownload = (row: Order) => {
+    ElMessage.success(`正在下载订单: ${row.orderNo}`)
+  }
 </script>
 
 <style lang="scss" scoped>
-.order-list {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow-y: auto;
-  border-radius: 8px;
-}
+  .order-list {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto;
+    border-radius: 8px;
+  }
 </style>

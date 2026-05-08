@@ -10,14 +10,14 @@ export const customerOptions = [
   { label: '深圳创新科技', value: '深圳创新科技' },
   { label: '北京软件开发公司', value: '北京软件开发公司' },
   { label: '上海信息技术公司', value: '上海信息技术公司' },
-  { label: '广州数字化公司', value: '广州数字化公司' }
+  { label: '广州数字化公司', value: '广州数字化公司' },
 ]
 
 // 产品下拉选项
 export const productOptions = [
   { label: '产品A', value: '产品A' },
   { label: '产品B', value: '产品B' },
-  { label: '产品C', value: '产品C' }
+  { label: '产品C', value: '产品C' },
 ]
 
 /**
@@ -30,27 +30,27 @@ export const messageSearchFields: SearchField[] = [
     label: '客户名称', // 字段显示名称
     type: 'select', // 字段类型
     placeholder: '请选择', // 占位符
-    options: customerOptions // 下拉选项
+    options: customerOptions, // 下拉选项
   },
   {
     prop: 'phone',
     label: '手机号',
     type: 'input',
-    placeholder: '请输入'
+    placeholder: '请输入',
   },
   {
     prop: 'product',
     label: '产品',
     type: 'select',
     placeholder: '请选择',
-    options: productOptions
+    options: productOptions,
   },
   {
     prop: 'expiryDays',
     label: '到期时间',
     type: 'input',
     placeholder: '',
-    suffix: '内' // 后缀
+    suffix: '内', // 后缀
   },
   {
     prop: 'status',
@@ -59,7 +59,7 @@ export const messageSearchFields: SearchField[] = [
     placeholder: '请选择',
     options: [
       { label: '未处理', value: '未处理' },
-      { label: '已处理', value: '已处理' }
-    ]
-  }
+      { label: '已处理', value: '已处理' },
+    ],
+  },
 ]

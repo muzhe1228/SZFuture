@@ -9,13 +9,22 @@ export function setupLogMock() {
     const params = new URLSearchParams(url.split('?')[1])
     const page = parseInt(params.get('page') || '1')
     const pageSize = parseInt(params.get('pageSize') || '20')
-    
+
     const operationTypes = ['新增', '修改', '删除', '查询', '导出', '导入', '登录', '退出']
-    const operationModules = ['用户管理', '角色管理', '部门管理', '订单管理', '客户管理', '授权管理', '产品管理', '系统配置']
+    const operationModules = [
+      '用户管理',
+      '角色管理',
+      '部门管理',
+      '订单管理',
+      '客户管理',
+      '授权管理',
+      '产品管理',
+      '系统配置',
+    ]
     const operationStatus = ['成功', '失败']
     const requestMethods = ['GET', 'POST', 'PUT', 'DELETE']
     const operators = ['张三', '李四', '王五', '赵六', '钱七', '孙八', '周九', '吴十']
-    
+
     const list = []
     for (let i = 0; i < pageSize; i++) {
       const operator = Random.pick(operators)
@@ -34,7 +43,7 @@ export function setupLogMock() {
           '登录系统',
           '修改系统配置',
           '授权产品给客户',
-          '创建试用申请'
+          '创建试用申请',
         ]),
         requestUrl: '/api/' + Random.word() + '/' + Random.word(),
         requestMethod: Random.pick(requestMethods),
@@ -46,17 +55,17 @@ export function setupLogMock() {
         browser: Random.pick(['Chrome 120', 'Firefox 121', 'Safari 17', 'Edge 120']),
         os: Random.pick(['Windows 11', 'macOS Sonoma', 'Ubuntu 22.04']),
         executionTime: Random.integer(10, 2000) + 'ms',
-        operationTime: Random.datetime('yyyy-MM-dd HH:mm:ss')
+        operationTime: Random.datetime('yyyy-MM-dd HH:mm:ss'),
       })
     }
-    
+
     return {
       code: 200,
       message: 'success',
       data: {
         list,
-        total: 500
-      }
+        total: 500,
+      },
     }
   })
 
@@ -75,15 +84,23 @@ export function setupLogMock() {
         operationDesc: Random.csentence(5, 20),
         requestUrl: '/api/' + Random.word() + '/' + Random.word(),
         requestMethod: Random.pick(['GET', 'POST', 'PUT', 'DELETE']),
-        requestParams: JSON.stringify({
-          [Random.word()]: Random.string('lower', 8),
-          [Random.word()]: Random.integer(1, 100)
-        }, null, 2),
-        responseData: JSON.stringify({
-          code: 200,
-          message: 'success',
-          data: {}
-        }, null, 2),
+        requestParams: JSON.stringify(
+          {
+            [Random.word()]: Random.string('lower', 8),
+            [Random.word()]: Random.integer(1, 100),
+          },
+          null,
+          2
+        ),
+        responseData: JSON.stringify(
+          {
+            code: 200,
+            message: 'success',
+            data: {},
+          },
+          null,
+          2
+        ),
         responseStatus: Random.pick([200, 400, 401, 403, 500]),
         operationStatus: Random.pick(['成功', '失败']),
         errorMsg: Random.boolean() ? Random.csentence(5, 20) : '-',
@@ -92,8 +109,8 @@ export function setupLogMock() {
         os: Random.pick(['Windows 11', 'macOS Sonoma', 'Ubuntu 22.04']),
         userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
         executionTime: Random.integer(10, 2000) + 'ms',
-        operationTime: Random.datetime('yyyy-MM-dd HH:mm:ss')
-      }
+        operationTime: Random.datetime('yyyy-MM-dd HH:mm:ss'),
+      },
     }
   })
 
@@ -103,11 +120,11 @@ export function setupLogMock() {
     const params = new URLSearchParams(url.split('?')[1])
     const page = parseInt(params.get('page') || '1')
     const pageSize = parseInt(params.get('pageSize') || '20')
-    
+
     const logLevels = ['INFO', 'WARN', 'ERROR', 'DEBUG']
     const logModules = ['系统服务', '数据库', '缓存服务', '消息队列', '文件服务', '认证服务', '网关服务']
     const logStatus = ['正常', '异常']
-    
+
     const list = []
     for (let i = 0; i < pageSize; i++) {
       list.push({
@@ -125,22 +142,24 @@ export function setupLogMock() {
           '数据库连接池已满',
           '请求超时异常',
           '文件上传失败',
-          '认证token过期'
+          '认证token过期',
         ]),
         logStatus: Random.pick(logStatus),
-        stackTrace: Random.boolean() ? 'Error: ' + Random.csentence(10, 30) + '\n    at ' + Random.word() + '.js:' + Random.integer(10, 500) : '-',
+        stackTrace: Random.boolean()
+          ? 'Error: ' + Random.csentence(10, 30) + '\n    at ' + Random.word() + '.js:' + Random.integer(10, 500)
+          : '-',
         ip: Random.ip(),
-        createTime: Random.datetime('yyyy-MM-dd HH:mm:ss')
+        createTime: Random.datetime('yyyy-MM-dd HH:mm:ss'),
       })
     }
-    
+
     return {
       code: 200,
       message: 'success',
       data: {
         list,
-        total: 1000
-      }
+        total: 1000,
+      },
     }
   })
 
@@ -156,15 +175,17 @@ export function setupLogMock() {
         logSource: Random.pick(['服务器-01', '服务器-02', '数据库主节点']),
         logMessage: Random.csentence(10, 50),
         logStatus: Random.pick(['正常', '异常']),
-        stackTrace: Random.boolean() ? `Error: ${Random.csentence(10, 30)}
+        stackTrace: Random.boolean()
+          ? `Error: ${Random.csentence(10, 30)}
     at ${Random.word()}.js:${Random.integer(10, 500)}
     at ${Random.word()}.js:${Random.integer(10, 500)}
-    at ${Random.word()}.js:${Random.integer(10, 500)}` : '-',
+    at ${Random.word()}.js:${Random.integer(10, 500)}`
+          : '-',
         ip: Random.ip(),
         threadName: 'thread-' + Random.integer(1, 20),
         requestId: Random.guid(),
-        createTime: Random.datetime('yyyy-MM-dd HH:mm:ss')
-      }
+        createTime: Random.datetime('yyyy-MM-dd HH:mm:ss'),
+      },
     }
   })
 
@@ -174,8 +195,8 @@ export function setupLogMock() {
       code: 200,
       message: '导出成功',
       data: {
-        downloadUrl: '/api/files/operation_logs_' + Random.date('yyyyMMdd') + '.xlsx'
-      }
+        downloadUrl: '/api/files/operation_logs_' + Random.date('yyyyMMdd') + '.xlsx',
+      },
     }
   })
 
@@ -185,8 +206,8 @@ export function setupLogMock() {
       code: 200,
       message: '导出成功',
       data: {
-        downloadUrl: '/api/files/system_logs_' + Random.date('yyyyMMdd') + '.xlsx'
-      }
+        downloadUrl: '/api/files/system_logs_' + Random.date('yyyyMMdd') + '.xlsx',
+      },
     }
   })
 
@@ -196,8 +217,8 @@ export function setupLogMock() {
       code: 200,
       message: '清理成功',
       data: {
-        cleanedCount: Random.integer(100, 1000)
-      }
+        cleanedCount: Random.integer(100, 1000),
+      },
     }
   })
 
@@ -207,8 +228,8 @@ export function setupLogMock() {
       code: 200,
       message: '清理成功',
       data: {
-        cleanedCount: Random.integer(100, 1000)
-      }
+        cleanedCount: Random.integer(100, 1000),
+      },
     }
   })
 }

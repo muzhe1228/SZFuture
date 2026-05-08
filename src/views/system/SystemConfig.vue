@@ -2,9 +2,7 @@
   <div class="system-config">
     <!-- Header with Save Button -->
     <div class="page-header">
-      <el-button type="primary" @click="handleSave" :loading="saveLoading">
-        保存
-      </el-button>
+      <el-button type="primary" @click="handleSave" :loading="saveLoading"> 保存 </el-button>
     </div>
 
     <!-- Form Content -->
@@ -130,28 +128,13 @@
             filterable
             style="width: 100%"
           >
-            <el-option
-              v-for="user in alertReceiverOptions"
-              :key="user.value"
-              :label="user.label"
-              :value="user.value"
-            />
+            <el-option v-for="user in alertReceiverOptions" :key="user.value" :label="user.label" :value="user.value" />
           </el-select>
         </el-form-item>
 
         <el-form-item label="接口调用失败" prop="alertReceiverApiError">
-          <el-select
-            v-model="form.alertReceiverApiError"
-            placeholder="请选择告警接收人"
-            filterable
-            style="width: 100%"
-          >
-            <el-option
-              v-for="user in alertReceiverOptions"
-              :key="user.value"
-              :label="user.label"
-              :value="user.value"
-            />
+          <el-select v-model="form.alertReceiverApiError" placeholder="请选择告警接收人" filterable style="width: 100%">
+            <el-option v-for="user in alertReceiverOptions" :key="user.value" :label="user.label" :value="user.value" />
           </el-select>
         </el-form-item>
 
@@ -191,12 +174,7 @@
             filterable
             style="width: 100%"
           >
-            <el-option
-              v-for="user in alertReceiverOptions"
-              :key="user.value"
-              :label="user.label"
-              :value="user.value"
-            />
+            <el-option v-for="user in alertReceiverOptions" :key="user.value" :label="user.label" :value="user.value" />
           </el-select>
         </el-form-item>
 
@@ -254,447 +232,437 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
-import { Plus } from '@element-plus/icons-vue'
-import type { SystemConfig } from '@/types/index'
-import type { FormInstance, FormRules, UploadFile } from 'element-plus'
-import { ElMessage } from 'element-plus'
+  import { ref, reactive, onMounted } from 'vue'
+  import { Plus } from '@element-plus/icons-vue'
+  import type { SystemConfig } from '@/types/index'
+  import type { FormInstance, FormRules, UploadFile } from 'element-plus'
+  import { ElMessage } from 'element-plus'
 
-// ─── Form State ──────────────────────────────────────────────────────
+  // ─── Form State ──────────────────────────────────────────────────────
 
-const formRef = ref<FormInstance>()
-const saveLoading = ref(false)
+  const formRef = ref<FormInstance>()
+  const saveLoading = ref(false)
 
-interface SystemConfigForm extends SystemConfig {
-  backupFrequencyEnabled: boolean
-}
+  interface SystemConfigForm extends SystemConfig {
+    backupFrequencyEnabled: boolean
+  }
 
-const form = reactive<SystemConfigForm>({
-  systemName: '',
-  sessionTimeout: '',
-  passwordMinLength: '8',
-  passwordMaxLength: '20',
-  passwordComplexity: '数字+大小写',
-  licenseCheckFrequency: '',
-  offlineActivationDuration: '',
-  licenseSyncInterval: '',
-  alertReceiverSystemError: '',
-  alertReceiverApiError: '',
-  alertReceiverLicenseExpiry: '',
-  alertTriggerThreshold: '30',
-  alertReceiverDeviceBind: '',
-  alertMethods: [],
-  backupFrequency: '每日',
-  backupFrequencyEnabled: false,
-  backupPath: '',
-  backupRetention: '',
-  dashboardRefreshRate: '',
-  logoUrl: '',
-  bgImageUrl: ''
-})
+  const form = reactive<SystemConfigForm>({
+    systemName: '',
+    sessionTimeout: '',
+    passwordMinLength: '8',
+    passwordMaxLength: '20',
+    passwordComplexity: '数字+大小写',
+    licenseCheckFrequency: '',
+    offlineActivationDuration: '',
+    licenseSyncInterval: '',
+    alertReceiverSystemError: '',
+    alertReceiverApiError: '',
+    alertReceiverLicenseExpiry: '',
+    alertTriggerThreshold: '30',
+    alertReceiverDeviceBind: '',
+    alertMethods: [],
+    backupFrequency: '每日',
+    backupFrequencyEnabled: false,
+    backupPath: '',
+    backupRetention: '',
+    dashboardRefreshRate: '',
+    logoUrl: '',
+    bgImageUrl: '',
+  })
 
-const formRules: FormRules = {
-  systemName: [
-    { required: true, message: '请输入系统名称', trigger: 'blur' },
-    { max: 50, message: '系统名称不能超过50个字符', trigger: 'blur' }
-  ],
-  sessionTimeout: [
-    { required: true, message: '请输入会话超时时间', trigger: 'blur' },
-    { pattern: /^\d+$/, message: '请输入有效的数字', trigger: 'blur' }
-  ],
-  licenseCheckFrequency: [
-    { required: true, message: '请输入许可校验频率', trigger: 'blur' },
-    { pattern: /^\d+$/, message: '请输入有效的数字', trigger: 'blur' }
-  ],
-  offlineActivationDuration: [
-    { required: true, message: '请输入离线激活有效时长', trigger: 'blur' },
-    { pattern: /^\d+$/, message: '请输入有效的数字', trigger: 'blur' }
-  ],
-  licenseSyncInterval: [
-    { required: true, message: '请输入许可状态同步时间间隔', trigger: 'blur' },
-    { pattern: /^\d+$/, message: '请输入有效的数字', trigger: 'blur' }
-  ],
-  alertReceiverSystemError: [
-    { required: true, message: '请选择告警接收人', trigger: 'change' }
-  ],
-  alertReceiverApiError: [
-    { required: true, message: '请选择告警接收人', trigger: 'change' }
-  ],
-  alertReceiverLicenseExpiry: [
-    { required: true, message: '请选择告警接收人', trigger: 'change' }
-  ],
-  alertReceiverDeviceBind: [
-    { required: true, message: '请选择告警接收人', trigger: 'change' }
-  ],
-  backupPath: [
-    { required: true, message: '请输入备份存储路径', trigger: 'blur' }
-  ],
-  backupRetention: [
-    { required: true, message: '请输入备份文件保留时长', trigger: 'blur' },
-    { pattern: /^\d+$/, message: '请输入有效的数字', trigger: 'blur' }
-  ],
-  dashboardRefreshRate: [
-    { required: true, message: '请输入刷新频率', trigger: 'blur' },
-    { pattern: /^\d+$/, message: '请输入有效的数字', trigger: 'blur' }
+  const formRules: FormRules = {
+    systemName: [
+      { required: true, message: '请输入系统名称', trigger: 'blur' },
+      { max: 50, message: '系统名称不能超过50个字符', trigger: 'blur' },
+    ],
+    sessionTimeout: [
+      { required: true, message: '请输入会话超时时间', trigger: 'blur' },
+      { pattern: /^\d+$/, message: '请输入有效的数字', trigger: 'blur' },
+    ],
+    licenseCheckFrequency: [
+      { required: true, message: '请输入许可校验频率', trigger: 'blur' },
+      { pattern: /^\d+$/, message: '请输入有效的数字', trigger: 'blur' },
+    ],
+    offlineActivationDuration: [
+      { required: true, message: '请输入离线激活有效时长', trigger: 'blur' },
+      { pattern: /^\d+$/, message: '请输入有效的数字', trigger: 'blur' },
+    ],
+    licenseSyncInterval: [
+      { required: true, message: '请输入许可状态同步时间间隔', trigger: 'blur' },
+      { pattern: /^\d+$/, message: '请输入有效的数字', trigger: 'blur' },
+    ],
+    alertReceiverSystemError: [{ required: true, message: '请选择告警接收人', trigger: 'change' }],
+    alertReceiverApiError: [{ required: true, message: '请选择告警接收人', trigger: 'change' }],
+    alertReceiverLicenseExpiry: [{ required: true, message: '请选择告警接收人', trigger: 'change' }],
+    alertReceiverDeviceBind: [{ required: true, message: '请选择告警接收人', trigger: 'change' }],
+    backupPath: [{ required: true, message: '请输入备份存储路径', trigger: 'blur' }],
+    backupRetention: [
+      { required: true, message: '请输入备份文件保留时长', trigger: 'blur' },
+      { pattern: /^\d+$/, message: '请输入有效的数字', trigger: 'blur' },
+    ],
+    dashboardRefreshRate: [
+      { required: true, message: '请输入刷新频率', trigger: 'blur' },
+      { pattern: /^\d+$/, message: '请输入有效的数字', trigger: 'blur' },
+    ],
+  }
+
+  // ─── Alert Receiver Options ──────────────────────────────────────────
+
+  const alertReceiverOptions = [
+    { label: '张三', value: 'zhangsan' },
+    { label: '李四', value: 'lisi' },
+    { label: '王五', value: 'wangwu' },
+    { label: '赵六', value: 'zhaoliu' },
+    { label: '系统管理员', value: 'admin' },
   ]
-}
 
-// ─── Alert Receiver Options ──────────────────────────────────────────
+  // ─── File Upload Handlers ────────────────────────────────────────────
 
-const alertReceiverOptions = [
-  { label: '张三', value: 'zhangsan' },
-  { label: '李四', value: 'lisi' },
-  { label: '王五', value: 'wangwu' },
-  { label: '赵六', value: 'zhaoliu' },
-  { label: '系统管理员', value: 'admin' }
-]
-
-// ─── File Upload Handlers ────────────────────────────────────────────
-
-const handleLogoChange = (file: UploadFile) => {
-  if (file.raw) {
-    const isImage = file.raw.type.startsWith('image/')
-    if (!isImage) {
-      ElMessage.error('只能上传图片文件!')
-      return
+  const handleLogoChange = (file: UploadFile) => {
+    if (file.raw) {
+      const isImage = file.raw.type.startsWith('image/')
+      if (!isImage) {
+        ElMessage.error('只能上传图片文件!')
+        return
+      }
+      const isLt2M = file.raw.size / 1024 / 1024 < 2
+      if (!isLt2M) {
+        ElMessage.error('图片大小不能超过 2MB!')
+        return
+      }
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        form.logoUrl = e.target?.result as string
+      }
+      reader.readAsDataURL(file.raw)
     }
-    const isLt2M = file.raw.size / 1024 / 1024 < 2
-    if (!isLt2M) {
-      ElMessage.error('图片大小不能超过 2MB!')
-      return
-    }
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      form.logoUrl = e.target?.result as string
-    }
-    reader.readAsDataURL(file.raw)
   }
-}
 
-const handleBgChange = (file: UploadFile) => {
-  if (file.raw) {
-    const isImage = file.raw.type.startsWith('image/')
-    if (!isImage) {
-      ElMessage.error('只能上传图片文件!')
-      return
+  const handleBgChange = (file: UploadFile) => {
+    if (file.raw) {
+      const isImage = file.raw.type.startsWith('image/')
+      if (!isImage) {
+        ElMessage.error('只能上传图片文件!')
+        return
+      }
+      const isLt5M = file.raw.size / 1024 / 1024 < 5
+      if (!isLt5M) {
+        ElMessage.error('图片大小不能超过 5MB!')
+        return
+      }
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        form.bgImageUrl = e.target?.result as string
+      }
+      reader.readAsDataURL(file.raw)
     }
-    const isLt5M = file.raw.size / 1024 / 1024 < 5
-    if (!isLt5M) {
-      ElMessage.error('图片大小不能超过 5MB!')
-      return
+  }
+
+  // ─── Backup Toggle ───────────────────────────────────────────────────
+
+  const handleBackupToggle = (val: boolean) => {
+    if (!val) {
+      form.backupFrequency = '每日'
     }
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      form.bgImageUrl = e.target?.result as string
+  }
+
+  // ─── Save ────────────────────────────────────────────────────────────
+
+  const handleSave = async () => {
+    if (!formRef.value) return
+    try {
+      await formRef.value.validate()
+      saveLoading.value = true
+
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 800))
+
+      ElMessage.success('保存成功')
+    } catch {
+      ElMessage.error('请检查表单填写')
+    } finally {
+      saveLoading.value = false
     }
-    reader.readAsDataURL(file.raw)
   }
-}
 
-// ─── Backup Toggle ───────────────────────────────────────────────────
+  // ─── Lifecycle ───────────────────────────────────────────────────────
 
-const handleBackupToggle = (val: boolean) => {
-  if (!val) {
-    form.backupFrequency = '每日'
-  }
-}
-
-// ─── Save ────────────────────────────────────────────────────────────
-
-const handleSave = async () => {
-  if (!formRef.value) return
-  try {
-    await formRef.value.validate()
-    saveLoading.value = true
-
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 800))
-
-    ElMessage.success('保存成功')
-  } catch {
-    ElMessage.error('请检查表单填写')
-  } finally {
-    saveLoading.value = false
-  }
-}
-
-// ─── Lifecycle ───────────────────────────────────────────────────────
-
-onMounted(() => {
-  // In production, fetch config from API here
-  // Example: loadConfig()
-})
+  onMounted(() => {
+    // In production, fetch config from API here
+    // Example: loadConfig()
+  })
 </script>
 
 <style lang="scss" scoped>
-.system-config {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow-y: auto;
-  border-radius: 8px;
-  padding-bottom: 40px;
-}
-
-// ─── Page Header ─────────────────────────────────────────────────────
-
-.page-header {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 16px;
-
-  .el-button {
-    min-width: 80px;
-  }
-}
-
-// ─── Form ────────────────────────────────────────────────────────────
-
-.config-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-// ─── Section Card ────────────────────────────────────────────────────
-
-.section-card {
-  background-color: var(--el-bg-color);
-  border-radius: 4px;
-  padding: 20px 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-
-  .section-title {
-    font-size: 15px;
-    font-weight: 500;
-    
-    margin-bottom: 20px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid #ebeef5;
-    position: relative;
-
-    &::before {
-      content: '';
-      position: absolute;
-      left: -12px;
-      top: 0;
-      bottom: 12px;
-      width: 3px;
-      background-color: var(--el-color-primary);
-      border-radius: 2px;
-    }
-  }
-}
-
-// ─── Logo Upload ─────────────────────────────────────────────────────
-
-.logo-uploader {
-  :deep(.el-upload) {
-    border: 1px dashed #d9d9d9;
-    border-radius: 6px;
-    cursor: pointer;
-    overflow: hidden;
-    transition: all 0.3s;
-
-    &:hover {
-      border-color: var(--el-color-primary);
-    }
-  }
-}
-
-.logo-preview {
-  width: 120px;
-  height: 120px;
-  display: block;
-  object-fit: contain;
-}
-
-.logo-placeholder {
-  width: 120px;
-  height: 120px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--el-bg-color);
-  color: var(--el-text-color-secondary);
-  font-size: 13px;
-
-  .upload-icon {
-    font-size: 28px;
-    color: #c0c4cc;
-    margin-bottom: 8px;
-  }
-}
-
-// ─── Background Image Upload ─────────────────────────────────────────
-
-.bg-uploader {
-  :deep(.el-upload) {
-    border: 1px dashed #d9d9d9;
-    border-radius: 6px;
-    cursor: pointer;
-    overflow: hidden;
-    transition: all 0.3s;
-
-    &:hover {
-      border-color: var(--el-color-primary);
-    }
-  }
-}
-
-.bg-preview {
-  width: 200px;
-  height: 120px;
-  display: block;
-  object-fit: cover;
-}
-
-.bg-placeholder {
-  width: 200px;
-  height: 120px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: var(--el-text-color-secondary);
-  font-size: 13px;
-
-  .upload-icon {
-    font-size: 28px;
-    color: #c0c4cc;
-    margin-bottom: 8px;
-  }
-}
-
-// ─── Password Complexity ─────────────────────────────────────────────
-
-.password-complexity {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 100%;
-
-  .complexity-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .complexity-label {
-    font-size: 14px;
-    color: var(--el-text-color-regular);
-    white-space: nowrap;
-    min-width: 80px;
-  }
-
-  .password-length-input {
-    width: 120px;
-  }
-
-  .complexity-separator {
-    font-size: 14px;
-    color: var(--el-text-color-secondary);
-  }
-}
-
-// ─── Alert Row (License Expiry) ──────────────────────────────────────
-
-.alert-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  flex-wrap: wrap;
-
-  .alert-receiver-select {
-    flex: 1;
-    min-width: 200px;
-  }
-
-  .alert-threshold-label {
-    font-size: 14px;
-    color: var(--el-text-color-regular);
-    white-space: nowrap;
-  }
-
-  .threshold-prefix {
-    font-size: 14px;
-    color: var(--el-text-color-secondary);
-  }
-
-  .threshold-input {
-    width: 120px;
-  }
-
-  .threshold-suffix {
-    font-size: 14px;
-    color: var(--el-text-color-secondary);
-  }
-}
-
-// ─── Backup Frequency ────────────────────────────────────────────────
-
-.backup-frequency {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-// ─── Form item overrides ─────────────────────────────────────────────
-
-:deep(.el-form-item) {
-  margin-bottom: 22px;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-}
-
-:deep(.el-form-item__label) {
-  font-weight: 400;
-}
-
-:deep(.el-input-group__append) {
-  padding: 0 12px;
-}
-
-// ─── Responsive ──────────────────────────────────────────────────────
-
-@media (max-width: 992px) {
   .system-config {
-    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto;
+    border-radius: 8px;
+    padding-bottom: 40px;
   }
+
+  // ─── Page Header ─────────────────────────────────────────────────────
+
+  .page-header {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 16px;
+
+    .el-button {
+      min-width: 80px;
+    }
+  }
+
+  // ─── Form ────────────────────────────────────────────────────────────
+
+  .config-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  // ─── Section Card ────────────────────────────────────────────────────
 
   .section-card {
-    padding: 16px;
+    background-color: var(--el-bg-color);
+    border-radius: 4px;
+    padding: 20px 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 
     .section-title {
+      font-size: 15px;
+      font-weight: 500;
+
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #ebeef5;
+      position: relative;
+
       &::before {
-        left: -8px;
+        content: '';
+        position: absolute;
+        left: -12px;
+        top: 0;
+        bottom: 12px;
+        width: 3px;
+        background-color: var(--el-color-primary);
+        border-radius: 2px;
       }
     }
   }
 
-  .password-complexity {
-    .complexity-row {
-      flex-wrap: wrap;
+  // ─── Logo Upload ─────────────────────────────────────────────────────
+
+  .logo-uploader {
+    :deep(.el-upload) {
+      border: 1px dashed #d9d9d9;
+      border-radius: 6px;
+      cursor: pointer;
+      overflow: hidden;
+      transition: all 0.3s;
+
+      &:hover {
+        border-color: var(--el-color-primary);
+      }
     }
   }
+
+  .logo-preview {
+    width: 120px;
+    height: 120px;
+    display: block;
+    object-fit: contain;
+  }
+
+  .logo-placeholder {
+    width: 120px;
+    height: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--el-bg-color);
+    color: var(--el-text-color-secondary);
+    font-size: 13px;
+
+    .upload-icon {
+      font-size: 28px;
+      color: #c0c4cc;
+      margin-bottom: 8px;
+    }
+  }
+
+  // ─── Background Image Upload ─────────────────────────────────────────
+
+  .bg-uploader {
+    :deep(.el-upload) {
+      border: 1px dashed #d9d9d9;
+      border-radius: 6px;
+      cursor: pointer;
+      overflow: hidden;
+      transition: all 0.3s;
+
+      &:hover {
+        border-color: var(--el-color-primary);
+      }
+    }
+  }
+
+  .bg-preview {
+    width: 200px;
+    height: 120px;
+    display: block;
+    object-fit: cover;
+  }
+
+  .bg-placeholder {
+    width: 200px;
+    height: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--el-text-color-secondary);
+    font-size: 13px;
+
+    .upload-icon {
+      font-size: 28px;
+      color: #c0c4cc;
+      margin-bottom: 8px;
+    }
+  }
+
+  // ─── Password Complexity ─────────────────────────────────────────────
+
+  .password-complexity {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+
+    .complexity-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .complexity-label {
+      font-size: 14px;
+      color: var(--el-text-color-regular);
+      white-space: nowrap;
+      min-width: 80px;
+    }
+
+    .password-length-input {
+      width: 120px;
+    }
+
+    .complexity-separator {
+      font-size: 14px;
+      color: var(--el-text-color-secondary);
+    }
+  }
+
+  // ─── Alert Row (License Expiry) ──────────────────────────────────────
 
   .alert-row {
-    flex-direction: column;
-    align-items: flex-start;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    flex-wrap: wrap;
 
     .alert-receiver-select {
-      width: 100%;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .alert-threshold-label {
+      font-size: 14px;
+      color: var(--el-text-color-regular);
+      white-space: nowrap;
+    }
+
+    .threshold-prefix {
+      font-size: 14px;
+      color: var(--el-text-color-secondary);
+    }
+
+    .threshold-input {
+      width: 120px;
+    }
+
+    .threshold-suffix {
+      font-size: 14px;
+      color: var(--el-text-color-secondary);
     }
   }
 
+  // ─── Backup Frequency ────────────────────────────────────────────────
+
   .backup-frequency {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
   }
-}
+
+  // ─── Form item overrides ─────────────────────────────────────────────
+
+  :deep(.el-form-item) {
+    margin-bottom: 22px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  :deep(.el-form-item__label) {
+    font-weight: 400;
+  }
+
+  :deep(.el-input-group__append) {
+    padding: 0 12px;
+  }
+
+  // ─── Responsive ──────────────────────────────────────────────────────
+
+  @media (max-width: 992px) {
+    .system-config {
+      padding: 12px;
+    }
+
+    .section-card {
+      padding: 16px;
+
+      .section-title {
+        &::before {
+          left: -8px;
+        }
+      }
+    }
+
+    .password-complexity {
+      .complexity-row {
+        flex-wrap: wrap;
+      }
+    }
+
+    .alert-row {
+      flex-direction: column;
+      align-items: flex-start;
+
+      .alert-receiver-select {
+        width: 100%;
+      }
+    }
+
+    .backup-frequency {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
+  }
 </style>

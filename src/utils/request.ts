@@ -1,32 +1,90 @@
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 import { ElMessage } from 'element-plus'
-import type { AxiosRequestConfig } from 'axios'
+import type { AxiosRequestConfig, AxiosResponse } from 'axios'
+
+interface RetryConfig {
+  maxRetries?: number
+  retryDelay?: number
+  retryOnStatusCodes?: number[]
+}
+
+const defaultRetryConfig: RetryConfig = {
+  maxRetries: 3,
+  retryDelay: 1000,
+  retryOnStatusCodes: [429, 500, 502, 503, 504],
+}
 
 const request = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
-  timeout: 5000
+  timeout: 5000,
 })
 
-// Custom request method that returns response.data directly
-const customRequest = <T = any>(config: AxiosRequestConfig): Promise<T> => {
-  return request(config).then((response) => response as T)
+const shouldRetry = (error: AxiosError, retryConfig: RetryConfig): boolean => {
+  if (error.response) {
+    const { status } = error.response
+    return retryConfig.retryOnStatusCodes?.includes(status) ?? false
+  }
+  return !!error.code && ['ECONNABORTED', 'ETIMEDOUT', 'ECONNRESET', 'ENOTFOUND', 'ENETUNREACH'].includes(error.code)
 }
 
-// Add HTTP method shortcuts
-customRequest.get = <T = any>(url: string, config?: AxiosRequestConfig): Promise<T> => {
-  return request.get<T>(url, config).then((response) => response as T)
-}
-customRequest.post = <T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
-  return request.post<T>(url, data, config).then((response) => response as T)
-}
-customRequest.put = <T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
-  return request.put<T>(url, data, config).then((response) => response as T)
-}
-customRequest.delete = <T = any>(url: string, config?: AxiosRequestConfig): Promise<T> => {
-  return request.delete<T>(url, config).then((response) => response as T)
+const getRetryDelay = (retryCount: number, retryDelay: number): number => {
+  return retryDelay * Math.pow(2, retryCount - 1)
 }
 
-// Request interceptor
+const customRequest = async <T = any>(config: AxiosRequestConfig & { retryConfig?: RetryConfig }): Promise<T> => {
+  const retryConfig = { ...defaultRetryConfig, ...config.retryConfig }
+  let retries = 0
+
+  const executeRequest = async (): Promise<AxiosResponse> => {
+    try {
+      return await request(config)
+    } catch (error) {
+      const axiosError = error as AxiosError
+
+      if (retries < (retryConfig.maxRetries ?? 3) && shouldRetry(axiosError, retryConfig)) {
+        retries++
+        const delay = getRetryDelay(retries, retryConfig.retryDelay ?? 1000)
+
+        await new Promise((resolve) => setTimeout(resolve, delay))
+
+        return executeRequest()
+      }
+
+      throw error
+    }
+  }
+
+  const response = await executeRequest()
+  return response as T
+}
+
+customRequest.get = <T = any>(url: string, config?: AxiosRequestConfig & { retryConfig?: RetryConfig }): Promise<T> => {
+  return customRequest({ method: 'get', url, ...config })
+}
+
+customRequest.post = <T = any>(
+  url: string,
+  data?: any,
+  config?: AxiosRequestConfig & { retryConfig?: RetryConfig }
+): Promise<T> => {
+  return customRequest({ method: 'post', url, data, ...config })
+}
+
+customRequest.put = <T = any>(
+  url: string,
+  data?: any,
+  config?: AxiosRequestConfig & { retryConfig?: RetryConfig }
+): Promise<T> => {
+  return customRequest({ method: 'put', url, data, ...config })
+}
+
+customRequest.delete = <T = any>(
+  url: string,
+  config?: AxiosRequestConfig & { retryConfig?: RetryConfig }
+): Promise<T> => {
+  return customRequest({ method: 'delete', url, ...config })
+}
+
 request.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token')
@@ -40,7 +98,6 @@ request.interceptors.request.use(
   }
 )
 
-// Response interceptor
 request.interceptors.response.use(
   (response) => {
     return response.data
@@ -62,9 +119,13 @@ request.interceptors.response.use(
         default:
           ElMessage.error(error.response.data?.message || 'Request failed')
       }
+    } else if (error.code) {
+      ElMessage.error(`Network error: ${error.code}`)
     }
     return Promise.reject(error)
   }
 )
 
 export default customRequest
+
+export type { RetryConfig }

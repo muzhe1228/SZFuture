@@ -4,21 +4,21 @@
 
 // 默认状态类型映射
 export const defaultStatusMap: Record<string, string> = {
-  '正常': 'success',
-  '激活': 'success',
-  '已激活': 'warning',
-  '未激活': 'info',
-  '已冻结': 'danger',
-  '冻结': 'warning',
-  '已作废': 'info',
-  '作废': 'danger',
-  '已授权': 'success',
-  '未授权': 'info',
-  '已过期': 'danger',
-  '过期': 'danger',
-  '已取消': 'info',
-  '关闭': 'danger',
-  '禁用': 'warning'
+  正常: 'success',
+  激活: 'success',
+  已激活: 'warning',
+  未激活: 'info',
+  已冻结: 'danger',
+  冻结: 'warning',
+  已作废: 'info',
+  作废: 'danger',
+  已授权: 'success',
+  未授权: 'info',
+  已过期: 'danger',
+  过期: 'danger',
+  已取消: 'info',
+  关闭: 'danger',
+  禁用: 'warning',
 }
 
 /**

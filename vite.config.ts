@@ -8,13 +8,13 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
-      '~': resolve(__dirname, 'src')
-    }
+      '~': resolve(__dirname, 'src'),
+    },
   },
 
   server: {
     port: 3000,
-    open: true
+    open: true,
   },
   base: './',
   build: {
@@ -31,8 +31,8 @@ export default defineConfig({
     terserOptions: {
       compress: {
         drop_console: true,
-        drop_debugger: true
-      }
+        drop_debugger: true,
+      },
     },
     rollupOptions: {
       output: {
@@ -51,9 +51,9 @@ export default defineConfig({
           // 工具库
           utils: ['nprogress'],
           // Mock 数据（仅开发环境）
-          mock: ['mockjs']
-        }
-      }
-    }
-  }
+          mock: ['mockjs'],
+        },
+      },
+    },
+  },
 })

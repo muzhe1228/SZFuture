@@ -10,10 +10,10 @@ export function setupMessageMock() {
     const params = new URLSearchParams(url.split('?')[1])
     const page = parseInt(params.get('page') || '1')
     const pageSize = parseInt(params.get('pageSize') || '20')
-    
+
     const messageTypes = ['系统通知', '订单通知', '授权通知', '审批通知', '系统公告']
     const messagePriorities = ['普通', '重要', '紧急']
-    
+
     const list = []
     for (let i = 0; i < pageSize; i++) {
       list.push({
@@ -32,18 +32,18 @@ export function setupMessageMock() {
         expiryTime: Random.date('yyyy-MM-dd'),
         isRead: Random.boolean(),
         receiveTime: Random.datetime('yyyy-MM-dd HH:mm:ss'),
-        customerName: Random.cname() + Random.pick(['科技有限公司', '信息技术有限公司'])
+        customerName: Random.cname() + Random.pick(['科技有限公司', '信息技术有限公司']),
       })
     }
-    
+
     return {
       code: 200,
       message: 'success',
       data: {
         list,
         total: 120,
-        unreadCount: Random.integer(5, 30)
-      }
+        unreadCount: Random.integer(5, 30),
+      },
     }
   })
 
@@ -66,12 +66,14 @@ export function setupMessageMock() {
         createTime: Random.datetime('yyyy-MM-dd HH:mm:ss'),
         readTime: Random.datetime('yyyy-MM-dd HH:mm:ss'),
         isRead: Random.boolean(),
-        attachment: Random.boolean() ? {
-          name: Random.ctitle(3, 5) + '.pdf',
-          size: Random.integer(100, 5000) + 'KB',
-          url: '/api/files/' + Random.guid()
-        } : null
-      }
+        attachment: Random.boolean()
+          ? {
+              name: Random.ctitle(3, 5) + '.pdf',
+              size: Random.integer(100, 5000) + 'KB',
+              url: '/api/files/' + Random.guid(),
+            }
+          : null,
+      },
     }
   })
 
@@ -80,7 +82,7 @@ export function setupMessageMock() {
     return {
       code: 200,
       message: 'success',
-      data: null
+      data: null,
     }
   })
 
@@ -89,7 +91,7 @@ export function setupMessageMock() {
     return {
       code: 200,
       message: 'success',
-      data: null
+      data: null,
     }
   })
 
@@ -98,7 +100,7 @@ export function setupMessageMock() {
     return {
       code: 200,
       message: '全部标记为已读',
-      data: null
+      data: null,
     }
   })
 
@@ -107,7 +109,7 @@ export function setupMessageMock() {
     return {
       code: 200,
       message: 'success',
-      data: null
+      data: null,
     }
   })
 
@@ -116,7 +118,7 @@ export function setupMessageMock() {
     return {
       code: 200,
       message: 'success',
-      data: null
+      data: null,
     }
   })
 
@@ -131,8 +133,8 @@ export function setupMessageMock() {
         orderNotice: Random.integer(1, 10),
         authNotice: Random.integer(1, 10),
         approvalNotice: Random.integer(1, 10),
-        announcement: Random.integer(1, 10)
-      }
+        announcement: Random.integer(1, 10),
+      },
     }
   })
 
@@ -142,8 +144,8 @@ export function setupMessageMock() {
       code: 200,
       message: '发送成功',
       data: {
-        id: Random.increment(10000)
-      }
+        id: Random.increment(10000),
+      },
     }
   })
 }

@@ -3,8 +3,6 @@ import Mock from 'mockjs'
 const Random = Mock.Random
 const Mocks = Mock.mock
 
-
-
 export function setupCustomerMock() {
   // Customer list
   Mock.mock(/\/api\/customer\/list/, 'get', (options: any) => {
@@ -12,17 +10,19 @@ export function setupCustomerMock() {
     const params = new URLSearchParams(url.split('?')[1])
     const page = parseInt(params.get('page') || '1')
     const pageSize = parseInt(params.get('pageSize') || '20')
-    
+
     const customerLevels = ['重要客户', '普通客户', '潜在客户', '流失客户']
     const customerSources = ['官网', '推荐', '展会', '电话营销', '网络推广']
     const industries = ['互联网', '金融', '制造', '教育', '医疗', '零售', '物流', '政府']
-    
+
     const list = []
     for (let i = 0; i < pageSize; i++) {
       list.push({
         id: (page - 1) * pageSize + i + 1,
         customerCode: 'CUST' + String(Random.integer(10000, 99999)),
-        name: Random.cname() + Random.pick(['科技有限公司', '信息技术有限公司', '网络技术有限公司', '软件科技有限公司', '数据科技有限公司']),
+        name:
+          Random.cname() +
+          Random.pick(['科技有限公司', '信息技术有限公司', '网络技术有限公司', '软件科技有限公司', '数据科技有限公司']),
         contact: Random.cname(),
         phone: Mocks(/1[3-9]\d{9}/),
         contactEmail: Random.email(),
@@ -39,17 +39,17 @@ export function setupCustomerMock() {
         lastCooperationDate: Random.date('yyyy-MM-dd'),
         createDate: Random.datetime('yyyy-MM-dd HH:mm:ss'),
         updateTime: Random.datetime('yyyy-MM-dd HH:mm:ss'),
-        remark: Random.csentence(10, 30)
+        remark: Random.csentence(10, 30),
       })
     }
-    
+
     return {
       code: 200,
       message: 'success',
       data: {
         list,
-        total: 180
-      }
+        total: 180,
+      },
     }
   })
 
@@ -82,8 +82,8 @@ export function setupCustomerMock() {
         lastCooperationDate: Random.date('yyyy-MM-dd'),
         createTime: Random.datetime('yyyy-MM-dd HH:mm:ss'),
         updateTime: Random.datetime('yyyy-MM-dd HH:mm:ss'),
-        remark: Random.csentence(10, 30)
-      }
+        remark: Random.csentence(10, 30),
+      },
     }
   })
 
@@ -94,8 +94,8 @@ export function setupCustomerMock() {
       message: 'success',
       data: {
         id: Random.increment(10000),
-        customerCode: 'CUST' + String(Random.integer(10000, 99999))
-      }
+        customerCode: 'CUST' + String(Random.integer(10000, 99999)),
+      },
     }
   })
 
@@ -104,7 +104,7 @@ export function setupCustomerMock() {
     return {
       code: 200,
       message: 'success',
-      data: null
+      data: null,
     }
   })
 
@@ -113,7 +113,7 @@ export function setupCustomerMock() {
     return {
       code: 200,
       message: 'success',
-      data: null
+      data: null,
     }
   })
 
@@ -123,8 +123,8 @@ export function setupCustomerMock() {
       code: 200,
       message: '导出成功',
       data: {
-        downloadUrl: '/api/files/customers_export_' + Random.date('yyyyMMdd') + '.xlsx'
-      }
+        downloadUrl: '/api/files/customers_export_' + Random.date('yyyyMMdd') + '.xlsx',
+      },
     }
   })
 }

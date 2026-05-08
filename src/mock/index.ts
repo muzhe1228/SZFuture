@@ -13,9 +13,9 @@ import { setupApprovalMock } from './approval'
 
 export function setupMock() {
   Mock.setup({
-    timeout: '200-600'
+    timeout: '200-600',
   })
-  
+
   setupUserMock()
   setupRoleMock()
   setupDepartmentMock()

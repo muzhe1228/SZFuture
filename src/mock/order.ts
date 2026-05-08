@@ -9,19 +9,26 @@ export function setupOrderMock() {
     const params = new URLSearchParams(url.split('?')[1])
     const page = parseInt(params.get('page') || '1')
     const pageSize = parseInt(params.get('pageSize') || '20')
-    
+
     const orderTypes = ['新购', '续费', '增购', '升级']
     const orderStatus = ['待支付', '已支付', '已取消', '已退款']
     const paymentMethods = ['支付宝', '微信支付', '银行转账', '对公转账']
-    const productNames = ['数据分析平台-专业版', '智能报表系统-企业版', '项目管理工具-标准版', '客户管理系统-专业版', '财务管理系统-企业版']
-    
+    const productNames = [
+      '数据分析平台-专业版',
+      '智能报表系统-企业版',
+      '项目管理工具-标准版',
+      '客户管理系统-专业版',
+      '财务管理系统-企业版',
+    ]
+
     const list = []
     for (let i = 0; i < pageSize; i++) {
       const orderNo = 'ORD' + Random.date('yyyyMMdd') + String(Random.integer(1000, 9999))
       list.push({
         id: (page - 1) * pageSize + i + 1,
         orderNo,
-        customerName: Random.cname() + Random.pick(['科技有限公司', '信息技术有限公司', '网络技术有限公司', '软件科技有限公司']),
+        customerName:
+          Random.cname() + Random.pick(['科技有限公司', '信息技术有限公司', '网络技术有限公司', '软件科技有限公司']),
         productName: Random.pick(productNames),
         orderType: Random.pick(orderTypes),
         orderStatus: Random.pick(orderStatus),
@@ -35,17 +42,17 @@ export function setupOrderMock() {
         createTime: Random.datetime('yyyy-MM-dd HH:mm:ss'),
         updateTime: Random.datetime('yyyy-MM-dd HH:mm:ss'),
         payTime: Random.datetime('yyyy-MM-dd HH:mm:ss'),
-        remark: Random.csentence(10, 30)
+        remark: Random.csentence(10, 30),
       })
     }
-    
+
     return {
       code: 200,
       message: 'success',
       data: {
         list,
-        total: 200
-      }
+        total: 200,
+      },
     }
   })
 
@@ -81,8 +88,8 @@ export function setupOrderMock() {
         payTime: Random.datetime('yyyy-MM-dd HH:mm:ss'),
         invoiceStatus: Random.pick(['未开票', '已开票', '已寄出']),
         invoiceNo: 'INV' + String(Random.integer(100000, 999999)),
-        remark: Random.csentence(10, 30)
-      }
+        remark: Random.csentence(10, 30),
+      },
     }
   })
 
@@ -93,8 +100,8 @@ export function setupOrderMock() {
       message: 'success',
       data: {
         id: Random.increment(10000),
-        orderNo: 'ORD' + Random.date('yyyyMMdd') + String(Random.integer(1000, 9999))
-      }
+        orderNo: 'ORD' + Random.date('yyyyMMdd') + String(Random.integer(1000, 9999)),
+      },
     }
   })
 
@@ -103,7 +110,7 @@ export function setupOrderMock() {
     return {
       code: 200,
       message: 'success',
-      data: null
+      data: null,
     }
   })
 
@@ -112,7 +119,7 @@ export function setupOrderMock() {
     return {
       code: 200,
       message: '订单已取消',
-      data: null
+      data: null,
     }
   })
 
@@ -121,7 +128,7 @@ export function setupOrderMock() {
     return {
       code: 200,
       message: 'success',
-      data: null
+      data: null,
     }
   })
 
@@ -131,8 +138,8 @@ export function setupOrderMock() {
       code: 200,
       message: '导出成功',
       data: {
-        downloadUrl: '/api/files/orders_export_' + Random.date('yyyyMMdd') + '.xlsx'
-      }
+        downloadUrl: '/api/files/orders_export_' + Random.date('yyyyMMdd') + '.xlsx',
+      },
     }
   })
 }

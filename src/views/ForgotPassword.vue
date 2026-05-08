@@ -175,349 +175,348 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
-import type { FormInstance } from 'element-plus'
+  import { ref, reactive, onUnmounted } from 'vue'
+  import { useRouter } from 'vue-router'
+  import { ElMessage } from 'element-plus'
+  import type { FormInstance } from 'element-plus'
 
-const router = useRouter()
+  const router = useRouter()
 
-const currentStep = ref(1)
-const countdown = ref(0)
-let countdownTimer: ReturnType<typeof setInterval> | null = null
+  const currentStep = ref(1)
+  const countdown = ref(0)
+  let countdownTimer: ReturnType<typeof setInterval> | null = null
 
-// Email form
-const emailFormRef = ref<FormInstance>()
-const emailLoading = ref(false)
-const emailForm = reactive({
-  email: ''
-})
-
-const emailRules = {
-  email: [
-    { required: true, message: '请输入注册邮箱', trigger: 'blur' },
-    { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' }
-  ]
-}
-
-// Code form
-const codeFormRef = ref<FormInstance>()
-const codeLoading = ref(false)
-const codeForm = reactive({
-  code: ''
-})
-
-const codeRules = {
-  code: [
-    { required: true, message: '请输入验证码', trigger: 'blur' },
-    { len: 6, message: '验证码为6位数字', trigger: 'blur' }
-  ]
-}
-
-// Password form
-const passwordFormRef = ref<FormInstance>()
-const passwordLoading = ref(false)
-const passwordForm = reactive({
-  newPassword: '',
-  confirmPassword: ''
-})
-
-const validateConfirmPassword = (_rule: unknown, value: string, callback: (error?: Error) => void) => {
-  if (value !== passwordForm.newPassword) {
-    callback(new Error('两次输入的密码不一致'))
-  } else {
-    callback()
-  }
-}
-
-const passwordRules = {
-  newPassword: [
-    { required: true, message: '请输入新密码', trigger: 'blur' },
-    { min: 6, max: 20, message: '密码长度为6-20位', trigger: 'blur' }
-  ],
-  confirmPassword: [
-    { required: true, message: '请确认新密码', trigger: 'blur' },
-    { validator: validateConfirmPassword, trigger: 'blur' }
-  ]
-}
-
-// Send reset code
-const handleSendCode = async () => {
-  if (!emailFormRef.value) return
-
-  await emailFormRef.value.validate(async (valid) => {
-    if (valid) {
-      emailLoading.value = true
-      try {
-        // Mock API call
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-        ElMessage.success('重置链接已发送至您的邮箱')
-        currentStep.value = 2
-        startCountdown()
-      } catch {
-        ElMessage.error('发送失败，请稍后重试')
-      } finally {
-        emailLoading.value = false
-      }
-    }
+  // Email form
+  const emailFormRef = ref<FormInstance>()
+  const emailLoading = ref(false)
+  const emailForm = reactive({
+    email: '',
   })
-}
 
-// Resend code
-const handleResendCode = () => {
-  handleSendCode()
-}
+  const emailRules = {
+    email: [
+      { required: true, message: '请输入注册邮箱', trigger: 'blur' },
+      { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' },
+    ],
+  }
 
-// Start countdown
-const startCountdown = () => {
-  countdown.value = 60
-  countdownTimer = setInterval(() => {
-    countdown.value--
-    if (countdown.value <= 0 && countdownTimer) {
+  // Code form
+  const codeFormRef = ref<FormInstance>()
+  const codeLoading = ref(false)
+  const codeForm = reactive({
+    code: '',
+  })
+
+  const codeRules = {
+    code: [
+      { required: true, message: '请输入验证码', trigger: 'blur' },
+      { len: 6, message: '验证码为6位数字', trigger: 'blur' },
+    ],
+  }
+
+  // Password form
+  const passwordFormRef = ref<FormInstance>()
+  const passwordLoading = ref(false)
+  const passwordForm = reactive({
+    newPassword: '',
+    confirmPassword: '',
+  })
+
+  const validateConfirmPassword = (_rule: unknown, value: string, callback: (error?: Error) => void) => {
+    if (value !== passwordForm.newPassword) {
+      callback(new Error('两次输入的密码不一致'))
+    } else {
+      callback()
+    }
+  }
+
+  const passwordRules = {
+    newPassword: [
+      { required: true, message: '请输入新密码', trigger: 'blur' },
+      { min: 6, max: 20, message: '密码长度为6-20位', trigger: 'blur' },
+    ],
+    confirmPassword: [
+      { required: true, message: '请确认新密码', trigger: 'blur' },
+      { validator: validateConfirmPassword, trigger: 'blur' },
+    ],
+  }
+
+  // Send reset code
+  const handleSendCode = async () => {
+    if (!emailFormRef.value) return
+
+    await emailFormRef.value.validate(async (valid) => {
+      if (valid) {
+        emailLoading.value = true
+        try {
+          // Mock API call
+          await new Promise((resolve) => setTimeout(resolve, 1000))
+          ElMessage.success('重置链接已发送至您的邮箱')
+          currentStep.value = 2
+          startCountdown()
+        } catch {
+          ElMessage.error('发送失败，请稍后重试')
+        } finally {
+          emailLoading.value = false
+        }
+      }
+    })
+  }
+
+  // Resend code
+  const handleResendCode = () => {
+    handleSendCode()
+  }
+
+  // Start countdown
+  const startCountdown = () => {
+    countdown.value = 60
+    countdownTimer = setInterval(() => {
+      countdown.value--
+      if (countdown.value <= 0 && countdownTimer) {
+        clearInterval(countdownTimer)
+        countdownTimer = null
+      }
+    }, 1000)
+  }
+
+  // Verify code
+  const handleVerifyCode = async () => {
+    if (!codeFormRef.value) return
+
+    await codeFormRef.value.validate(async (valid) => {
+      if (valid) {
+        codeLoading.value = true
+        try {
+          // Mock API call
+          await new Promise((resolve) => setTimeout(resolve, 1000))
+          ElMessage.success('验证成功')
+          currentStep.value = 3
+        } catch {
+          ElMessage.error('验证码错误')
+        } finally {
+          codeLoading.value = false
+        }
+      }
+    })
+  }
+
+  // Reset password
+  const handleResetPassword = async () => {
+    if (!passwordFormRef.value) return
+
+    await passwordFormRef.value.validate(async (valid) => {
+      if (valid) {
+        passwordLoading.value = true
+        try {
+          // Mock API call
+          await new Promise((resolve) => setTimeout(resolve, 1000))
+          currentStep.value = 4
+        } catch {
+          ElMessage.error('重置失败，请稍后重试')
+        } finally {
+          passwordLoading.value = false
+        }
+      }
+    })
+  }
+
+  // Go to login
+  const goToLogin = () => {
+    router.push('/login')
+  }
+
+  // Cleanup timer
+  onUnmounted(() => {
+    if (countdownTimer) {
       clearInterval(countdownTimer)
-      countdownTimer = null
-    }
-  }, 1000)
-}
-
-// Verify code
-const handleVerifyCode = async () => {
-  if (!codeFormRef.value) return
-
-  await codeFormRef.value.validate(async (valid) => {
-    if (valid) {
-      codeLoading.value = true
-      try {
-        // Mock API call
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-        ElMessage.success('验证成功')
-        currentStep.value = 3
-      } catch {
-        ElMessage.error('验证码错误')
-      } finally {
-        codeLoading.value = false
-      }
     }
   })
-}
-
-// Reset password
-const handleResetPassword = async () => {
-  if (!passwordFormRef.value) return
-
-  await passwordFormRef.value.validate(async (valid) => {
-    if (valid) {
-      passwordLoading.value = true
-      try {
-        // Mock API call
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-        currentStep.value = 4
-      } catch {
-        ElMessage.error('重置失败，请稍后重试')
-      } finally {
-        passwordLoading.value = false
-      }
-    }
-  })
-}
-
-// Go to login
-const goToLogin = () => {
-  router.push('/login')
-}
-
-// Cleanup timer
-onUnmounted(() => {
-  if (countdownTimer) {
-    clearInterval(countdownTimer)
-  }
-})
 </script>
 
 <style lang="scss" scoped>
-.forgot-password-container {
-  display: flex;
-  height: 100vh;
-  background: #ffffff;
-}
-
-.left-panel {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 40px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
-}
-
-.brand {
-  font-size: 24px;
-  font-weight: bold;
-  color: #f59e0b;
-  margin-bottom: 60px;
-}
-
-.illustration {
-  width: 80%;
-  max-width: 500px;
-
-  svg {
-    width: 100%;
-    height: auto;
+  .forgot-password-container {
+    display: flex;
+    height: 100vh;
+    background: #ffffff;
   }
-}
 
-.right-panel {
-  width: 500px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40px;
-}
+  .left-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+  }
 
-.form-card {
-  width: 100%;
-  max-width: 420px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  border: none;
-}
+  .brand {
+    font-size: 24px;
+    font-weight: bold;
+    color: #f59e0b;
+    margin-bottom: 60px;
+  }
 
-.form-wrapper {
-  padding: 20px;
-}
+  .illustration {
+    width: 80%;
+    max-width: 500px;
 
-.form-title {
-  text-align: center;
-  margin-bottom: 12px;
-  font-size: 22px;
-  font-weight: 600;
-  
-}
+    svg {
+      width: 100%;
+      height: auto;
+    }
+  }
 
-.form-subtitle {
-  text-align: center;
-  margin-bottom: 30px;
-  font-size: 14px;
-  color: var(--el-text-color-secondary);
-}
+  .right-panel {
+    width: 500px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+  }
 
-.code-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: -10px;
-  margin-bottom: 20px;
-  font-size: 14px;
+  .form-card {
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+    border: none;
+  }
 
-  .countdown-text {
+  .form-wrapper {
+    padding: 20px;
+  }
+
+  .form-title {
+    text-align: center;
+    margin-bottom: 12px;
+    font-size: 22px;
+    font-weight: 600;
+  }
+
+  .form-subtitle {
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 14px;
     color: var(--el-text-color-secondary);
   }
-}
 
-.success-wrapper {
-  padding: 20px 0;
-}
+  .code-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: -10px;
+    margin-bottom: 20px;
+    font-size: 14px;
 
-.form-footer {
-  text-align: center;
-  margin-top: 20px;
-}
-
-// 暗黑模式样式
-.dark {
-  .forgot-password-container {
-    background: #1a1a1a;
+    .countdown-text {
+      color: var(--el-text-color-secondary);
+    }
   }
-  
-  .left-panel {
-    background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
-    
-    .illustration {
-      svg {
-        // 修改SVG中的白色元素为浅色
-        rect[fill="#ffffff"] {
-          fill: #2c2c2c;
-        }
-        
-        rect[fill="#f5f7fa"] {
-          fill: #1a1a1a;
-        }
-        
-        rect[fill="#f0f9ff"] {
-          fill: #2c2c2c;
-        }
-        
-        rect[stroke="#e4e7ed"] {
-          stroke: #333;
+
+  .success-wrapper {
+    padding: 20px 0;
+  }
+
+  .form-footer {
+    text-align: center;
+    margin-top: 20px;
+  }
+
+  // 暗黑模式样式
+  .dark {
+    .forgot-password-container {
+      background: #1a1a1a;
+    }
+
+    .left-panel {
+      background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
+
+      .illustration {
+        svg {
+          // 修改SVG中的白色元素为浅色
+          rect[fill='#ffffff'] {
+            fill: #2c2c2c;
+          }
+
+          rect[fill='#f5f7fa'] {
+            fill: #1a1a1a;
+          }
+
+          rect[fill='#f0f9ff'] {
+            fill: #2c2c2c;
+          }
+
+          rect[stroke='#e4e7ed'] {
+            stroke: #333;
+          }
         }
       }
     }
-  }
-  
-  .right-panel {
-    background: #1a1a1a;
-  }
-  
-  .form-card {
-    background-color: #2c2c2c;
-    border-color: #333;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.5);
-  }
-  
-  .form-title {
-    color: var(--el-text-color-primary);
-  }
-  
-  .form-subtitle {
-    color: var(--el-text-color-secondary);
-  }
-  
-  .countdown-text {
-    color: var(--el-text-color-secondary);
-  }
-  
-  // 确保表单在暗黑模式下的样式
-  :deep(.el-form) {
-    .el-form-item__label {
-      color: var(--el-text-color-primary);
-    }
-  }
-  
-  // 确保输入框在暗黑模式下的样式
-  :deep(.el-input__wrapper) {
-    --el-input-bg-color: var(--el-input-bg-color);
-    --el-input-border-color: var(--el-input-border-color);
-    --el-input-text-color: var(--el-input-text-color);
-    --el-input-placeholder-color: var(--el-input-placeholder-color);
-  }
-  
-  // 确保结果组件在暗黑模式下的样式
-  :deep(.el-result) {
-    .el-result__title {
-      color: var(--el-text-color-primary);
-    }
-    
-    .el-result__sub-title {
-      color: var(--el-text-color-regular);
-    }
-  }
-  
-  // 响应式调整
-  @media (max-width: 768px) {
+
     .right-panel {
       background: #1a1a1a;
     }
-  }
-}
 
-@media (max-width: 768px) {
-  .left-panel {
-    display: none;
+    .form-card {
+      background-color: #2c2c2c;
+      border-color: #333;
+      box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.5);
+    }
+
+    .form-title {
+      color: var(--el-text-color-primary);
+    }
+
+    .form-subtitle {
+      color: var(--el-text-color-secondary);
+    }
+
+    .countdown-text {
+      color: var(--el-text-color-secondary);
+    }
+
+    // 确保表单在暗黑模式下的样式
+    :deep(.el-form) {
+      .el-form-item__label {
+        color: var(--el-text-color-primary);
+      }
+    }
+
+    // 确保输入框在暗黑模式下的样式
+    :deep(.el-input__wrapper) {
+      --el-input-bg-color: var(--el-input-bg-color);
+      --el-input-border-color: var(--el-input-border-color);
+      --el-input-text-color: var(--el-input-text-color);
+      --el-input-placeholder-color: var(--el-input-placeholder-color);
+    }
+
+    // 确保结果组件在暗黑模式下的样式
+    :deep(.el-result) {
+      .el-result__title {
+        color: var(--el-text-color-primary);
+      }
+
+      .el-result__sub-title {
+        color: var(--el-text-color-regular);
+      }
+    }
+
+    // 响应式调整
+    @media (max-width: 768px) {
+      .right-panel {
+        background: #1a1a1a;
+      }
+    }
   }
 
-  .right-panel {
-    width: 100%;
+  @media (max-width: 768px) {
+    .left-panel {
+      display: none;
+    }
+
+    .right-panel {
+      width: 100%;
+    }
   }
-}
 </style>

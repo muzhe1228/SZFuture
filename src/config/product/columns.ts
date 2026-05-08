@@ -10,21 +10,21 @@ export const licenseTemplateColumns: ColumnConfig[] = [
     label: '许可模版名称', // 列显示名称
     prop: 'name', // 数据字段名
     minWidth: '160', // 最小宽度
-    visible: true // 是否默认显示
+    visible: true, // 是否默认显示
   },
   {
     key: 'productName',
     label: '产品名称',
     prop: 'productName',
     minWidth: '140',
-    visible: true
+    visible: true,
   },
   {
     key: 'licenseType',
     label: '许可类型',
     prop: 'licenseType',
     minWidth: '120',
-    visible: true
+    visible: true,
   },
   {
     key: 'status',
@@ -32,15 +32,15 @@ export const licenseTemplateColumns: ColumnConfig[] = [
     prop: 'status',
     width: '100', // 固定宽度
     visible: true,
-    hasTemplate: true // 是否使用自定义模板
+    hasTemplate: true, // 是否使用自定义模板
   },
   {
     key: 'createTime',
     label: '创建时间',
     prop: 'createTime',
     minWidth: '180',
-    visible: true
-  }
+    visible: true,
+  },
 ]
 
 /**
@@ -54,7 +54,7 @@ export const productModuleColumns: ColumnConfig[] = [
     prop: 'name',
     minWidth: '200',
     visible: true,
-    showOverflowTooltip: true // 显示溢出提示
+    showOverflowTooltip: true, // 显示溢出提示
   },
   {
     key: 'type',
@@ -62,7 +62,7 @@ export const productModuleColumns: ColumnConfig[] = [
     prop: 'type',
     width: '100',
     visible: true,
-    hasTemplate: true
+    hasTemplate: true,
   },
   {
     key: 'status',
@@ -70,7 +70,7 @@ export const productModuleColumns: ColumnConfig[] = [
     prop: 'status',
     width: '100',
     visible: true,
-    hasTemplate: true
+    hasTemplate: true,
   },
   {
     key: 'description',
@@ -78,6 +78,6 @@ export const productModuleColumns: ColumnConfig[] = [
     prop: 'description',
     minWidth: '180',
     visible: true,
-    showOverflowTooltip: true
-  }
+    showOverflowTooltip: true,
+  },
 ]

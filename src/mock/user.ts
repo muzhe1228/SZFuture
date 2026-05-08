@@ -3,8 +3,6 @@ import Mock from 'mockjs'
 const Random = Mock.Random
 const Mocks = Mock.mock
 
-
-
 export function setupUserMock() {
   // User list
   Mock.mock(/\/api\/user\/list/, 'get', (options: any) => {
@@ -25,19 +23,25 @@ export function setupUserMock() {
         createTime: Random.datetime('yyyy-MM-dd HH:mm:ss'),
         updateTime: Random.datetime('yyyy-MM-dd HH:mm:ss'),
         status: Random.pick(['启用', '禁用']),
-        department: Random.pick(['华东分部-研发部', '华东分部-技术部', '华南分部-财务部', '华北分部-市场部', '总部-人力资源部']),
+        department: Random.pick([
+          '华东分部-研发部',
+          '华东分部-技术部',
+          '华南分部-财务部',
+          '华北分部-市场部',
+          '总部-人力资源部',
+        ]),
         gender: Random.pick(['男', '女', '保密']),
-        position: Random.pick(['高级工程师', '产品经理', '设计师', '测试工程师', '项目经理', '技术总监'])
+        position: Random.pick(['高级工程师', '产品经理', '设计师', '测试工程师', '项目经理', '技术总监']),
       })
     }
-    
+
     return {
       code: 200,
       message: 'success',
       data: {
         list,
-        total: 100
-      }
+        total: 100,
+      },
     }
   })
 
@@ -59,8 +63,8 @@ export function setupUserMock() {
         gender: Random.pick(['男', '女', '保密']),
         position: Random.pick(['高级工程师', '产品经理', '设计师', '测试工程师']),
         avatar: Random.image('100x100', '#f59e0b', 'Avatar'),
-        remark: Random.csentence(10, 30)
-      }
+        remark: Random.csentence(10, 30),
+      },
     }
   })
 
@@ -70,8 +74,8 @@ export function setupUserMock() {
       code: 200,
       message: 'success',
       data: {
-        id: Random.increment(10000)
-      }
+        id: Random.increment(10000),
+      },
     }
   })
 
@@ -80,7 +84,7 @@ export function setupUserMock() {
     return {
       code: 200,
       message: 'success',
-      data: null
+      data: null,
     }
   })
 
@@ -89,7 +93,7 @@ export function setupUserMock() {
     return {
       code: 200,
       message: 'success',
-      data: null
+      data: null,
     }
   })
 
@@ -98,7 +102,7 @@ export function setupUserMock() {
     return {
       code: 200,
       message: 'success',
-      data: null
+      data: null,
     }
   })
 
@@ -108,8 +112,8 @@ export function setupUserMock() {
       code: 200,
       message: '密码重置成功',
       data: {
-        password: '123456'
-      }
+        password: '123456',
+      },
     }
   })
 }

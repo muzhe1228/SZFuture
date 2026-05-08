@@ -10,11 +10,12 @@ export const orderSearchFields: SearchField[] = [
     label: '客户名称', // 字段显示名称
     type: 'select', // 字段类型
     placeholder: '请选择', // 占位符
-    options: [ // 下拉选项
+    options: [
+      // 下拉选项
       { label: 'xx科技有限公司', value: 'xx科技有限公司' },
       { label: '测试客户A', value: '测试客户A' },
-      { label: '测试客户B', value: '测试客户B' }
-    ]
+      { label: '测试客户B', value: '测试客户B' },
+    ],
   },
   {
     prop: 'orderNo',
@@ -24,8 +25,8 @@ export const orderSearchFields: SearchField[] = [
     options: [
       { label: 'SGZZ-20210906-001', value: 'SGZZ-20210906-001' },
       { label: 'SGZZ-20210907-002', value: 'SGZZ-20210907-002' },
-      { label: 'SGZZ-20210908-003', value: 'SGZZ-20210908-003' }
-    ]
+      { label: 'SGZZ-20210908-003', value: 'SGZZ-20210908-003' },
+    ],
   },
   {
     prop: 'product',
@@ -35,8 +36,8 @@ export const orderSearchFields: SearchField[] = [
     options: [
       { label: '产品A', value: '产品A' },
       { label: '产品B', value: '产品B' },
-      { label: '产品C', value: '产品C' }
-    ]
+      { label: '产品C', value: '产品C' },
+    ],
   },
   {
     prop: 'licenseType',
@@ -46,9 +47,9 @@ export const orderSearchFields: SearchField[] = [
     options: [
       { label: '永久许可', value: '永久许可' },
       { label: '订阅许可', value: '订阅许可' },
-      { label: '试用许可', value: '试用许可' }
-    ]
-  }
+      { label: '试用许可', value: '试用许可' },
+    ],
+  },
 ]
 
 /**
@@ -64,8 +65,8 @@ export const customerSearchFields: SearchField[] = [
     options: [
       { label: '客户名称客户名称', value: '客户名称客户名称' },
       { label: '测试客户A', value: '测试客户A' },
-      { label: '测试客户B', value: '测试客户B' }
-    ]
+      { label: '测试客户B', value: '测试客户B' },
+    ],
   },
   {
     prop: 'accountStatus',
@@ -75,9 +76,9 @@ export const customerSearchFields: SearchField[] = [
     options: [
       { label: '正常', value: '正常' },
       { label: '冻结', value: '冻结' },
-      { label: '关闭', value: '关闭' }
-    ]
-  }
+      { label: '关闭', value: '关闭' },
+    ],
+  },
 ]
 
 /**
@@ -93,20 +94,20 @@ export const authSearchFields: SearchField[] = [
     options: [
       { label: '客户名称客户名称', value: '客户名称客户名称' },
       { label: '测试客户A', value: '测试客户A' },
-      { label: '测试客户B', value: '测试客户B' }
-    ]
+      { label: '测试客户B', value: '测试客户B' },
+    ],
   },
-  { 
-    prop: 'orderNo', 
-    label: '订单编号', 
-    type: 'input', 
-    placeholder: '请输入' 
+  {
+    prop: 'orderNo',
+    label: '订单编号',
+    type: 'input',
+    placeholder: '请输入',
   },
-  { 
-    prop: 'authNo', 
-    label: '授权编号', 
-    type: 'input', 
-    placeholder: '请输入' 
+  {
+    prop: 'authNo',
+    label: '授权编号',
+    type: 'input',
+    placeholder: '请输入',
   },
   {
     prop: 'product',
@@ -116,8 +117,8 @@ export const authSearchFields: SearchField[] = [
     options: [
       { label: '产品A', value: '产品A' },
       { label: '产品B', value: '产品B' },
-      { label: '产品C', value: '产品C' }
-    ]
+      { label: '产品C', value: '产品C' },
+    ],
   },
   {
     prop: 'version',
@@ -127,8 +128,8 @@ export const authSearchFields: SearchField[] = [
     options: [
       { label: 'V1.0', value: 'V1.0' },
       { label: 'V2.0', value: 'V2.0' },
-      { label: 'V3.0', value: 'V3.0' }
-    ]
+      { label: 'V3.0', value: 'V3.0' },
+    ],
   },
   {
     prop: 'licenseType',
@@ -138,8 +139,8 @@ export const authSearchFields: SearchField[] = [
     options: [
       { label: '永久许可', value: '永久许可' },
       { label: '订阅许可', value: '订阅许可' },
-      { label: '试用许可', value: '试用许可' }
-    ]
+      { label: '试用许可', value: '试用许可' },
+    ],
   },
   {
     prop: 'status',
@@ -150,12 +151,12 @@ export const authSearchFields: SearchField[] = [
       { label: '已激活', value: '已激活' },
       { label: '未激活', value: '未激活' },
       { label: '已冻结', value: '已冻结' },
-      { label: '已作废', value: '已作废' }
-    ]
+      { label: '已作废', value: '已作废' },
+    ],
   },
-  { 
-    prop: 'dateRange', 
-    label: '授权起止时间', 
-    type: 'datetimerange' 
-  }
+  {
+    prop: 'dateRange',
+    label: '授权起止时间',
+    type: 'datetimerange',
+  },
 ]

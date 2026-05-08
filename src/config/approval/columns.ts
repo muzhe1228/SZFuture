@@ -10,35 +10,35 @@ export const approvalColumns: ColumnConfig[] = [
     label: '审批事项', // 列显示名称
     prop: 'item', // 数据字段名
     minWidth: '120', // 最小宽度
-    visible: true // 是否默认显示
+    visible: true, // 是否默认显示
   },
   {
     key: 'authNo',
     label: '授权编号',
     prop: 'authNo',
     minWidth: '180',
-    visible: true
+    visible: true,
   },
   {
     key: 'customerName',
     label: '客户名称',
     prop: 'customerName',
     minWidth: '140',
-    visible: true
+    visible: true,
   },
   {
     key: 'operator',
     label: '操作人',
     prop: 'operator',
     minWidth: '100',
-    visible: true
+    visible: true,
   },
   {
     key: 'operateTime',
     label: '操作时间',
     prop: 'operateTime',
     minWidth: '170',
-    visible: true
+    visible: true,
   },
   {
     key: 'status',
@@ -46,6 +46,6 @@ export const approvalColumns: ColumnConfig[] = [
     prop: 'status',
     width: '120', // 固定宽度
     visible: true,
-    hasTemplate: true // 是否使用自定义模板
-  }
+    hasTemplate: true, // 是否使用自定义模板
+  },
 ]

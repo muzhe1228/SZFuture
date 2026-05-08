@@ -1,5 +1,5 @@
 <template>
-  <Dialog v-model="dialogVisible" title="客户详情" width="560px" :close-on-click-modal="false">
+  <BaseDialog v-model="dialogVisible" title="客户详情" width="520px" :close-on-click-modal="false">
     <div class="view-modal" v-if="customer">
       <el-descriptions :column="2" border>
         <el-descriptions-item label="客户名称" :span="2">{{ customer.name }}</el-descriptions-item>
@@ -18,48 +18,48 @@
         <el-button @click="dialogVisible = false">关闭</el-button>
       </div>
     </template>
-  </Dialog>
+  </BaseDialog>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { Dialog } from '@/components/Dialog'
-import type { Customer } from '@/types/index'
+  import { computed } from 'vue'
+  import { BaseDialog } from '@/components/BaseDialog'
+  import type { Customer } from '@/types/index'
 
-const props = defineProps<{
-  modelValue: boolean
-  customer: Customer | null
-}>()
+  const props = defineProps<{
+    modelValue: boolean
+    customer: Customer | null
+  }>()
 
-const emit = defineEmits<{
-  'update:modelValue': [value: boolean]
-}>()
+  const emit = defineEmits<{
+    'update:modelValue': [value: boolean]
+  }>()
 
-const dialogVisible = computed({
-  get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value)
-})
+  const dialogVisible = computed({
+    get: () => props.modelValue,
+    set: (value) => emit('update:modelValue', value),
+  })
 
-const getStatusType = (status: string) => {
-  const map: Record<string, string> = {
-    '正常': 'success',
-    '冻结': 'warning',
-    '关闭': 'danger'
+  const getStatusType = (status: string) => {
+    const map: Record<string, string> = {
+      正常: 'success',
+      冻结: 'warning',
+      关闭: 'danger',
+    }
+    return (map[status] || 'info') as any
   }
-  return (map[status] || 'info') as any
-}
 </script>
 
 <style lang="scss" scoped>
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-}
-
-.view-modal {
-  .el-descriptions {
-    --el-descriptions-item-bordered-label-background: #fafafa;
+  .dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
   }
-}
+
+  .view-modal {
+    .el-descriptions {
+      --el-descriptions-item-bordered-label-background: #fafafa;
+    }
+  }
 </style>

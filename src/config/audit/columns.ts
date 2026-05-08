@@ -10,43 +10,43 @@ export const systemLogColumns: ColumnConfig[] = [
     label: '操作', // 列显示名称
     prop: 'operation', // 数据字段名
     minWidth: '120', // 最小宽度
-    visible: true // 是否默认显示
+    visible: true, // 是否默认显示
   },
   {
     key: 'ipAddress',
     label: 'IP地址',
     prop: 'ipAddress',
     minWidth: '160',
-    visible: true
+    visible: true,
   },
   {
     key: 'addressType',
     label: '地址类型',
     prop: 'addressType',
     minWidth: '120',
-    visible: true
+    visible: true,
   },
   {
     key: 'user',
     label: '用户',
     prop: 'user',
     minWidth: '140',
-    visible: true
+    visible: true,
   },
   {
     key: 'account',
     label: '账号',
     prop: 'account',
     minWidth: '160',
-    visible: true
+    visible: true,
   },
   {
     key: 'createTime',
     label: '创建时间',
     prop: 'createTime',
     minWidth: '180',
-    visible: true
-  }
+    visible: true,
+  },
 ]
 
 /**
@@ -59,14 +59,14 @@ export const operationLogColumns: ColumnConfig[] = [
     label: '操作人', // 列显示名称
     prop: 'operator', // 数据字段名
     width: '150', // 固定宽度
-    visible: true // 是否默认显示
+    visible: true, // 是否默认显示
   },
   {
     key: 'description',
     label: '操作描述',
     prop: 'description',
     width: '180',
-    visible: true
+    visible: true,
   },
   {
     key: 'duration',
@@ -76,7 +76,7 @@ export const operationLogColumns: ColumnConfig[] = [
     align: 'left',
     sortable: true,
     visible: true,
-    hasTemplate: true // 是否使用自定义模板
+    hasTemplate: true, // 是否使用自定义模板
   },
   {
     key: 'method',
@@ -85,7 +85,7 @@ export const operationLogColumns: ColumnConfig[] = [
     width: '120',
     visible: true,
     hasTemplate: true,
-    showOverflowTooltip: true // 显示溢出提示
+    showOverflowTooltip: true, // 显示溢出提示
   },
   {
     key: 'params',
@@ -94,14 +94,14 @@ export const operationLogColumns: ColumnConfig[] = [
     width: '200',
     visible: true,
     hasTemplate: true,
-    showOverflowTooltip: true
+    showOverflowTooltip: true,
   },
   {
     key: 'ipAddress',
     label: 'IP地址',
     prop: 'ipAddress',
     width: '160',
-    visible: true
+    visible: true,
   },
   {
     key: 'location',
@@ -110,7 +110,7 @@ export const operationLogColumns: ColumnConfig[] = [
     minWidth: '200',
     visible: true,
     hasTemplate: true,
-    showOverflowTooltip: true
+    showOverflowTooltip: true,
   },
   {
     key: 'createTime',
@@ -118,6 +118,6 @@ export const operationLogColumns: ColumnConfig[] = [
     prop: 'createTime',
     width: '240',
     sortable: true,
-    visible: true
-  }
+    visible: true,
+  },
 ]

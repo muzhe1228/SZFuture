@@ -9,10 +9,10 @@ export function setupAuthMock() {
     const params = new URLSearchParams(url.split('?')[1])
     const page = parseInt(params.get('page') || '1')
     const pageSize = parseInt(params.get('pageSize') || '20')
-    
+
     const productModules = ['数据分析平台', '智能报表系统', '项目管理工具', '客户管理系统', '财务管理系统']
     const licenseTypes = ['试用版', '标准版', '专业版', '企业版']
-    
+
     const list = []
     for (let i = 0; i < pageSize; i++) {
       list.push({
@@ -30,17 +30,17 @@ export function setupAuthMock() {
         authorizedBy: Random.cname(),
         createTime: Random.datetime('yyyy-MM-dd HH:mm:ss'),
         updateTime: Random.datetime('yyyy-MM-dd HH:mm:ss'),
-        remark: Random.csentence(10, 30)
+        remark: Random.csentence(10, 30),
       })
     }
-    
+
     return {
       code: 200,
       message: 'success',
       data: {
         list,
-        total: 150
-      }
+        total: 150,
+      },
     }
   })
 
@@ -66,8 +66,8 @@ export function setupAuthMock() {
         authorizedBy: Random.cname(),
         createTime: Random.datetime('yyyy-MM-dd HH:mm:ss'),
         updateTime: Random.datetime('yyyy-MM-dd HH:mm:ss'),
-        remark: Random.csentence(10, 30)
-      }
+        remark: Random.csentence(10, 30),
+      },
     }
   })
 
@@ -78,8 +78,8 @@ export function setupAuthMock() {
       message: '授权成功',
       data: {
         id: Random.increment(10000),
-        authCode: 'AUTH' + String(Random.integer(100000, 999999))
-      }
+        authCode: 'AUTH' + String(Random.integer(100000, 999999)),
+      },
     }
   })
 
@@ -88,7 +88,7 @@ export function setupAuthMock() {
     return {
       code: 200,
       message: '取消授权成功',
-      data: null
+      data: null,
     }
   })
 
@@ -97,7 +97,7 @@ export function setupAuthMock() {
     return {
       code: 200,
       message: 'success',
-      data: null
+      data: null,
     }
   })
 }

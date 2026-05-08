@@ -67,12 +67,7 @@
               style="width: 100%"
               :disabled="!orderForm.productName"
             >
-              <el-option
-                v-for="v in availableVersions"
-                :key="v"
-                :label="v"
-                :value="v"
-              />
+              <el-option v-for="v in availableVersions" :key="v" :label="v" :value="v" />
             </el-select>
           </el-form-item>
         </el-col>
@@ -144,11 +139,7 @@
       </el-row>
       <el-form-item label="功能权限" prop="permissions">
         <div class="permission-grid">
-          <div
-            v-for="perm in permissionsList"
-            :key="perm.name"
-            class="permission-item"
-          >
+          <div v-for="perm in permissionsList" :key="perm.name" class="permission-item">
             <el-checkbox v-model="perm.checked" @change="handlePermissionChange">
               {{ perm.name }}
             </el-checkbox>
@@ -166,252 +157,255 @@
         </div>
       </el-form-item>
       <el-form-item label="订单备注" prop="remarks">
-        <el-input
-          v-model="orderForm.remarks"
-          type="textarea"
-          :rows="3"
-          placeholder="请输入订单备注"
-        />
+        <el-input v-model="orderForm.remarks" type="textarea" :rows="3" placeholder="请输入订单备注" />
       </el-form-item>
     </el-form>
     <template #footer>
       <div class="dialog-footer">
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit" :loading="submitLoading">
-          确定
-        </el-button>
+        <el-button type="primary" @click="handleSubmit" :loading="submitLoading"> 确定 </el-button>
       </div>
     </template>
   </el-dialog>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
-import { ElMessage } from 'element-plus'
-import type { FormInstance, FormRules } from 'element-plus'
+  import { ref, reactive, computed } from 'vue'
+  import { ElMessage } from 'element-plus'
+  import type { FormInstance, FormRules } from 'element-plus'
 
-// ─── Props ──────────────────────────────────────────────────────
+  // ─── Props ──────────────────────────────────────────────────────
 
-interface Order {
-  id: number
-  orderNo: string
-  createTime: string
-  customerName: string
-  authCount: number
-  authStartDate: string
-  authEndDate: string
-}
-
-interface Props {
-  modelValue: boolean
-  isEditMode: boolean
-  order?: Order | null
-}
-
-const props = defineProps<Props>()
-
-// ─── Emits ──────────────────────────────────────────────────────
-
-const emit = defineEmits<{
-  (e: 'update:modelValue', value: boolean): void
-  (e: 'submit', order: any): void
-}>()
-
-// ─── Reactive Data ─────────────────────────────────────────────
-
-const dialogVisible = ref(props.modelValue)
-const orderFormRef = ref<FormInstance>()
-const submitLoading = ref(false)
-
-const orderForm = reactive({
-  account: '',
-  orderNo: '',
-  authCount: 1,
-  productName: '',
-  productVersion: '',
-  licenseTemplate: '',
-  licenseType: '',
-  authStartDate: '',
-  authEndDate: '',
-  floatingEnabled: false,
-  floatingLicense: '',
-  remarks: ''
-})
-
-const orderFormRules: FormRules = {
-  account: [{ required: true, message: '请选择开户账户', trigger: 'change' }],
-  orderNo: [{ required: true, message: '请输入订单编号', trigger: 'blur' }],
-  authCount: [{ required: true, message: '请输入授权数量', trigger: 'blur' }],
-  productName: [{ required: true, message: '请选择产品名称', trigger: 'change' }],
-  productVersion: [{ required: true, message: '请选择产品版本', trigger: 'change' }],
-  licenseTemplate: [{ required: true, message: '请选择许可模版', trigger: 'change' }],
-  licenseType: [{ required: true, message: '请选择许可类型', trigger: 'change' }],
-  authStartDate: [{ required: true, message: '请选择授权起始日期', trigger: 'change' }],
-  authEndDate: [{ required: true, message: '请选择授权结束日期', trigger: 'change' }]
-}
-
-// ─── Permission Grid ─────────────────────────────────────────────────
-
-interface PermissionItem {
-  name: string
-  checked: boolean
-  limit: number
-}
-
-const defaultPermissions: PermissionItem[] = [
-  { name: '功能模块A', checked: false, limit: 0 },
-  { name: '功能模块B', checked: false, limit: 0 },
-  { name: '功能模块C', checked: false, limit: 0 },
-  { name: '功能模块D', checked: false, limit: 0 },
-  { name: '功能模块E', checked: false, limit: 0 },
-  { name: '功能模块F', checked: false, limit: 0 },
-  { name: '功能模块G', checked: false, limit: 0 },
-  { name: '功能模块H', checked: false, limit: 0 },
-  { name: '功能模块I', checked: false, limit: 0 },
-  { name: '功能模块J', checked: false, limit: 0 },
-  { name: '功能模块K', checked: false, limit: 0 },
-  { name: '功能模块L', checked: false, limit: 0 }
-]
-
-const permissionsList = ref<PermissionItem[]>(defaultPermissions.map(p => ({ ...p })))
-
-const resetPermissions = () => {
-  permissionsList.value = defaultPermissions.map(p => ({ ...p }))
-}
-
-const handlePermissionChange = () => {
-  // Optional: react to permission changes
-}
-
-// ─── Product & Version Mapping ───────────────────────────────────────
-
-const versionMap: Record<string, string[]> = {
-  '产品A': ['V1.0', 'V2.0', 'V3.0'],
-  '产品B': ['V1.0', 'V2.0'],
-  '产品C': ['V1.0', 'V3.0']
-}
-
-const availableVersions = computed(() => {
-  if (!orderForm.productName) return []
-  return versionMap[orderForm.productName] || []
-})
-
-const handleProductChange = () => {
-  orderForm.productVersion = ''
-}
-
-// ─── License Template -> Default License Type ────────────────────────
-
-const licenseTemplateDefaultMap: Record<string, string> = {
-  '模版A': '永久许可',
-  '模版B': '订阅许可',
-  '模版C': '试用许可'
-}
-
-const handleLicenseTemplateChange = () => {
-  const tpl = orderForm.licenseTemplate
-  if (tpl && licenseTemplateDefaultMap[tpl]) {
-    orderForm.licenseType = licenseTemplateDefaultMap[tpl]
+  interface Order {
+    id: number
+    orderNo: string
+    createTime: string
+    customerName: string
+    authCount: number
+    authStartDate: string
+    authEndDate: string
   }
-}
 
-// ─── Watch ─────────────────────────────────────────────────────
+  interface Props {
+    modelValue: boolean
+    isEditMode: boolean
+    order?: Order | null
+  }
 
-import { watch } from 'vue'
+  const props = defineProps<Props>()
 
-watch(() => props.modelValue, (newValue) => {
-  dialogVisible.value = newValue
-  if (newValue) {
-    if (props.order) {
-      orderForm.account = props.order.customerName
-      orderForm.orderNo = props.order.orderNo
-      orderForm.authCount = props.order.authCount
-      orderForm.authStartDate = props.order.authStartDate
-      orderForm.authEndDate = props.order.authEndDate
-    } else {
-      resetForm()
+  // ─── Emits ──────────────────────────────────────────────────────
+
+  const emit = defineEmits<{
+    (e: 'update:modelValue', value: boolean): void
+    (e: 'submit', order: any): void
+  }>()
+
+  // ─── Reactive Data ─────────────────────────────────────────────
+
+  const dialogVisible = ref(props.modelValue)
+  const orderFormRef = ref<FormInstance>()
+  const submitLoading = ref(false)
+
+  const orderForm = reactive({
+    account: '',
+    orderNo: '',
+    authCount: 1,
+    productName: '',
+    productVersion: '',
+    licenseTemplate: '',
+    licenseType: '',
+    authStartDate: '',
+    authEndDate: '',
+    floatingEnabled: false,
+    floatingLicense: '',
+    remarks: '',
+  })
+
+  const orderFormRules: FormRules = {
+    account: [{ required: true, message: '请选择开户账户', trigger: 'change' }],
+    orderNo: [{ required: true, message: '请输入订单编号', trigger: 'blur' }],
+    authCount: [{ required: true, message: '请输入授权数量', trigger: 'blur' }],
+    productName: [{ required: true, message: '请选择产品名称', trigger: 'change' }],
+    productVersion: [{ required: true, message: '请选择产品版本', trigger: 'change' }],
+    licenseTemplate: [{ required: true, message: '请选择许可模版', trigger: 'change' }],
+    licenseType: [{ required: true, message: '请选择许可类型', trigger: 'change' }],
+    authStartDate: [{ required: true, message: '请选择授权起始日期', trigger: 'change' }],
+    authEndDate: [{ required: true, message: '请选择授权结束日期', trigger: 'change' }],
+  }
+
+  // ─── Permission Grid ─────────────────────────────────────────────────
+
+  interface PermissionItem {
+    name: string
+    checked: boolean
+    limit: number
+  }
+
+  const defaultPermissions: PermissionItem[] = [
+    { name: '功能模块A', checked: false, limit: 0 },
+    { name: '功能模块B', checked: false, limit: 0 },
+    { name: '功能模块C', checked: false, limit: 0 },
+    { name: '功能模块D', checked: false, limit: 0 },
+    { name: '功能模块E', checked: false, limit: 0 },
+    { name: '功能模块F', checked: false, limit: 0 },
+    { name: '功能模块G', checked: false, limit: 0 },
+    { name: '功能模块H', checked: false, limit: 0 },
+    { name: '功能模块I', checked: false, limit: 0 },
+    { name: '功能模块J', checked: false, limit: 0 },
+    { name: '功能模块K', checked: false, limit: 0 },
+    { name: '功能模块L', checked: false, limit: 0 },
+  ]
+
+  const permissionsList = ref<PermissionItem[]>(defaultPermissions.map((p) => ({ ...p })))
+
+  const resetPermissions = () => {
+    permissionsList.value = defaultPermissions.map((p) => ({ ...p }))
+  }
+
+  const handlePermissionChange = () => {
+    // Optional: react to permission changes
+  }
+
+  // ─── Product & Version Mapping ───────────────────────────────────────
+
+  const versionMap: Record<string, string[]> = {
+    产品A: ['V1.0', 'V2.0', 'V3.0'],
+    产品B: ['V1.0', 'V2.0'],
+    产品C: ['V1.0', 'V3.0'],
+  }
+
+  const availableVersions = computed(() => {
+    if (!orderForm.productName) return []
+    return versionMap[orderForm.productName] || []
+  })
+
+  const handleProductChange = () => {
+    orderForm.productVersion = ''
+  }
+
+  // ─── License Template -> Default License Type ────────────────────────
+
+  const licenseTemplateDefaultMap: Record<string, string> = {
+    模版A: '永久许可',
+    模版B: '订阅许可',
+    模版C: '试用许可',
+  }
+
+  const handleLicenseTemplateChange = () => {
+    const tpl = orderForm.licenseTemplate
+    if (tpl && licenseTemplateDefaultMap[tpl]) {
+      orderForm.licenseType = licenseTemplateDefaultMap[tpl]
     }
   }
-})
 
-watch(() => props.order, (newValue) => {
-  if (newValue) {
-    orderForm.account = newValue.customerName
-    orderForm.orderNo = newValue.orderNo
-    orderForm.authCount = newValue.authCount
-    orderForm.authStartDate = newValue.authStartDate
-    orderForm.authEndDate = newValue.authEndDate
-  }
-})
+  // ─── Watch ─────────────────────────────────────────────────────
 
-// ─── Methods ───────────────────────────────────────────────────
+  import { watch } from 'vue'
 
-const resetForm = () => {
-  orderForm.account = ''
-  orderForm.orderNo = ''
-  orderForm.authCount = 1
-  orderForm.productName = ''
-  orderForm.productVersion = ''
-  orderForm.licenseTemplate = ''
-  orderForm.licenseType = ''
-  orderForm.authStartDate = ''
-  orderForm.authEndDate = ''
-  orderForm.floatingEnabled = false
-  orderForm.floatingLicense = ''
-  orderForm.remarks = ''
-  resetPermissions()
-  orderFormRef.value?.clearValidate()
-}
+  watch(
+    () => props.modelValue,
+    (newValue) => {
+      dialogVisible.value = newValue
+      if (newValue) {
+        if (props.order) {
+          orderForm.account = props.order.customerName
+          orderForm.orderNo = props.order.orderNo
+          orderForm.authCount = props.order.authCount
+          orderForm.authStartDate = props.order.authStartDate
+          orderForm.authEndDate = props.order.authEndDate
+        } else {
+          resetForm()
+        }
+      }
+    }
+  )
 
-const resetModal = () => {
-  resetForm()
-}
+  watch(
+    () => props.order,
+    (newValue) => {
+      if (newValue) {
+        orderForm.account = newValue.customerName
+        orderForm.orderNo = newValue.orderNo
+        orderForm.authCount = newValue.authCount
+        orderForm.authStartDate = newValue.authStartDate
+        orderForm.authEndDate = newValue.authEndDate
+      }
+    }
+  )
 
-const handleSubmit = async () => {
-  if (!orderFormRef.value) return
-  await orderFormRef.value.validate(async (valid) => {
-    if (!valid) return
-
-    submitLoading.value = true
-    await new Promise(resolve => setTimeout(resolve, 600))
-
-    ElMessage.success(props.isEditMode ? '订单修改成功' : '订单新增成功')
-    emit('submit', orderForm)
-    emit('update:modelValue', false)
-    submitLoading.value = false
+  watch(dialogVisible, (newValue) => {
+    emit('update:modelValue', newValue)
   })
-}
+
+  // ─── Methods ───────────────────────────────────────────────────
+
+  const resetForm = () => {
+    orderForm.account = ''
+    orderForm.orderNo = ''
+    orderForm.authCount = 1
+    orderForm.productName = ''
+    orderForm.productVersion = ''
+    orderForm.licenseTemplate = ''
+    orderForm.licenseType = ''
+    orderForm.authStartDate = ''
+    orderForm.authEndDate = ''
+    orderForm.floatingEnabled = false
+    orderForm.floatingLicense = ''
+    orderForm.remarks = ''
+    resetPermissions()
+    orderFormRef.value?.clearValidate()
+  }
+
+  const resetModal = () => {
+    resetForm()
+  }
+
+  const handleSubmit = async () => {
+    if (!orderFormRef.value) return
+    await orderFormRef.value.validate(async (valid) => {
+      if (!valid) return
+
+      submitLoading.value = true
+      await new Promise((resolve) => setTimeout(resolve, 600))
+
+      ElMessage.success(props.isEditMode ? '订单修改成功' : '订单新增成功')
+      emit('submit', orderForm)
+      emit('update:modelValue', false)
+      submitLoading.value = false
+    })
+  }
 </script>
 
 <style lang="scss" scoped>
-.order-form {
-  .floating-license-field {
+  .order-form {
+    .floating-license-field {
+      display: flex;
+      align-items: center;
+    }
+  }
+
+  .permission-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px 16px;
+    width: 100%;
+  }
+
+  .permission-item {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    padding: 4px 0;
+
+    .el-checkbox {
+      flex-shrink: 0;
+    }
   }
-}
 
-.permission-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px 16px;
-  width: 100%;
-}
-
-.permission-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 4px 0;
-
-  .el-checkbox {
-    flex-shrink: 0;
+  .dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
   }
-}
-
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-}
 </style>

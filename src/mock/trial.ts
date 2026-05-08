@@ -10,11 +10,11 @@ export function setupTrialMock() {
     const params = new URLSearchParams(url.split('?')[1])
     const page = parseInt(params.get('page') || '1')
     const pageSize = parseInt(params.get('pageSize') || '20')
-    
+
     const productNames = ['数据分析平台', '智能报表系统', '项目管理工具', '客户管理系统', '财务管理系统']
     const trialDurations = [7, 14, 30, 60, 90]
     const approvalStatus = ['待审批', '审批通过', '审批拒绝']
-    
+
     const list = []
     for (let i = 0; i < pageSize; i++) {
       list.push({
@@ -36,17 +36,17 @@ export function setupTrialMock() {
         approvalTime: Random.datetime('yyyy-MM-dd HH:mm:ss'),
         createTime: Random.datetime('yyyy-MM-dd HH:mm:ss'),
         updateTime: Random.datetime('yyyy-MM-dd HH:mm:ss'),
-        remark: Random.csentence(10, 30)
+        remark: Random.csentence(10, 30),
       })
     }
-    
+
     return {
       code: 200,
       message: 'success',
       data: {
         list,
-        total: 85
-      }
+        total: 85,
+      },
     }
   })
 
@@ -82,8 +82,8 @@ export function setupTrialMock() {
         features: ['基础功能', '数据导出', '报表查看'],
         createTime: Random.datetime('yyyy-MM-dd HH:mm:ss'),
         updateTime: Random.datetime('yyyy-MM-dd HH:mm:ss'),
-        remark: Random.csentence(10, 30)
-      }
+        remark: Random.csentence(10, 30),
+      },
     }
   })
 
@@ -94,8 +94,8 @@ export function setupTrialMock() {
       message: '申请提交成功',
       data: {
         id: Random.increment(10000),
-        trialNo: 'TRIAL' + String(Random.integer(10000, 99999))
-      }
+        trialNo: 'TRIAL' + String(Random.integer(10000, 99999)),
+      },
     }
   })
 
@@ -104,7 +104,7 @@ export function setupTrialMock() {
     return {
       code: 200,
       message: '审批通过',
-      data: null
+      data: null,
     }
   })
 
@@ -113,7 +113,7 @@ export function setupTrialMock() {
     return {
       code: 200,
       message: '已拒绝',
-      data: null
+      data: null,
     }
   })
 
@@ -122,7 +122,7 @@ export function setupTrialMock() {
     return {
       code: 200,
       message: 'success',
-      data: null
+      data: null,
     }
   })
 
@@ -131,7 +131,7 @@ export function setupTrialMock() {
     return {
       code: 200,
       message: 'success',
-      data: null
+      data: null,
     }
   })
 }

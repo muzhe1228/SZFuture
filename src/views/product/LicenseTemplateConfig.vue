@@ -20,329 +20,323 @@
         </span>
       </template>
       <template #extra-actions>
-        <el-button type="primary" size="small" @click="handleAdd" :icon="Plus">
-          新增模版
-        </el-button>
-        <el-button type="danger" size="small" plain :icon="Delete" :disabled="selectedRows.length === 0" @click="handleBatchDelete">
+        <el-button type="primary" size="small" @click="handleAdd" :icon="Plus"> 新增模版 </el-button>
+        <el-button
+          type="danger"
+          size="small"
+          plain
+          :icon="Delete"
+          :disabled="selectedRows.length === 0"
+          @click="handleBatchDelete"
+        >
           删除模版
         </el-button>
       </template>
     </BaseTablePage>
 
     <!-- Add/Edit Template Modal -->
-    <TemplateForm 
-      v-model="templateModalVisible" 
-      :is-edit-mode="isEditMode" 
-      :template="currentTemplate" 
-      :product-module-options="productModuleOptions" 
-      @submit="handleTemplateSubmit" 
-      @close="handleModalClose" 
+    <TemplateForm
+      v-model="templateModalVisible"
+      :is-edit-mode="isEditMode"
+      :template="currentTemplate"
+      :product-module-options="productModuleOptions"
+      @submit="handleTemplateSubmit"
+      @close="handleModalClose"
     />
 
     <!-- View Detail Dialog -->
-    <TemplateDetail
-      v-model="viewDialogVisible"
-      :template="viewingTemplate"
-    />
+    <TemplateDetail v-model="viewDialogVisible" :template="viewingTemplate" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Plus, Delete } from '@element-plus/icons-vue'
-import type { LicenseTemplate } from '@/types/index'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { BaseTablePage } from '@/components/BaseTablePage'
-import TemplateForm from '@/components/Dialog/LicenseTemplateConfig/TemplateForm.vue'
-import TemplateDetail from '@/components/Dialog/LicenseTemplateConfig/TemplateDetail.vue'
-import type { ActionButton } from '@/components/DataTable/types'
-import { licenseTemplateColumns } from '@/config/product/columns'
-import { licenseTemplateSearchFields } from '@/config/product/searchFields'
-import request from '@/utils/request'
+  import { ref } from 'vue'
+  import { Plus, Delete } from '@element-plus/icons-vue'
+  import type { LicenseTemplate } from '@/types/index'
+  import { ElMessage, ElMessageBox } from 'element-plus'
+  import { BaseTablePage } from '@/components/BaseTablePage'
+  import TemplateForm from '@/components/Dialog/LicenseTemplateConfig/TemplateForm.vue'
+  import TemplateDetail from '@/components/Dialog/LicenseTemplateConfig/TemplateDetail.vue'
+  import type { ActionButton } from '@/components/DataTable/types'
+  import { licenseTemplateColumns } from '@/config/product/columns'
+  import { licenseTemplateSearchFields } from '@/config/product/searchFields'
+  import request from '@/utils/request'
 
-// ─── Search Form ──────────────────────────────────────────────────────
+  // ─── Search Form ──────────────────────────────────────────────────────
 
-// 搜索字段配置已移至 @/config/product/searchFields.ts
-const searchFields = licenseTemplateSearchFields
+  // 搜索字段配置已移至 @/config/product/searchFields.ts
+  const searchFields = licenseTemplateSearchFields
 
-// ─── Table Config ─────────────────────────────────────────────────────
+  // ─── Table Config ─────────────────────────────────────────────────────
 
-// 表格列配置已移至 @/config/product/columns.ts
-const columns = ref(licenseTemplateColumns)
+  // 表格列配置已移至 @/config/product/columns.ts
+  const columns = ref(licenseTemplateColumns)
 
-const tableActions: ActionButton[] = [
-  { key: 'view', label: '查看', type: 'primary' },
-  { key: 'edit', label: '修改', type: 'success' },
-  { key: 'delete', label: '删除', type: 'danger' }
-]
+  const tableActions: ActionButton[] = [
+    { key: 'view', label: '查看', type: 'primary' },
+    { key: 'edit', label: '修改', type: 'success' },
+    { key: 'delete', label: '删除', type: 'danger' },
+  ]
 
-// ─── Selection ────────────────────────────────────────────────────────
+  // ─── Selection ────────────────────────────────────────────────────────
 
-const selectedRows = ref<LicenseTemplate[]>([])
+  const selectedRows = ref<LicenseTemplate[]>([])
 
-const handleSelectionChange = (selection: LicenseTemplate[]) => {
-  selectedRows.value = selection
-}
-
-const handleTableAction = (action: string, row: LicenseTemplate) => {
-  if (action === 'view') {
-    handleView(row)
-  } else if (action === 'edit') {
-    handleEdit(row)
-  } else if (action === 'delete') {
-    handleDelete(row)
+  const handleSelectionChange = (selection: LicenseTemplate[]) => {
+    selectedRows.value = selection
   }
-}
 
-// ─── Product Module Options ───────────────────────────────────────────
-
-const productModuleOptions = ref([
-  { label: '产品名称 / 版本号', value: 1 },
-  { label: '产品名称1 / 版本号1', value: 2 },
-  { label: '产品名称2 / 版本号2', value: 3 }
-])
-
-// ─── Fetch Data ───────────────────────────────────────────────────────
-
-const fetchData = async (formData?: Record<string, any>, page: number = 1, pageSize: number = 20) => {
-  try {
-    const result = await request.get('/api/license-template/list', {
-      params: {
-        page: String(page),
-        pageSize: String(pageSize),
-        ...formData
-      }
-    })
-    if (result.code === 200) {
-      // 映射mock数据中的字段名称到LicenseTemplate类型的字段名称
-      const list = (result.data.list || []).map((item: any) => ({
-        id: item.id,
-        name: item.templateName,
-        productName: item.productName || '未设置',
-        version: item.version || '未设置',
-        licenseType: item.templateType,
-        status: item.templateStatus,
-        createTime: item.createTime
-      }))
-      return {
-        list,
-        total: result.data.total || 0
-      }
+  const handleTableAction = (action: string, row: LicenseTemplate) => {
+    if (action === 'view') {
+      handleView(row)
+    } else if (action === 'edit') {
+      handleEdit(row)
+    } else if (action === 'delete') {
+      handleDelete(row)
     }
-    return { list: [], total: 0 }
-  } catch (error) {
-    ElMessage.error('加载数据失败')
-    return { list: [], total: 0 }
   }
-}
 
-// ─── Action Handlers ──────────────────────────────────────────────────
+  // ─── Product Module Options ───────────────────────────────────────────
 
-const handleAdd = () => {
-  isEditMode.value = false
-  currentTemplate.value = null
-  templateModalVisible.value = true
-}
+  const productModuleOptions = ref([
+    { label: '产品名称 / 版本号', value: 1 },
+    { label: '产品名称1 / 版本号1', value: 2 },
+    { label: '产品名称2 / 版本号2', value: 3 },
+  ])
 
-const handleView = (row: LicenseTemplate) => {
-  viewingTemplate.value = {
-    id: row.id,
-    name: row.name,
-    productName: row.productName || '未设置',
-    version: row.version || '未设置',
-    status: row.status,
-    createTime: row.createTime
+  // ─── Fetch Data ───────────────────────────────────────────────────────
+
+  const fetchData = async (formData?: Record<string, any>, page: number = 1, pageSize: number = 20) => {
+    try {
+      const result = await request.get('/api/license-template/list', {
+        params: {
+          page: String(page),
+          pageSize: String(pageSize),
+          ...formData,
+        },
+      })
+      if (result.code === 200) {
+        // 映射mock数据中的字段名称到LicenseTemplate类型的字段名称
+        const list = (result.data.list || []).map((item: any) => ({
+          id: item.id,
+          name: item.templateName,
+          productName: item.productName || '未设置',
+          version: item.version || '未设置',
+          licenseType: item.templateType,
+          status: item.templateStatus,
+          createTime: item.createTime,
+        }))
+        return {
+          list,
+          total: result.data.total || 0,
+        }
+      }
+      return { list: [], total: 0 }
+    } catch {
+      ElMessage.error('加载数据失败')
+      return { list: [], total: 0 }
+    }
   }
-  viewDialogVisible.value = true
-}
 
-const handleEdit = (row: LicenseTemplate) => {
-  isEditMode.value = true
-  editingTemplateId.value = row.id
-  currentTemplate.value = row
-  templateModalVisible.value = true
-}
+  // ─── Action Handlers ──────────────────────────────────────────────────
 
-const handleDelete = async (row: LicenseTemplate) => {
-  try {
-    await ElMessageBox.confirm(
-      `确定要删除模版 "${row.name}" 吗？`,
-      '删除确认',
-      {
+  const handleAdd = () => {
+    isEditMode.value = false
+    currentTemplate.value = null
+    templateModalVisible.value = true
+  }
+
+  const handleView = (row: LicenseTemplate) => {
+    viewingTemplate.value = {
+      id: row.id,
+      name: row.name,
+      productName: row.productName || '未设置',
+      version: row.version || '未设置',
+      status: row.status,
+      createTime: row.createTime,
+    }
+    viewDialogVisible.value = true
+  }
+
+  const handleEdit = (row: LicenseTemplate) => {
+    isEditMode.value = true
+    editingTemplateId.value = row.id
+    currentTemplate.value = row
+    templateModalVisible.value = true
+  }
+
+  const handleDelete = async (row: LicenseTemplate) => {
+    try {
+      await ElMessageBox.confirm(`确定要删除模版 "${row.name}" 吗？`, '删除确认', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
-        type: 'warning'
-      }
-    )
-    ElMessage.success('删除成功')
-  } catch {
-    // User cancelled
+        type: 'warning',
+      })
+      ElMessage.success('删除成功')
+    } catch {
+      // User cancelled
+    }
   }
-}
 
-const handleBatchDelete = async () => {
-  if (selectedRows.value.length === 0) {
-    ElMessage.warning('请先选择要删除的模版')
-    return
-  }
-  try {
-    await ElMessageBox.confirm(
-      `确定要删除选中的 ${selectedRows.value.length} 个模版吗？`,
-      '删除确认',
-      {
+  const handleBatchDelete = async () => {
+    if (selectedRows.value.length === 0) {
+      ElMessage.warning('请先选择要删除的模版')
+      return
+    }
+    try {
+      await ElMessageBox.confirm(`确定要删除选中的 ${selectedRows.value.length} 个模版吗？`, '删除确认', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
-        type: 'warning'
-      }
-    )
-    ElMessage.success('批量删除成功')
-  } catch {
-    // User cancelled
+        type: 'warning',
+      })
+      ElMessage.success('批量删除成功')
+    } catch {
+      // User cancelled
+    }
   }
-}
 
-// ─── Template Modal ───────────────────────────────────────────────────
+  // ─── Template Modal ───────────────────────────────────────────────────
 
-const templateModalVisible = ref(false)
-const isEditMode = ref(false)
-const editingTemplateId = ref<number | null>(null)
-const viewDialogVisible = ref(false)
-const viewingTemplate = ref<LicenseTemplate | null>(null)
-const currentTemplate = ref<LicenseTemplate | null>(null)
+  const templateModalVisible = ref(false)
+  const isEditMode = ref(false)
+  const editingTemplateId = ref<number | null>(null)
+  const viewDialogVisible = ref(false)
+  const viewingTemplate = ref<LicenseTemplate | null>(null)
+  const currentTemplate = ref<LicenseTemplate | null>(null)
 
-const handleTemplateSubmit = async (_template: LicenseTemplate, isEdit: boolean) => {
-  try {
-    templateModalVisible.value = false
-    await new Promise(resolve => setTimeout(resolve, 800))
-    
-    ElMessage.success(isEdit ? '编辑成功' : '新增成功')
-  } catch {
-    ElMessage.error('操作失败')
+  const handleTemplateSubmit = async (_template: LicenseTemplate, isEdit: boolean) => {
+    try {
+      templateModalVisible.value = false
+      await new Promise((resolve) => setTimeout(resolve, 800))
+
+      ElMessage.success(isEdit ? '编辑成功' : '新增成功')
+    } catch {
+      ElMessage.error('操作失败')
+    }
   }
-}
 
-const handleModalClose = () => {
-  isEditMode.value = false
-  editingTemplateId.value = null
-}
+  const handleModalClose = () => {
+    isEditMode.value = false
+    editingTemplateId.value = null
+  }
 </script>
 
 <style lang="scss" scoped>
-.license-template-config {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow-y: auto;
-  border-radius: 8px;
-}
-
-// ─── Status Cell ─────────────────────────────────────────────────────
-
-.status-cell {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.status-dot {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.status-enabled {
-  background-color: #67c23a;
-}
-
-.status-disabled {
-  background-color: var(--el-text-color-secondary);
-}
-
-// ─── Modal ───────────────────────────────────────────────────────────
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
-
-  &-title {
-    font-size: 14px;
-    font-weight: 500;
-    
-    white-space: nowrap;
+  .license-template-config {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto;
+    border-radius: 8px;
   }
-}
 
-.divider {
-  flex: 1;
-  height: 1px;
-  background-color: #ebeef5;
-}
+  // ─── Status Cell ─────────────────────────────────────────────────────
 
-.template-form {
-  padding: 8px 0;
-}
+  .status-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
 
-// ─── Function Grid ───────────────────────────────────────────────────
+  .status-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
 
-.function-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  padding: 6px 0;
-  width: 100%;
-}
+  .status-enabled {
+    background-color: #67c23a;
+  }
 
-.function-item {
-  display: flex;
-  align-items: center;
+  .status-disabled {
+    background-color: var(--el-text-color-secondary);
+  }
 
-  :deep(.el-checkbox) {
-    .el-checkbox__label {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      padding: 8px 12px;
-      border-radius: 4px;
-      width: 100%;
-      justify-content: center;
-      transition: border-color 0.2s;
-    }
+  // ─── Modal ───────────────────────────────────────────────────────────
 
-    &.is-checked .el-checkbox__label {
-      background-color: #ecf5ff;
+  .modal-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+
+    &-title {
+      font-size: 14px;
+      font-weight: 500;
+
+      white-space: nowrap;
     }
   }
 
-  .function-name {
-    font-size: 13px;
-    font-weight: 500;
+  .divider {
+    flex: 1;
+    height: 1px;
+    background-color: #ebeef5;
   }
-}
 
-// ─── Dialog Footer ───────────────────────────────────────────────────
+  .template-form {
+    padding: 8px 0;
+  }
 
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-}
+  // ─── Function Grid ───────────────────────────────────────────────────
 
-// ─── Responsive ──────────────────────────────────────────────────────
-
-@media (max-width: 992px) {
   .function-grid {
-    grid-template-columns: repeat(3, 1fr);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    padding: 6px 0;
+    width: 100%;
   }
-}
 
-@media (max-width: 576px) {
-  .function-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .function-item {
+    display: flex;
+    align-items: center;
+
+    :deep(.el-checkbox) {
+      .el-checkbox__label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        padding: 8px 12px;
+        border-radius: 4px;
+        width: 100%;
+        justify-content: center;
+        transition: border-color 0.2s;
+      }
+
+      &.is-checked .el-checkbox__label {
+        background-color: #ecf5ff;
+      }
+    }
+
+    .function-name {
+      font-size: 13px;
+      font-weight: 500;
+    }
   }
-}
+
+  // ─── Dialog Footer ───────────────────────────────────────────────────
+
+  .dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+  }
+
+  // ─── Responsive ──────────────────────────────────────────────────────
+
+  @media (max-width: 992px) {
+    .function-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (max-width: 576px) {
+    .function-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
 </style>

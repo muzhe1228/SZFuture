@@ -33,10 +33,7 @@
     <!-- ==================== Modals ==================== -->
 
     <!-- 1. 产品试用信息 Modal (查看) -->
-    <ViewModal
-      v-model="viewModalVisible"
-      :trial="currentTrial"
-    />
+    <ViewModal v-model="viewModalVisible" :data="currentTrial" :title="`产品试用信息`" />
 
     <!-- 2. 授权冻结 Modal -->
     <FreezeModal
@@ -49,8 +46,12 @@
     <!-- 3. 授权解冻/更新 Modal -->
     <UnfreezeModal
       v-model="unfreezeModalVisible"
-      :trial="currentTrial"
-      :trial-id="currentTrial?.id || null"
+      :data="currentTrial"
+      :id="currentTrial?.id || null"
+      title="授权更新"
+      reason-label="更新原因"
+      placeholder="请输入更新原因"
+      api-url="/api/trial/unfreeze"
       @unfreeze="handleUnfreezeEvent"
     />
 
@@ -63,265 +64,270 @@
     />
 
     <!-- 5. 授权作废 Modal -->
-    <VoidModal
-      v-model="voidModalVisible"
-      :selected-ids="selectedTrials.map(t => t.id)"
-      @void="handleVoidEvent"
-    />
+    <VoidModal v-model="voidModalVisible" :selected-ids="selectedTrials.map((t) => t.id)" @void="handleVoidEvent" />
 
-    <!-- 6. 删除试用确认 Modal -->
-    <DeleteModal
-      v-model="deleteModalVisible"
-      :selected-count="selectedTrials.length"
-      :selected-ids="selectedTrials.map(t => t.id)"
-      @delete="handleDeleteEvent"
-    />
+    
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import type { Trial } from '@/types/index'
-import { ElMessage } from 'element-plus'
-import { BaseTablePage } from '@/components/BaseTablePage'
-import { StatusTag } from '@/components/StatusTag'
-import ViewModal from '@/components/Dialog/TrialList/ViewModal.vue'
-import FreezeModal from '@/components/Dialog/TrialList/FreezeModal.vue'
-import UnfreezeModal from '@/components/Dialog/TrialList/UnfreezeModal.vue'
-import ActivateModal from '@/components/Dialog/TrialList/ActivateModal.vue'
-import VoidModal from '@/components/Dialog/TrialList/VoidModal.vue'
-import DeleteModal from '@/components/Dialog/TrialList/DeleteModal.vue'
-import type { ActionButton } from '@/components/DataTable/types'
-import { trialColumns } from '@/config/trial/columns'
-import { trialSearchFields } from '@/config/trial/searchFields'
-import request from '@/utils/request'
+  import { ref } from 'vue'
+  import type { Trial } from '@/types/index'
+  import { ElMessage, ElMessageBox } from 'element-plus'
+  import { BaseTablePage } from '@/components/BaseTablePage'
+  import { StatusTag } from '@/components/StatusTag'
+  import ViewModal from '@/components/Dialog/common/ViewModal.vue'
+  import FreezeModal from '@/components/Dialog/common/FreezeModal.vue'
+  import UnfreezeModal from '@/components/Dialog/common/UnfreezeModal.vue'
+  import ActivateModal from '@/components/Dialog/common/ActivateModal.vue'
+  import VoidModal from '@/components/Dialog/common/VoidModal.vue'
+  import type { ActionButton } from '@/components/DataTable/types'
+  import { trialColumns } from '@/config/trial/columns'
+  import { trialSearchFields } from '@/config/trial/searchFields'
+  import request from '@/utils/request'
 
-// ─── Extended Types ──────────────────────────────────────────────────────
+  // ─── Extended Types ──────────────────────────────────────────────────────
 
-interface TrialExtended extends Trial {
-  licenseKey?: string
-  product?: string
-  version?: string
-  remarks?: string
-  freezeTime?: string
-  freezeReason?: string
-}
+  interface TrialExtended extends Trial {
+    licenseKey?: string
+    product?: string
+    version?: string
+    remarks?: string
+    freezeTime?: string
+    freezeReason?: string
+  }
 
-// ─── Table Config ─────────────────────────────────────────────────────
+  // ─── Table Config ─────────────────────────────────────────────────────
 
-// 表格列配置已移至 @/config/trial/columns.ts
-const columns = ref(trialColumns)
+  // 表格列配置已移至 @/config/trial/columns.ts
+  const columns = ref(trialColumns)
 
-const tableActions: ActionButton[] = [
-  { key: 'view', label: '查看', type: 'primary' },
-  { key: 'activate', label: '激活', type: 'success', condition: (row: TrialExtended) => row.status !== '已激活' },
-  { key: 'freeze', label: '冻结', type: 'primary', condition: (row: TrialExtended) => row.status === '已激活' },
-  { key: 'unfreeze', label: '更新', type: 'warning', condition: (row: TrialExtended) => row.status === '已冻结' }
-]
+  const tableActions: ActionButton[] = [
+    { key: 'view', label: '查看', type: 'primary' },
+    { key: 'activate', label: '激活', type: 'success', condition: (row: TrialExtended) => row.status !== '已激活' },
+    { key: 'freeze', label: '冻结', type: 'primary', condition: (row: TrialExtended) => row.status === '已激活' },
+    { key: 'unfreeze', label: '更新', type: 'warning', condition: (row: TrialExtended) => row.status === '已冻结' },
+  ]
 
-// ─── Search Form ──────────────────────────────────────────────────────
+  // ─── Search Form ──────────────────────────────────────────────────────
 
-// 搜索字段配置已移至 @/config/trial/searchFields.ts
-const searchFields = trialSearchFields
+  // 搜索字段配置已移至 @/config/trial/searchFields.ts
+  const searchFields = trialSearchFields
 
-// ─── Status Tag Type ──────────────────────────────────────────────────
+  // ─── Status Tag Type ──────────────────────────────────────────────────
 
-const statusMap = {
-  '已激活': 'warning',
-  '未激活': 'info',
-  '已过期': 'info',
-  '已冻结': 'danger'
-}
+  const statusMap = {
+    已激活: 'warning',
+    未激活: 'info',
+    已过期: 'info',
+    已冻结: 'danger',
+  }
 
-// ─── Table Data ───────────────────────────────────────────────────────
+  // ─── Table Data ───────────────────────────────────────────────────────
 
-const tableLoading = ref(false)
-const selectedTrials = ref<TrialExtended[]>([])
+  const tableLoading = ref(false)
+  const selectedTrials = ref<TrialExtended[]>([])
 
-const fetchData = async (formData?: Record<string, any>, page: number = 1, pageSize: number = 20) => {
-  tableLoading.value = true
-  try {
-    const result = await request.get('/api/trial/list', {
-      params: {
-        page: String(page),
-        pageSize: String(pageSize),
-        ...formData
+  const fetchData = async (formData?: Record<string, any>, page: number = 1, pageSize: number = 20) => {
+    tableLoading.value = true
+    try {
+      const result = await request.get('/api/trial/list', {
+        params: {
+          page: String(page),
+          pageSize: String(pageSize),
+          ...formData,
+        },
+      })
+      if (result.code === 200) {
+        return { list: result.data.list || [], total: result.data.total || 0 }
       }
-    })
-    if (result.code === 200) {
-      return { list: result.data.list || [], total: result.data.total || 0 }
+      return { list: [], total: 0 }
+    } catch (error) {
+      ElMessage.error('加载数据失败')
+      return { list: [], total: 0 }
+    } finally {
+      tableLoading.value = false
     }
-    return { list: [], total: 0 }
-  } catch (error) {
-    ElMessage.error('加载数据失败')
-    return { list: [], total: 0 }
-  } finally {
-    tableLoading.value = false
   }
-}
 
-const handleSelectionChange = (selection: TrialExtended[]) => {
-  selectedTrials.value = selection
-}
-
-const handleTableAction = (action: string, row: TrialExtended) => {
-  if (action === 'view') {
-    handleView(row)
-  } else if (action === 'activate') {
-    handleActivate(row)
-  } else if (action === 'freeze') {
-    handleFreeze(row)
-  } else if (action === 'unfreeze') {
-    handleUnfreeze(row)
+  const handleSelectionChange = (selection: TrialExtended[]) => {
+    selectedTrials.value = selection
   }
-}
 
-// ─── Current Trial (for modals) ───────────────────────────────────────
+  const handleTableAction = (action: string, row: TrialExtended) => {
+    if (action === 'view') {
+      handleView(row)
+    } else if (action === 'activate') {
+      handleActivate(row)
+    } else if (action === 'freeze') {
+      handleFreeze(row)
+    } else if (action === 'unfreeze') {
+      handleUnfreeze(row)
+    }
+  }
 
-const currentTrial = ref<TrialExtended | null>(null)
+  // ─── Current Trial (for modals) ───────────────────────────────────────
 
-// ─── 1. View Modal ───────────────────────────────────────────────────
+  const currentTrial = ref<TrialExtended | null>(null)
 
-const viewModalVisible = ref(false)
+  // ─── 1. View Modal ───────────────────────────────────────────────────
 
-const handleView = (row: TrialExtended) => {
-  currentTrial.value = row
-  viewModalVisible.value = true
-}
+  const viewModalVisible = ref(false)
 
-// ─── 2. Freeze Modal ─────────────────────────────────────────────────
+  const handleView = (row: TrialExtended) => {
+    currentTrial.value = row
+    viewModalVisible.value = true
+  }
 
-const freezeModalVisible = ref(false)
+  // ─── 2. Freeze Modal ─────────────────────────────────────────────────
 
-const handleBatchFreeze = () => {
-  if (selectedTrials.value.length === 0) return
-  currentTrial.value = null
-  freezeModalVisible.value = true
-}
+  const freezeModalVisible = ref(false)
 
-const handleFreeze = (row: TrialExtended) => {
-  currentTrial.value = row
-  freezeModalVisible.value = true
-}
+  const handleBatchFreeze = () => {
+    if (selectedTrials.value.length === 0) return
+    currentTrial.value = null
+    freezeModalVisible.value = true
+  }
 
-// ─── 3. Unfreeze/Update Modal ─────────────────────────────────────────
+  const handleFreeze = (row: TrialExtended) => {
+    currentTrial.value = row
+    freezeModalVisible.value = true
+  }
 
-const unfreezeModalVisible = ref(false)
+  // ─── 3. Unfreeze/Update Modal ─────────────────────────────────────────
 
-const handleUnfreeze = (row: TrialExtended) => {
-  currentTrial.value = row
-  unfreezeModalVisible.value = true
-}
+  const unfreezeModalVisible = ref(false)
 
-// ─── 4. Activate Modal ───────────────────────────────────────────────
+  const handleUnfreeze = (row: TrialExtended) => {
+    currentTrial.value = row
+    unfreezeModalVisible.value = true
+  }
 
-const activateModalVisible = ref(false)
+  // ─── 4. Activate Modal ───────────────────────────────────────────────
 
-const handleActivate = (row: TrialExtended) => {
-  currentTrial.value = row
-  activateModalVisible.value = true
-}
+  const activateModalVisible = ref(false)
 
-// ─── 5. Void Modal ───────────────────────────────────────────────────
+  const handleActivate = (row: TrialExtended) => {
+    currentTrial.value = row
+    activateModalVisible.value = true
+  }
 
-const voidModalVisible = ref(false)
+  // ─── 5. Void Modal ───────────────────────────────────────────────────
 
-const handleBatchVoid = () => {
-  if (selectedTrials.value.length === 0) return
-  currentTrial.value = null
-  voidModalVisible.value = true
-}
+  const voidModalVisible = ref(false)
 
-// ─── 6. Delete Modal ─────────────────────────────────────────────────
+  const handleBatchVoid = () => {
+    if (selectedTrials.value.length === 0) return
+    currentTrial.value = null
+    voidModalVisible.value = true
+  }
 
-const deleteModalVisible = ref(false)
+  // ─── 6. Delete ─────────────────────────────────────────────────
 
-const handleBatchDelete = async () => {
-  if (selectedTrials.value.length === 0) return
-  deleteModalVisible.value = true
-}
+  const handleBatchDelete = () => {
+    if (selectedTrials.value.length === 0) return
+    ElMessageBox.confirm(`确定要删除选中的 ${selectedTrials.value.length} 条试用记录吗？`, '确认删除', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+      .then(async () => {
+        try {
+          const result = await request.delete('/api/trial/delete', {
+            data: { ids: selectedTrials.value.map((t) => t.id) },
+          })
+          if (result.code === 200) {
+            ElMessage.success(`已成功删除 ${selectedTrials.value.length} 条试用记录`)
+            selectedTrials.value = []
+          } else {
+            ElMessage.error(result.message || '删除失败')
+          }
+        } catch {
+          ElMessage.error('删除失败')
+        }
+      })
+      .catch(() => {
+        // User cancelled
+      })
+  }
 
-// ─── Event Handlers for Modals ───────────────────────────────────────
+  // ─── Event Handlers for Modals ───────────────────────────────────────
 
-const handleFreezeEvent = async (_reason: string, _ids: number[]) => {
-  // 处理冻结事件
-  ElMessage.success('试用授权冻结成功')
-}
+  const handleFreezeEvent = async (_reason: string, _ids: number[]) => {
+    // 处理冻结事件
+    ElMessage.success('试用授权冻结成功')
+  }
 
-const handleUnfreezeEvent = async (_reason: string, _id: number) => {
-  // 处理解冻事件
-  ElMessage.success('试用授权更新成功')
-}
+  const handleUnfreezeEvent = async (_reason: string, _id?: number) => {
+    // 处理解冻事件
+    ElMessage.success('试用授权更新成功')
+  }
 
-const handleActivateEvent = async (_licenseKey: string, _deviceFingerprint: string, _id: number) => {
-  // 处理激活事件
-  ElMessage.success('激活码生成成功，试用已激活')
-}
+  const handleActivateEvent = async (_licenseKey: string, _deviceFingerprint: string, _id: number) => {
+    // 处理激活事件
+    ElMessage.success('激活码生成成功，试用已激活')
+  }
 
-const handleVoidEvent = async (_reason: string, _approver: string, _ids: number[]) => {
-  // 处理作废事件
-  ElMessage.success('试用授权作废成功')
-}
+  const handleVoidEvent = async (_reason: string, _approver: string, _ids: number[]) => {
+    // 处理作废事件
+    ElMessage.success('试用授权作废成功')
+  }
 
-const handleDeleteEvent = async (ids: number[]) => {
-  // 处理删除事件
-  ElMessage.success(`已成功删除 ${ids.length} 条试用记录`)
-  selectedTrials.value = []
-}
+  
 </script>
 
 <script lang="ts">
-export default {
-  name: 'TrialList'
-}
+  export default {
+    name: 'TrialList',
+  }
 </script>
 
 <style lang="scss" scoped>
-.trial-list {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow-y: auto;
-  border-radius: 8px;
-}
-
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-}
-
-.freeze-modal {
-  .el-alert {
-    margin-bottom: 20px;
+  .trial-list {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto;
+    border-radius: 8px;
   }
-}
 
-.modal-form {
-  margin-top: 16px;
-}
-
-.unfreeze-modal {
-  .el-descriptions {
-    margin-bottom: 20px;
+  .dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
   }
-}
 
-.void-modal {
-  .el-alert {
-    margin-bottom: 20px;
+  .freeze-modal {
+    .el-alert {
+      margin-bottom: 20px;
+    }
   }
-}
 
-.delete-modal {
-  .el-alert {
-    margin-bottom: 0;
+  .modal-form {
+    margin-top: 16px;
   }
-}
 
-.view-modal {
-  .el-descriptions {
-    --el-descriptions-item-bordered-label-background: #fafafa;
+  .unfreeze-modal {
+    .el-descriptions {
+      margin-bottom: 20px;
+    }
   }
-}
+
+  .void-modal {
+    .el-alert {
+      margin-bottom: 20px;
+    }
+  }
+
+  .delete-modal {
+    .el-alert {
+      margin-bottom: 0;
+    }
+  }
+
+  .view-modal {
+    .el-descriptions {
+      --el-descriptions-item-bordered-label-background: #fafafa;
+    }
+  }
 </style>

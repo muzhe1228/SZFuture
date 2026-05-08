@@ -1,6 +1,13 @@
-import RouteTransition from './src/RouteTransition.vue'
-import './src/transition.scss'
-import { useRouteTransition, useTransitionDuration, useTransitionControl, useKeepAliveCache, useTransitionAnimations, useRouteMetaTransition } from './src/useRouteTransition'
+import RouteTransition from './RouteTransition.vue'
+import './transition.scss'
+import {
+  useRouteTransition,
+  useTransitionDuration,
+  useTransitionControl,
+  useKeepAliveCache,
+  useTransitionAnimations,
+  useRouteMetaTransition,
+} from './useRouteTransition'
 
 export {
   RouteTransition,
@@ -9,7 +16,7 @@ export {
   useTransitionControl,
   useKeepAliveCache,
   useTransitionAnimations,
-  useRouteMetaTransition
+  useRouteMetaTransition,
 }
 
 export default RouteTransition

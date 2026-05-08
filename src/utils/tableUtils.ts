@@ -10,11 +10,11 @@ import type { ColumnConfig } from '@/components/DataTable/types'
  * @returns 处理后的列配置
  */
 export const processColumns = (columns: ColumnConfig[]): ColumnConfig[] => {
-  return columns.map(column => ({
+  return columns.map((column) => ({
     ...column,
     minWidth: column.minWidth || '100',
     align: column.align || 'left',
-    visible: column.visible !== false
+    visible: column.visible !== false,
   }))
 }
 
@@ -25,7 +25,7 @@ export const processColumns = (columns: ColumnConfig[]): ColumnConfig[] => {
  * @returns 列配置
  */
 export const getColumnByKey = (columns: ColumnConfig[], key: string): ColumnConfig | undefined => {
-  return columns.find(column => column.key === key)
+  return columns.find((column) => column.key === key)
 }
 
 /**
@@ -34,7 +34,7 @@ export const getColumnByKey = (columns: ColumnConfig[], key: string): ColumnConf
  * @returns 可见列配置数组
  */
 export const getVisibleColumns = (columns: ColumnConfig[]): ColumnConfig[] => {
-  return columns.filter(column => column.visible !== false)
+  return columns.filter((column) => column.visible !== false)
 }
 
 /**
@@ -63,9 +63,9 @@ export const calculateTableWidth = (columns: ColumnConfig[]): string => {
  * @returns 处理后的数据
  */
 export const processTableData = (data: any[], columns: ColumnConfig[]): any[] => {
-  return data.map(item => {
+  return data.map((item) => {
     const processedItem: any = { ...item }
-    columns.forEach(column => {
+    columns.forEach((column) => {
       if (column.formatter && typeof column.formatter === 'function') {
         processedItem[column.prop as string] = column.formatter(item, column)
       }

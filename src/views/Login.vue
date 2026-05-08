@@ -41,20 +41,13 @@
     <div class="login-right">
       <el-card class="login-card" shadow="always">
         <h1 class="login-title">登录</h1>
-        <el-form
-          ref="formRef"
-          :model="loginForm"
-          :rules="rules"
-          class="login-form"
-          @keyup.enter="handleLogin"
-        >
+        <div class="login-tips">
+          <p><strong>超级管理员：</strong>admin / admin</p>
+          <p><strong>商家账号：</strong>merchant / merchant</p>
+        </div>
+        <el-form ref="formRef" :model="loginForm" :rules="rules" class="login-form" @keyup.enter="handleLogin">
           <el-form-item prop="username">
-            <el-input
-              v-model="loginForm.username"
-              placeholder="账号"
-              size="large"
-              :prefix-icon="User"
-            />
+            <el-input v-model="loginForm.username" placeholder="账号" size="large" :prefix-icon="User" />
           </el-form-item>
           <el-form-item prop="password">
             <el-input
@@ -71,13 +64,7 @@
             <router-link to="/forgot-password" class="forgot-link">忘记密码?</router-link>
           </div>
           <el-form-item>
-            <el-button
-              type="primary"
-              size="large"
-              class="login-btn"
-              :loading="loading"
-              @click="handleLogin"
-            >
+            <el-button type="primary" size="large" class="login-btn" :loading="loading" @click="handleLogin">
               登录
             </el-button>
           </el-form-item>
@@ -88,248 +75,321 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { useRouter } from 'vue-router'
-import { User, Lock } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
-import type { FormInstance, FormRules } from 'element-plus'
-import { useUserStore } from '@/store/user'
+  import { ref, reactive } from 'vue'
+  import { useRouter } from 'vue-router'
+  import { User, Lock } from '@element-plus/icons-vue'
+  import { ElMessage } from 'element-plus'
+  import type { FormInstance, FormRules } from 'element-plus'
+  import { useUserStore } from '@/stores/user'
+  import { useTabStore } from '@/stores/tabStore'
+  import { setUserInfo as setPermissionUserInfo } from '@/utils/permission'
 
-const router = useRouter()
-const formRef = ref<FormInstance>()
-const loading = ref(false)
-const userStore = useUserStore()
+  const router = useRouter()
+  const formRef = ref<FormInstance>()
+  const loading = ref(false)
+  const userStore = useUserStore()
+  const tabStore = useTabStore()
 
-const loginForm = reactive({
-  username: '',
-  password: '',
-  rememberMe: false
-})
-
-const rules: FormRules = {
-  username: [
-    { required: true, message: '请输入账号', trigger: 'blur' }
-  ],
-  password: [
-    { required: true, message: '请输入密码', trigger: 'blur' }
-  ]
-}
-
-const handleLogin = async () => {
-  if (!formRef.value) return
-
-  await formRef.value.validate(async (valid) => {
-    if (!valid) return
-
-    loading.value = true
-    try {
-      // Mock login: any username/password works
-      await new Promise((resolve) => setTimeout(resolve, 800))
-
-      // Store token in localStorage
-      const token = 'mock-token-' + Date.now()
-      localStorage.setItem('token', token)
-      userStore.setToken(token)
-
-      // Save user info to store
-      userStore.setUserInfo({
-        username: loginForm.username,
-        avatar: 'https://img1.baidu.com/it/u=3423853670,1866145135&fm=253&fmt=auto&app=138&f=JPEG?w=800&h=800', // 默认头像
-        role: '管理员' // 默认角色
-      })
-
-      // Remember password option
-      if (loginForm.rememberMe) {
-        localStorage.setItem('rememberedUsername', loginForm.username)
-      } else {
-        localStorage.removeItem('rememberedUsername')
-      }
-
-      ElMessage.success('登录成功')
-      router.push('/')
-    } catch {
-      ElMessage.error('登录失败，请重试')
-    } finally {
-      loading.value = false
-    }
+  const loginForm = reactive({
+    username: '',
+    password: '',
+    rememberMe: false,
   })
-}
 
-// Load remembered username on mount
-const rememberedUsername = localStorage.getItem('rememberedUsername')
-if (rememberedUsername) {
-  loginForm.username = rememberedUsername
-  loginForm.rememberMe = true
-}
+  const rules: FormRules = {
+    username: [{ required: true, message: '请输入账号', trigger: 'blur' }],
+    password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+  }
+
+  const adminPermissions = [
+    'message:view',
+    'trial:view',
+    'auth:view',
+    'order:view',
+    'customer:view',
+    'product:view',
+    'user:view',
+    'role:view',
+    'department:view',
+    'system:config',
+    'log:view',
+    'approval:view',
+  ]
+  const merchantPermissions = [
+    'message:view',
+    'trial:view',
+    'auth:view',
+    'order:view',
+    'user:view',
+    'role:view',
+    'department:view',
+    'log:view',
+  ]
+
+  const handleLogin = async () => {
+    if (!formRef.value) return
+
+    await formRef.value.validate(async (valid) => {
+      if (!valid) return
+
+      loading.value = true
+      try {
+        // Mock login: check username and password
+        await new Promise((resolve) => setTimeout(resolve, 800))
+
+        const username = loginForm.username
+        const password = loginForm.password
+
+        // Validate credentials
+        if ((username === 'admin' && password === 'admin') || (username === 'merchant' && password === 'merchant')) {
+          // Clear old user data before login, except theme
+          localStorage.removeItem('token')
+          localStorage.removeItem('userInfo')
+          localStorage.removeItem('user_info')
+          localStorage.removeItem('tabStore.tabs')
+          localStorage.removeItem('tabStore.currentPath')
+          Object.keys(localStorage).forEach((key) => {
+            if (key.startsWith('searchFields-') || key.endsWith('-visibility')) {
+              localStorage.removeItem(key)
+            }
+          })
+
+          // Store token
+          const token = 'mock-token-' + Date.now()
+          userStore.setToken(token)
+
+          // Determine role and permissions based on username
+          const isAdmin = username === 'admin'
+          const role = isAdmin ? 'admin' : 'merchant'
+          const permissions = isAdmin ? adminPermissions : merchantPermissions
+          const roleName = isAdmin ? '超级管理员' : '商家'
+
+          // Save user info to store
+          userStore.setUserInfo({
+            username: username,
+            avatar: 'https://img1.baidu.com/it/u=3423853670,1866145135&fm=253&fmt=auto&app=138&f=JPEG?w=800&h=800',
+            role: roleName,
+          })
+
+          // Save permission info for permission checking
+          setPermissionUserInfo({
+            id: isAdmin ? 1 : 2,
+            username: username,
+            name: roleName,
+            role: role,
+            permissions: permissions,
+          })
+
+          // Remember username option
+          if (loginForm.rememberMe) {
+            localStorage.setItem('rememberedUsername', username)
+          } else {
+            localStorage.removeItem('rememberedUsername')
+          }
+
+          ElMessage.success('登录成功')
+          tabStore.resetTabs()
+          router.push('/')
+        } else {
+          ElMessage.error('账号或密码错误')
+        }
+      } catch {
+        ElMessage.error('登录失败，请重试')
+      } finally {
+        loading.value = false
+      }
+    })
+  }
+
+  // Load remembered username on mount
+  const rememberedUsername = localStorage.getItem('rememberedUsername')
+  if (rememberedUsername) {
+    loginForm.username = rememberedUsername
+    loginForm.rememberMe = true
+  }
 </script>
 
 <style lang="scss" scoped>
-.login-page {
-  display: flex;
-  width: 100%;
-  height: 100vh;
-  overflow: hidden;
-}
-
-.login-left {
-  flex: 1;
-  background: linear-gradient(135deg, #e8f4fd 0%, #d4e8f7 100%);
-  display: flex;
-  flex-direction: column;
-  padding: 40px;
-  position: relative;
-}
-
-.brand-name {
-  font-size: 28px;
-  font-weight: 700;
-  color: #f59e0b;
-  letter-spacing: 2px;
-}
-
-.illustration {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  svg {
-    max-width: 100%;
-    max-height: 100%;
-    width: 500px;
-    height: 400px;
-  }
-}
-
-.login-right {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f5f7fa;
-}
-
-.login-card {
-  width: 420px;
-  padding: 20px;
-  border-radius: 12px;
-
-  :deep(.el-card__body) {
-    padding: 40px 30px;
-  }
-}
-
-.login-title {
-  text-align: center;
-  font-size: 32px;
-  font-weight: 700;
-  
-  margin-bottom: 36px;
-}
-
-.login-form {
-  .form-options {
+  .login-page {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-  }
-
-  .forgot-link {
-    font-size: 14px;
-  }
-
-  .login-btn {
     width: 100%;
-    height: 44px;
-    font-size: 16px;
-    font-weight: 500;
+    height: 100vh;
+    overflow: hidden;
   }
-}
 
-// 暗黑模式样式
-.dark {
   .login-left {
-    background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
-    
-    .illustration {
-      svg {
-        // 修改SVG中的白色元素为浅色
-        rect[fill="#fff"] {
-          fill: #e0e0e0;
-        }
-        
-        rect[fill="#E8F4FD"] {
-          fill: #2c2c2c;
+    flex: 1;
+    background: linear-gradient(135deg, #e8f4fd 0%, #d4e8f7 100%);
+    display: flex;
+    flex-direction: column;
+    padding: 40px;
+    position: relative;
+  }
+
+  .brand-name {
+    font-size: 28px;
+    font-weight: 700;
+    color: #f59e0b;
+    letter-spacing: 2px;
+  }
+
+  .illustration {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+      max-width: 100%;
+      max-height: 100%;
+      width: 500px;
+      height: 400px;
+    }
+  }
+
+  .login-right {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f7fa;
+  }
+
+  .login-card {
+    width: 420px;
+    padding: 20px;
+    border-radius: 12px;
+
+    :deep(.el-card__body) {
+      padding: 40px 30px;
+    }
+  }
+
+  .login-title {
+    text-align: center;
+    font-size: 32px;
+    font-weight: 700;
+
+    margin-bottom: 16px;
+  }
+
+  .login-tips {
+    text-align: center;
+    margin-bottom: 24px;
+    padding: 12px;
+    background-color: #fef9c3;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #854d0e;
+
+    p {
+      margin: 4px 0;
+    }
+  }
+
+  .login-form {
+    .form-options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .forgot-link {
+      font-size: 14px;
+    }
+
+    .login-btn {
+      width: 100%;
+      height: 44px;
+      font-size: 16px;
+      font-weight: 500;
+    }
+  }
+
+  // 暗黑模式样式
+  .dark {
+    .login-left {
+      background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
+
+      .illustration {
+        svg {
+          // 修改SVG中的白色元素为浅色
+          rect[fill='#fff'] {
+            fill: #e0e0e0;
+          }
+
+          rect[fill='#E8F4FD'] {
+            fill: #2c2c2c;
+          }
         }
       }
     }
-  }
-  
-  .login-right {
-    background: #1a1a1a;
-  }
-  
-  .login-card {
-    background-color: #2c2c2c;
-    border-color: #333;
-    
-    :deep(.el-card__body) {
-      background-color: #2c2c2c;
-    }
-  }
-  
-  .login-title {
-    color: var(--el-text-color-primary);
-  }
-  
-  .forgot-link {
-    color: var(--el-color-primary);
-  }
-  
-  // 确保表单在暗黑模式下的样式
-  :deep(.el-form) {
-    .el-form-item__label {
-      color: var(--el-text-color-primary);
-    }
-  }
-  
-  // 确保输入框在暗黑模式下的样式
-  :deep(.el-input__wrapper) {
-    --el-input-bg-color: var(--el-input-bg-color);
-    --el-input-border-color: var(--el-input-border-color);
-    --el-input-text-color: var(--el-input-text-color);
-    --el-input-placeholder-color: var(--el-input-placeholder-color);
-  }
-  
-  // 确保复选框在暗黑模式下的样式
-  :deep(.el-checkbox) {
-    .el-checkbox__label {
-      color: var(--el-text-color-primary);
-    }
-  }
-  
-  // 响应式调整
-  @media (max-width: 768px) {
+
     .login-right {
-      background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
+      background: #1a1a1a;
+    }
+
+    .login-card {
+      background-color: #2c2c2c;
+      border-color: #333;
+
+      :deep(.el-card__body) {
+        background-color: #2c2c2c;
+      }
+    }
+
+    .login-title {
+      color: var(--el-text-color-primary);
+    }
+
+    .forgot-link {
+      color: var(--el-color-primary);
+    }
+
+    // 确保表单在暗黑模式下的样式
+    :deep(.el-form) {
+      .el-form-item__label {
+        color: var(--el-text-color-primary);
+      }
+    }
+
+    // 确保输入框在暗黑模式下的样式
+    :deep(.el-input__wrapper) {
+      --el-input-bg-color: var(--el-input-bg-color);
+      --el-input-border-color: var(--el-input-border-color);
+      --el-input-text-color: var(--el-input-text-color);
+      --el-input-placeholder-color: var(--el-input-placeholder-color);
+    }
+
+    // 确保复选框在暗黑模式下的样式
+    :deep(.el-checkbox) {
+      .el-checkbox__label {
+        color: var(--el-text-color-primary);
+      }
+    }
+
+    // 响应式调整
+    @media (max-width: 768px) {
+      .login-right {
+        background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
+      }
     }
   }
-}
 
-// Responsive: stack on small screens
-@media (max-width: 768px) {
-  .login-left {
-    display: none;
-  }
+  // Responsive: stack on small screens
+  @media (max-width: 768px) {
+    .login-left {
+      display: none;
+    }
 
-  .login-right {
-    background: linear-gradient(135deg, #e8f4fd 0%, #d4e8f7 100%);
-  }
+    .login-right {
+      background: linear-gradient(135deg, #e8f4fd 0%, #d4e8f7 100%);
+    }
 
-  .login-card {
-    width: 90%;
-    max-width: 420px;
+    .login-card {
+      width: 90%;
+      max-width: 420px;
+    }
   }
-}
 </style>

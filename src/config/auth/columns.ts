@@ -10,43 +10,43 @@ export const orderColumns: ColumnConfig[] = [
     label: '订单编号', // 列显示名称
     prop: 'orderNo', // 数据字段名
     minWidth: '180', // 最小宽度
-    visible: true // 是否默认显示
+    visible: true, // 是否默认显示
   },
   {
     key: 'createTime',
     label: '创建时间',
     prop: 'createTime',
     minWidth: '170',
-    visible: true
+    visible: true,
   },
   {
     key: 'customerName',
     label: '客户名称',
     prop: 'customerName',
     minWidth: '180',
-    visible: true
+    visible: true,
   },
   {
     key: 'authCount',
     label: '授权数量',
     prop: 'authCount',
     width: '100', // 固定宽度
-    visible: true
+    visible: true,
   },
   {
     key: 'authStartDate',
     label: '授权起始日期',
     prop: 'authStartDate',
     minWidth: '170',
-    visible: true
+    visible: true,
   },
   {
     key: 'authEndDate',
     label: '授权结束日期',
     prop: 'authEndDate',
     minWidth: '170',
-    visible: true
-  }
+    visible: true,
+  },
 ]
 
 /**
@@ -59,21 +59,21 @@ export const customerColumns: ColumnConfig[] = [
     label: '客户名称',
     prop: 'name',
     minWidth: '160',
-    visible: true
+    visible: true,
   },
   {
     key: 'contact',
     label: '联系人',
     prop: 'contact',
     minWidth: '120',
-    visible: true
+    visible: true,
   },
   {
     key: 'phone',
     label: '手机号',
     prop: 'phone',
     minWidth: '140',
-    visible: true
+    visible: true,
   },
   {
     key: 'accountStatus',
@@ -81,15 +81,15 @@ export const customerColumns: ColumnConfig[] = [
     prop: 'accountStatus',
     width: '100',
     visible: true,
-    hasTemplate: true
+    hasTemplate: true,
   },
   {
     key: 'createDate',
     label: '创建日期',
     prop: 'createDate',
     minWidth: '170',
-    visible: true
-  }
+    visible: true,
+  },
 ]
 
 /**
@@ -102,35 +102,35 @@ export const authColumns: ColumnConfig[] = [
     label: '客户名称',
     prop: 'customerName',
     minWidth: '140',
-    visible: true
+    visible: true,
   },
   {
     key: 'authNo',
     label: '授权编号',
     prop: 'authNo',
     minWidth: '140',
-    visible: true
+    visible: true,
   },
   {
     key: 'bindDate',
     label: '绑定日期',
     prop: 'bindDate',
     minWidth: '170',
-    visible: true
+    visible: true,
   },
   {
     key: 'authStartDate',
     label: '授权起始日期',
     prop: 'authStartDate',
     minWidth: '170',
-    visible: true
+    visible: true,
   },
   {
     key: 'authEndDate',
     label: '授权结束日期',
     prop: 'authEndDate',
     minWidth: '170',
-    visible: true
+    visible: true,
   },
   {
     key: 'status',
@@ -138,6 +138,6 @@ export const authColumns: ColumnConfig[] = [
     prop: 'status',
     minWidth: '100',
     visible: true,
-    hasTemplate: true
-  }
+    hasTemplate: true,
+  },
 ]

@@ -36,120 +36,113 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Delete } from '@element-plus/icons-vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { BaseTablePage } from '@/components/BaseTablePage'
-import type { ActionButton } from '@/components/DataTable/types'
-import { operationLogColumns } from '@/config/audit/columns'
-import { operationLogSearchFields } from '@/config/audit/searchFields'
-import type { OperationLog } from '@/types/index'
-import request from '@/utils/request'
+  import { ref } from 'vue'
+  import { Delete } from '@element-plus/icons-vue'
+  import { ElMessage, ElMessageBox } from 'element-plus'
+  import { BaseTablePage } from '@/components/BaseTablePage'
+  import type { ActionButton } from '@/components/DataTable/types'
+  import { operationLogColumns } from '@/config/audit/columns'
+  import { operationLogSearchFields } from '@/config/audit/searchFields'
+  import type { OperationLog } from '@/types/index'
+  import request from '@/utils/request'
 
-const selectedRows = ref<OperationLog[]>([])
+  const selectedRows = ref<OperationLog[]>([])
 
-// ─── Table Config ─────────────────────────────────────────────────────
+  // ─── Table Config ─────────────────────────────────────────────────────
 
-// 表格列配置已移至 @/config/audit/columns.ts
-const columns = ref(operationLogColumns)
+  // 表格列配置已移至 @/config/audit/columns.ts
+  const columns = ref(operationLogColumns)
 
-const tableActions: ActionButton[] = [
-  { key: 'delete', label: '删除', type: 'danger', icon: Delete }
-]
+  const tableActions: ActionButton[] = [{ key: 'delete', label: '删除', type: 'danger', icon: Delete }]
 
-const handleTableAction = (action: string, row: OperationLog) => {
-  if (action === 'delete') {
-    handleDelete(row)
-  }
-}
-
-// 搜索字段配置已移至 @/config/audit/searchFields.ts
-const searchFields = operationLogSearchFields
-
-const fetchData = async (formData?: Record<string, any>, page: number = 1, pageSize: number = 20) => {
-  try {
-    const result = await request.get('/api/log/operation/list', {
-      params: {
-        page: String(page),
-        pageSize: String(pageSize),
-        ...formData
-      }
-    })
-    console.log(result)
-    if (result.code === 200) {
-      // 映射mock数据中的字段到OperationLog类型
-      const list = (result.data.list || []).map((item: any) => ({
-        id: item.id,
-        operator: item.operator,
-        description: item.operationDesc,
-        duration: parseInt(item.executionTime) || 0,
-        method: item.requestMethod,
-        params: item.requestParams,
-        ipAddress: item.ip,
-        location: item.browser || '',
-        createTime: item.operationTime
-      }))
-      return {
-        list,
-        total: result.data.total || 0
-      }
+  const handleTableAction = (action: string, row: OperationLog) => {
+    if (action === 'delete') {
+      handleDelete(row)
     }
-    return { list: [], total: 0 }
-  } catch (error) {
-    ElMessage.error('加载数据失败')
-    return { list: [], total: 0 }
   }
-}
 
-const handleSelectionChange = (selection: OperationLog[]) => {
-  selectedRows.value = selection
-}
+  // 搜索字段配置已移至 @/config/audit/searchFields.ts
+  const searchFields = operationLogSearchFields
 
-const handleDelete = async (row: OperationLog) => {
-  try {
-    await ElMessageBox.confirm(
-      `确定要删除操作人 "${row.operator}" 的日志记录吗？`,
-      '删除确认',
-      {
+  const fetchData = async (formData?: Record<string, any>, page: number = 1, pageSize: number = 20) => {
+    try {
+      const result = await request.get('/api/log/operation/list', {
+        params: {
+          page: String(page),
+          pageSize: String(pageSize),
+          ...formData,
+        },
+      })
+      if (result.code === 200) {
+        // 映射mock数据中的字段到OperationLog类型
+        const list = (result.data.list || []).map((item: any) => ({
+          id: item.id,
+          operator: item.operator,
+          description: item.operationDesc,
+          duration: parseInt(item.executionTime) || 0,
+          method: item.requestMethod,
+          params: item.requestParams,
+          ipAddress: item.ip,
+          location: item.browser || '',
+          createTime: item.operationTime,
+        }))
+        return {
+          list,
+          total: result.data.total || 0,
+        }
+      }
+      return { list: [], total: 0 }
+    } catch {
+      ElMessage.error('加载数据失败')
+      return { list: [], total: 0 }
+    }
+  }
+
+  const handleSelectionChange = (selection: OperationLog[]) => {
+    selectedRows.value = selection
+  }
+
+  const handleDelete = async (row: OperationLog) => {
+    try {
+      await ElMessageBox.confirm(`确定要删除操作人 "${row.operator}" 的日志记录吗？`, '删除确认', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
-        type: 'warning'
+        type: 'warning',
+      })
+      const result = await request.delete(`/api/log/operation/delete`, { params: { id: row.id } })
+      if (result.code === 200) {
+        ElMessage.success('删除成功')
       }
-    )
-    const result = await request.delete(`/api/log/operation/delete`, { params: { id: row.id } })
-    if (result.code === 200) {
-      ElMessage.success('删除成功')
+    } catch {
+      // User cancelled
     }
-  } catch {
-    // User cancelled
   }
-}
 </script>
 
 <style lang="scss" scoped>
-.operation-logs {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow-y: auto;
-  border-radius: 8px;
+  .operation-logs {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto;
+    border-radius: 8px;
 
-  .duration-badge {
-    display: inline-block;
-    padding: 2px 10px;
-    background: #e8f5e9;
-    color: #4caf50;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 500;
-  }
+    .duration-badge {
+      display: inline-block;
+      padding: 2px 10px;
+      background: #e8f5e9;
+      color: #4caf50;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
 
-  .text-ellipsis {
-    display: inline-block;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    .text-ellipsis {
+      display: inline-block;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   }
-}
 </style>

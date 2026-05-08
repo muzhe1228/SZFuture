@@ -9,9 +9,7 @@ export function setupApprovalMock() {
     const params = new URLSearchParams(url.split('?')[1])
     const page = parseInt(params.get('page') || '1')
     const pageSize = parseInt(params.get('pageSize') || '20')
-    
 
-    
     const list = []
     for (let i = 0; i < pageSize; i++) {
       list.push({
@@ -33,7 +31,7 @@ export function setupApprovalMock() {
           hardwareBind: Random.pick(['已绑定', '未绑定']),
           bindDate: Random.date('yyyy-MM-dd'),
           authStartDate: Random.date('yyyy-MM-dd'),
-          authEndDate: Random.date('yyyy-MM-dd')
+          authEndDate: Random.date('yyyy-MM-dd'),
         },
         records: [
           {
@@ -41,20 +39,20 @@ export function setupApprovalMock() {
             action: '提交审批',
             time: Random.datetime('yyyy-MM-dd HH:mm:ss'),
             type: 'info',
-            color: '#909399'
-          }
-        ]
+            color: '#909399',
+          },
+        ],
       })
     }
-    
+
     return {
       code: 200,
       message: 'success',
       data: {
         list,
         total: 75,
-        pendingCount: Random.integer(5, 20)
-      }
+        pendingCount: Random.integer(5, 20),
+      },
     }
   })
 
@@ -86,8 +84,8 @@ export function setupApprovalMock() {
           {
             name: Random.ctitle(3, 5) + '.pdf',
             size: Random.integer(100, 5000) + 'KB',
-            url: '/api/files/' + Random.guid()
-          }
+            url: '/api/files/' + Random.guid(),
+          },
         ],
         approvalFlow: [
           {
@@ -96,7 +94,7 @@ export function setupApprovalMock() {
             role: '部门经理',
             status: '已通过',
             comment: '同意申请',
-            approvalTime: Random.datetime('yyyy-MM-dd HH:mm:ss')
+            approvalTime: Random.datetime('yyyy-MM-dd HH:mm:ss'),
           },
           {
             step: 2,
@@ -104,7 +102,7 @@ export function setupApprovalMock() {
             role: '技术总监',
             status: Random.pick(['待审批', '已通过', '已拒绝']),
             comment: Random.pick(['-', '同意', '需要补充材料']),
-            approvalTime: Random.pick(['-', Random.datetime('yyyy-MM-dd HH:mm:ss')])
+            approvalTime: Random.pick(['-', Random.datetime('yyyy-MM-dd HH:mm:ss')]),
           },
           {
             step: 3,
@@ -112,13 +110,13 @@ export function setupApprovalMock() {
             role: '总经理',
             status: '待审批',
             comment: '-',
-            approvalTime: '-'
-          }
+            approvalTime: '-',
+          },
         ],
         createTime: Random.datetime('yyyy-MM-dd HH:mm:ss'),
         updateTime: Random.datetime('yyyy-MM-dd HH:mm:ss'),
-        remark: Random.csentence(5, 20)
-      }
+        remark: Random.csentence(5, 20),
+      },
     }
   })
 
@@ -127,7 +125,7 @@ export function setupApprovalMock() {
     return {
       code: 200,
       message: '审批通过',
-      data: null
+      data: null,
     }
   })
 
@@ -136,7 +134,7 @@ export function setupApprovalMock() {
     return {
       code: 200,
       message: '已拒绝',
-      data: null
+      data: null,
     }
   })
 
@@ -145,7 +143,7 @@ export function setupApprovalMock() {
     return {
       code: 200,
       message: '已撤回',
-      data: null
+      data: null,
     }
   })
 
@@ -156,8 +154,8 @@ export function setupApprovalMock() {
       message: '提交成功',
       data: {
         id: Random.increment(10000),
-        approvalNo: 'APPR' + Random.date('yyyyMMdd') + String(Random.integer(1000, 9999))
-      }
+        approvalNo: 'APPR' + Random.date('yyyyMMdd') + String(Random.integer(1000, 9999)),
+      },
     }
   })
 
@@ -172,8 +170,8 @@ export function setupApprovalMock() {
         order: Random.integer(1, 10),
         auth: Random.integer(1, 10),
         refund: Random.integer(0, 5),
-        discount: Random.integer(0, 5)
-      }
+        discount: Random.integer(0, 5),
+      },
     }
   })
 }
