@@ -10,7 +10,9 @@
     "prepare": "husky",
     "lint": "eslint . --ext .vue,.js,.jsx,.ts,.tsx",
     "lint:fix": "eslint . --ext .vue,.js,.jsx,.ts,.tsx --fix",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "release": "bash scripts/release.sh",
+    "release:tag": "git tag -a v$(jq -r '.version' package.json) -m \"Release v$(jq -r '.version' package.json)\" && git push origin v$(jq -r '.version' package.json)"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",
