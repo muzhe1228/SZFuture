@@ -78,7 +78,7 @@
       </el-header>
 
       <!-- Tab Bar -->
-      <!-- <TabBar /> -->
+      <TabBar />
 
       <!-- Content -->
       <el-main class="main-content">
@@ -111,7 +111,7 @@ import { useTabStore } from '@/stores/tabStore'
 import { clearUserInfo as clearPermissionUserInfo } from '@/utils/permission'
 import { usePermission } from '@/composables/usePermission'
 import { menuItems, type MenuItem } from '@/config/menu'
-// import TabBar from '@/components/TabBar'
+import TabBar from '@/components/TabBar'
 import RouteTransition from '@/components/RouteTransition'
 
 const route = useRoute()
