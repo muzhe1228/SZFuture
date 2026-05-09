@@ -4,7 +4,7 @@
 @forward 'element-plus/theme-chalk/src/common/var.scss' with (
   $colors: (
     'primary': (
-      'base': #f59e0b, // 橙色主题
+      'base': #416BCB, // 蓝色主题
     ),
   )
 );
@@ -14,21 +14,21 @@
 
 // 确保暗黑模式下也使用自定义主色
 :root {
-  --el-color-primary: #f59e0b !important;
-  --el-color-primary-light-3: #fbbf24 !important;
-  --el-color-primary-light-5: #fcd34d !important;
-  --el-color-primary-light-7: #fde68a !important;
-  --el-color-primary-light-8: #fef3c7 !important;
-  --el-color-primary-light-9: #fffbeb !important;
-  --el-color-primary-dark-2: #d97706 !important;
+  --el-color-primary: #416BCB !important;
+  --el-color-primary-light-3: #5A84D1 !important;
+  --el-color-primary-light-5: #739DE7 !important;
+  --el-color-primary-light-7: #8CB6ED !important;
+  --el-color-primary-light-8: #A3C5F0 !important;
+  --el-color-primary-light-9: #BBD4F5 !important;
+  --el-color-primary-dark-2: #3659A3 !important;
 }
 
 .dark {
-  --el-color-primary: #f59e0b !important;
-  --el-color-primary-light-3: #fbbf24 !important;
-  --el-color-primary-light-5: #fcd34d !important;
-  --el-color-primary-light-7: #fde68a !important;
-  --el-color-primary-light-8: #fef3c7 !important;
-  --el-color-primary-light-9: #fffbeb !important;
-  --el-color-primary-dark-2: #d97706 !important;
+  --el-color-primary: #416BCB !important;
+  --el-color-primary-light-3: #5A84D1 !important;
+  --el-color-primary-light-5: #739DE7 !important;
+  --el-color-primary-light-7: #8CB6ED !important;
+  --el-color-primary-light-8: #A3C5F0 !important;
+  --el-color-primary-light-9: #BBD4F5 !important;
+  --el-color-primary-dark-2: #3659A3 !important;
 }
