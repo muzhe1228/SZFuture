@@ -1,6 +1,7 @@
 import axios, { AxiosError } from 'axios'
 import { ElMessage } from 'element-plus'
 import type { AxiosRequestConfig, AxiosResponse } from 'axios'
+import { logger } from '@/utils/logger'
 
 interface RetryConfig {
   maxRetries?: number
@@ -100,10 +101,15 @@ request.interceptors.request.use(
 
 request.interceptors.response.use(
   (response) => {
+    const { url, method, params, data } = response.config
+    logger.info(`[API] ${method?.toUpperCase()} ${url}`, { params, data, response: response.data })
     return response.data
   },
   (error) => {
     if (error.response) {
+      const { url, method, params, data } = error.response.config
+      logger.error(`[API ERROR] ${method?.toUpperCase()} ${url}`, { params, data, error: error.response.data })
+      
       switch (error.response.status) {
         case 401:
           ElMessage.error('Unauthorized, please login again')
@@ -120,6 +126,7 @@ request.interceptors.response.use(
           ElMessage.error(error.response.data?.message || 'Request failed')
       }
     } else if (error.code) {
+      logger.error(`[NETWORK ERROR] ${error.code}`, error)
       ElMessage.error(`Network error: ${error.code}`)
     }
     return Promise.reject(error)

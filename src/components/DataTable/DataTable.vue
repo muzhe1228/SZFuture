@@ -101,125 +101,125 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, onMounted } from 'vue'
-  import { Setting } from '@element-plus/icons-vue'
-  import type { DataTableProps, DataTableEmits } from './types'
-  import { logger } from '@/utils/logger'
+import { ref, computed, onMounted } from 'vue'
+import { Setting } from '@element-plus/icons-vue'
+import type { DataTableProps, DataTableEmits } from './types'
+import { logger } from '@/utils/logger'
 
-  const props = withDefaults(defineProps<DataTableProps>(), {
-    loading: false,
-    total: 0,
-    currentPage: 1,
-    pageSize: 20,
-    pageSizes: () => [10, 20, 50, 100],
-    title: '',
-    storageKey: 'data-table-columns',
-    showColumnSettings: true,
-    showSelection: true,
-    rowKey: 'id',
-    actions: () => [],
-    treeProps: undefined,
-    defaultExpandAll: false,
-  })
+const props = withDefaults(defineProps<DataTableProps>(), {
+  loading: false,
+  total: 0,
+  currentPage: 1,
+  pageSize: 20,
+  pageSizes: () => [10, 20, 50, 100],
+  title: '',
+  storageKey: 'data-table-columns',
+  showColumnSettings: true,
+  showSelection: true,
+  rowKey: 'id',
+  actions: () => [],
+  treeProps: undefined,
+  defaultExpandAll: false,
+})
 
-  const emit = defineEmits<DataTableEmits>()
+const emit = defineEmits<DataTableEmits>()
 
-  const drawerVisible = ref(false)
+const drawerVisible = ref(false)
 
-  const currentPageModel = computed({
-    get: () => props.currentPage,
-    set: (val) => emit('page-change', val, props.pageSize),
-  })
+const currentPageModel = computed({
+  get: () => props.currentPage,
+  set: (val) => emit('page-change', val, props.pageSize),
+})
 
-  const pageSizeModel = computed({
-    get: () => props.pageSize,
-    set: (val) => emit('page-change', props.currentPage, val),
-  })
+const pageSizeModel = computed({
+  get: () => props.pageSize,
+  set: (val) => emit('page-change', props.currentPage, val),
+})
 
-  const visibleColumns = computed(() => {
-    return props.columns.filter((col) => col.visible !== false)
-  })
+const visibleColumns = computed(() => {
+  return props.columns.filter((col) => col.visible !== false)
+})
 
-  const visibleActions = computed(() => {
-    return props.actions || []
-  })
+const visibleActions = computed(() => {
+  return props.actions || []
+})
 
-  const actionsWidth = computed(() => {
-    const count = visibleActions.value.length > 4 ? 4 : visibleActions.value.length
-    return Math.max(80, count * 50)
-  })
+const actionsWidth = computed(() => {
+  const count = visibleActions.value.length > 4 ? 4 : visibleActions.value.length
+  return Math.max(80, count * 50)
+})
 
-  const handleSelectionChange = (selection: any[]) => {
-    emit('selection-change', selection)
-  }
+const handleSelectionChange = (selection: any[]) => {
+  emit('selection-change', selection)
+}
 
-  const handleSizeChange = (size: number) => {
-    emit('page-change', props.currentPage, size)
-  }
+const handleSizeChange = (size: number) => {
+  emit('page-change', props.currentPage, size)
+}
 
-  const handleCurrentChange = (page: number) => {
-    emit('page-change', page, props.pageSize)
-  }
+const handleCurrentChange = (page: number) => {
+  emit('page-change', page, props.pageSize)
+}
 
-  const handleColumnSettings = () => {
-    drawerVisible.value = true
-    emit('column-settings')
-  }
+const handleColumnSettings = () => {
+  drawerVisible.value = true
+  emit('column-settings')
+}
 
-  const handleColumnChange = () => {
-    saveColumnVisibility()
-  }
+const handleColumnChange = () => {
+  saveColumnVisibility()
+}
 
-  const handleAction = (action: string, row: any) => {
-    emit('action', action, row)
-  }
+const handleAction = (action: string, row: any) => {
+  emit('action', action, row)
+}
 
-  const loadColumnVisibility = () => {
-    if (!props.storageKey) return
-    const saved = localStorage.getItem(`${props.storageKey}-visibility`)
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved)
-        props.columns.forEach((col) => {
-          if (parsed[col.key] !== undefined) {
-            col.visible = parsed[col.key]
-          }
-        })
-      } catch (e) {
-        logger.error('Failed to load column visibility:', e)
-      }
+const loadColumnVisibility = () => {
+  if (!props.storageKey) return
+  const saved = localStorage.getItem(`${props.storageKey}-visibility`)
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved)
+      props.columns.forEach((col) => {
+        if (parsed[col.key] !== undefined) {
+          col.visible = parsed[col.key]
+        }
+      })
+    } catch (e) {
+      logger.error('Failed to load column visibility:', e)
     }
   }
+}
 
-  const saveColumnVisibility = () => {
-    if (!props.storageKey) return
-    const visibility = props.columns.reduce(
-      (acc, col) => {
-        acc[col.key] = col.visible ?? true
-        return acc
-      },
-      {} as Record<string, boolean>
-    )
-    localStorage.setItem(`${props.storageKey}-visibility`, JSON.stringify(visibility))
-  }
+const saveColumnVisibility = () => {
+  if (!props.storageKey) return
+  const visibility = props.columns.reduce(
+    (acc, col) => {
+      acc[col.key] = col.visible ?? true
+      return acc
+    },
+    {} as Record<string, boolean>
+  )
+  localStorage.setItem(`${props.storageKey}-visibility`, JSON.stringify(visibility))
+}
 
-  onMounted(() => {
-    loadColumnVisibility()
-  })
+onMounted(() => {
+  loadColumnVisibility()
+})
 </script>
 
 <style lang="scss" scoped>
-  .data-table {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    overflow-y: auto;
-    border-radius: 8px;
-    background-color: var(--el-card-bg-color);
-  }
+.data-table {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  border-radius: 8px;
+  background-color: var(--el-card-bg-color);
+}
 
-  .table-header {
+.table-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
