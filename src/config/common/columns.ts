@@ -23,7 +23,7 @@ export const messageColumns: ColumnConfig[] = [
     key: 'expiryTime',
     label: '到期时间',
     prop: 'expiryTime',
-    width: '100', // 固定宽度
+    width: '130', // 固定宽度
     visible: true,
   },
   {
@@ -38,14 +38,14 @@ export const messageColumns: ColumnConfig[] = [
     key: 'startDate',
     label: '授权起始日期',
     prop: 'startDate',
-    minWidth: '170',
+    minWidth: '160',
     visible: true,
   },
   {
     key: 'endDate',
     label: '授权结束日期',
     prop: 'endDate',
-    minWidth: '170',
+    minWidth: '160',
     visible: true,
   },
 ]
