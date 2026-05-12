@@ -78,8 +78,8 @@
   const columns = ref(approvalColumns)
 
   const tableActions: ActionButton[] = [
-    { key: 'view', label: '查看', type: 'primary' },
-    { key: 'approve', label: '审批', type: 'danger', condition: (row: ExtendedApproval) => row.status === '待审核' },
+    { key: 'view', label: '查看', type: 'primary', icon: 'IconShow' },
+    { key: 'approve', label: '审批', type: 'danger', icon: 'IconApproval', condition: (row: ExtendedApproval) => row.status === '待审核' },
   ]
 
   // ─── Search Form ──────────────────────────────────────────────────────

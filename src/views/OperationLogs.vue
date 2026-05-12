@@ -37,7 +37,6 @@
 
 <script setup lang="ts">
   import { ref } from 'vue'
-  import { Delete } from '@element-plus/icons-vue'
   import { ElMessage, ElMessageBox } from 'element-plus'
   import { BaseTablePage } from '@/components/BaseTablePage'
   import type { ActionButton } from '@/components/DataTable/types'
@@ -53,7 +52,7 @@
   // 表格列配置已移至 @/config/audit/columns.ts
   const columns = ref(operationLogColumns)
 
-  const tableActions: ActionButton[] = [{ key: 'delete', label: '删除', type: 'danger', icon: Delete }]
+  const tableActions: ActionButton[] = [{ key: 'delete', label: '删除', type: 'danger', icon: 'IconDel' }]
 
   const handleTableAction = (action: string, row: OperationLog) => {
     if (action === 'delete') {

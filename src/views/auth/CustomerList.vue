@@ -64,10 +64,10 @@
   const columns = ref(customerColumns)
 
   const tableActions: ActionButton[] = [
-    { key: 'view', label: '查看', type: 'primary' },
-    { key: 'edit', label: '修改', type: 'success' },
-    { key: 'download', label: '下载', type: 'primary' },
-    { key: 'delete', label: '删除', type: 'danger' },
+    { key: 'view', label: '查看', type: 'primary', icon: 'IconShow' },
+    { key: 'edit', label: '修改', type: 'success', icon: 'IconEdit' },
+    { key: 'download', label: '下载', type: 'primary', icon: 'IconDownload' },
+    { key: 'delete', label: '删除', type: 'danger', icon: 'IconDel' },
   ]
 
   // ─── Table Data ───────────────────────────────────────────────────────

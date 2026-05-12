@@ -13,12 +13,26 @@ export interface ColumnConfig {
   [key: string]: any
 }
 
+export type IconType =
+  | 'IconActive'
+  | 'IconShow'
+  | 'IconDel'
+  | 'IconDownload'
+  | 'IconApproval'
+  | 'IconCopy'
+  | 'IconDelay'
+  | 'IconEdit'
+  | 'IconFreeze'
+  | 'IconRefresh'
+  | 'IconUpload'
+  | 'IconVoid'
+
 export interface ActionButton {
   key: string
   label: string
   type?: 'primary' | 'success' | 'warning' | 'danger' | 'info'
   link?: boolean
-  icon?: any
+  icon?: IconType
   condition?: (row: any) => boolean
 }
 

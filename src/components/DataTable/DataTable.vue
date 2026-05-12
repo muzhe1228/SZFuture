@@ -41,7 +41,12 @@
             <template v-for="action in visibleActions" :key="action.key">
               <el-button v-if="!action.condition || action.condition(row)" :type="action.type || 'primary'"
                 :link="action.link !== false" size="small" @click="handleAction(action.key, row)">
-                {{ action.label }}
+                <el-tooltip :content="action.label" placement="top">
+                  <img :src="iconMap[action.icon as IconType]" alt="icon" :class="['icon', action.icon]" />
+                  <!-- <span class="label">
+                  {{ action.label }}
+                </span> -->
+                </el-tooltip>
               </el-button>
             </template>
           </template>
@@ -71,8 +76,35 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import type { DataTableProps, DataTableEmits } from './types'
+import type { DataTableProps, DataTableEmits, IconType } from './types'
 import { logger } from '@/utils/logger'
+import IconActive from '@/assets/icons/iconActive.png'
+import IconShow from '@/assets/icons/iconShow.png'
+import IconDel from '@/assets/icons/iconDel.png'
+import IconDownload from '@/assets/icons/iconDownload.png'
+import IconApproval from '@/assets/icons/iconApproval.png'
+import IconCopy from '@/assets/icons/iconCopy.png'
+import IconDelay from '@/assets/icons/iconDelay.png'
+import IconEdit from '@/assets/icons/iconEdit.png'
+import IconFreeze from '@/assets/icons/iconFreeze.png'
+import IconRefresh from '@/assets/icons/iconRefresh.png'
+import IconUpload from '@/assets/icons/iconUpload.png'
+import IconVoid from '@/assets/icons/iconVoid.png'
+
+const iconMap: Record<string, string> = {
+  IconActive,
+  IconShow,
+  IconDel,
+  IconDownload,
+  IconApproval,
+  IconCopy,
+  IconDelay,
+  IconEdit,
+  IconFreeze,
+  IconRefresh,
+  IconUpload,
+  IconVoid,
+}
 
 const props = withDefaults(defineProps<DataTableProps>(), {
   loading: false,
@@ -246,6 +278,7 @@ onMounted(() => {
 
 .table-container {
   flex: 1;
+  border-radius: 12px 12px 0 0;
 
   :deep(.table_1_column_1) {
     text-align: center;
@@ -312,13 +345,25 @@ onMounted(() => {
       transform: scaleY(0);
     }
   }
+
+  .icon {
+    width: 22px;
+    transition: transform 0.3s ease-in-out;
+    &.IconApproval{
+      width: 19px;
+    }
+
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
 }
 
 .pagination-container {
   display: flex;
   justify-content: flex-end;
   padding: 12px 16px;
-
+  border-radius: 0 0 12px 12px;
 }
 
 .column-settings {

@@ -76,12 +76,12 @@
 
   // 表格列配置已移至 @/config/product/columns.ts
   const columns = ref(productModuleColumns)
-
+// , condition: (row: ProductModule) => row.type === '版本' 
   const tableActions: ActionButton[] = [
-    { key: 'view', label: '查看', type: 'primary' },
-    { key: 'edit', label: '修改', type: 'success' },
-    { key: 'clone', label: '克隆', type: 'warning', condition: (row: ProductModule) => row.type === '版本' },
-    { key: 'delete', label: '删除', type: 'danger' },
+    { key: 'view', label: '查看', type: 'primary' ,icon:'IconShow'},
+    { key: 'edit', label: '修改', type: 'success', icon: 'IconEdit' },
+    { key: 'clone', label: '克隆', type: 'warning', icon: 'IconCopy'},
+    { key: 'delete', label: '删除', type: 'danger', icon: 'IconDel' },
   ]
 
   const handleTableAction = (action: string, row: ProductModule) => {

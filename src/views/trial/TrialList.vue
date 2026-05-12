@@ -18,13 +18,13 @@
       </template>
 
       <template #extra-actions>
-        <el-button type="primary" size="small" @click="handleBatchFreeze" :disabled="selectedTrials.length === 0">
+        <el-button type="primary" link @click="handleBatchFreeze" :disabled="selectedTrials.length === 0">
           授权冻结
         </el-button>
-        <el-button type="info" size="small" @click="handleBatchVoid" :disabled="selectedTrials.length === 0">
+        <el-button type="info" link @click="handleBatchVoid" :disabled="selectedTrials.length === 0">
           授权作废
         </el-button>
-        <el-button type="danger" size="small" @click="handleBatchDelete" :disabled="selectedTrials.length === 0">
+        <el-button type="danger" link @click="handleBatchDelete" :disabled="selectedTrials.length === 0">
           删除试用
         </el-button>
       </template>
@@ -103,10 +103,10 @@
   const columns = ref(trialColumns)
 
   const tableActions: ActionButton[] = [
-    { key: 'view', label: '查看', type: 'primary' },
-    { key: 'activate', label: '激活', type: 'success', condition: (row: TrialExtended) => row.status !== '已激活' },
-    { key: 'freeze', label: '冻结', type: 'primary', condition: (row: TrialExtended) => row.status === '已激活' },
-    { key: 'unfreeze', label: '更新', type: 'warning', condition: (row: TrialExtended) => row.status === '已冻结' },
+    { key: 'view', label: '查看', type: 'primary', icon: 'IconShow' },
+    { key: 'activate', label: '激活', type: 'success', icon: 'IconActive', condition: (row: TrialExtended) => row.status !== '已激活' },
+    { key: 'freeze', label: '冻结', type: 'primary', icon: 'IconFreeze', condition: (row: TrialExtended) => row.status === '已激活' },
+    { key: 'unfreeze', label: '更新', type: 'warning', icon: 'IconRefresh', condition: (row: TrialExtended) => row.status === '已冻结' },
   ]
 
   // ─── Search Form ──────────────────────────────────────────────────────

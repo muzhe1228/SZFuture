@@ -49,8 +49,8 @@ const searchFields = messageSearchFields
 const columns = ref(messageColumns)
 
 const tableActions: ActionButton[] = [
-  { key: 'view', label: '查看', type: 'primary' },
-  { key: 'delete', label: '删除', type: 'danger' },
+  { key: 'view', label: '查看', type: 'primary', icon:'IconShow' },
+  { key: 'delete', label: '删除', type: 'danger', icon:'IconDel' },
 ]
 
 // ─── Table Data ───────────────────────────────────────────────────────
