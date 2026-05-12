@@ -32,8 +32,9 @@ export interface DataTableProps {
   pageSizes?: number[]
   title?: string
   storageKey?: string
-  showColumnSettings?: boolean
-  showSelection?: boolean
+  hideColumnSettings?: boolean
+  hideSelection?: boolean
+  hideExport?: boolean
   actions?: ActionButton[]
   rowKey?: string
   treeProps?: any
@@ -42,6 +43,7 @@ export interface DataTableProps {
   onSelectionChange?: (selection: any[]) => void
   onColumnSettings?: () => void
   onAction?: (action: string, row: any) => void
+  onExport?: () => void
 }
 
 export interface DataTableEmits {
@@ -49,4 +51,5 @@ export interface DataTableEmits {
   (e: 'selection-change', selection: any[]): void
   (e: 'column-settings'): void
   (e: 'action', action: string, row: any): void
+  (e: 'export'): void
 }

@@ -2,17 +2,16 @@
   <div class="data-table">
     <!-- Table Header -->
     <div class="table-header">
-      <div class="table-title">
-        <h3>{{ title }}</h3>
-
-        <span v-if="total" class="total-count">{{ total }}</span>
-      </div>
       <div class="table-actions">
         <slot name="extra-actions"></slot>
-        <el-button v-if="showColumnSettings" type="primary" size="small" @click="handleColumnSettings">
-          <el-icon>
-            <Setting />
-          </el-icon>
+      </div>
+      <div class="table-actions">
+        <slot name="extra-actions-right"></slot>
+        <el-button v-if="!hideExport" type="primary" link :loading="exportLoading" :disabled="exportLoading"
+          icon="Download" @click="handleExport">
+          导出
+        </el-button>
+        <el-button v-if="!hideColumnSettings" link icon="Tools" @click="handleColumnSettings">
           列配置
         </el-button>
       </div>
@@ -20,30 +19,18 @@
 
     <!-- Data Table -->
     <div class="table-container">
-      <el-table
-        :data="data"
-        border
-        stripe
-        highlight-current-row
-        style="width: 100%; height: 100%"
-        v-loading="loading"
-        @selection-change="handleSelectionChange"
-        :row-key="rowKey"
-        :tree-props="treeProps"
-      >
-        <el-table-column v-if="showSelection" type="selection" width="50" fixed="left" />
+      <!-- border
+      stripe
+      highlight-current-row -->
+      <el-table :data="data" style="width: 100%; height: 100%" v-loading="loading"
+        @selection-change="handleSelectionChange" :row-key="rowKey" :tree-props="treeProps"
+        :row-class-name="rowClassName">
+        <el-table-column v-if="!hideSelection" type="selection" width="50" fixed="left" align="center"
+          :header-align="'center'" />
 
-        <el-table-column
-          v-for="col in visibleColumns"
-          :key="col.key"
-          :prop="col.prop"
-          :label="col.label"
-          :width="col.width"
-          :min-width="col.minWidth"
-          :align="col.align"
-          :sortable="col.sortable"
-          :show-overflow-tooltip="col.showOverflowTooltip"
-        >
+        <el-table-column v-for="col in visibleColumns" :key="col.key" :prop="col.prop" :label="col.label"
+          :width="col.width" :min-width="col.minWidth" :align="col.align" :sortable="col.sortable"
+          :show-overflow-tooltip="col.showOverflowTooltip">
           <template #default="{ row }" v-if="col.hasTemplate">
             <slot :name="`cell-${col.key}`" :row="row"></slot>
           </template>
@@ -52,13 +39,8 @@
         <el-table-column v-if="actions && actions.length > 0" label="操作" :width="actionsWidth" fixed="right">
           <template #default="{ row }">
             <template v-for="action in visibleActions" :key="action.key">
-              <el-button
-                v-if="!action.condition || action.condition(row)"
-                :type="action.type || 'primary'"
-                :link="action.link !== false"
-                size="small"
-                @click="handleAction(action.key, row)"
-              >
+              <el-button v-if="!action.condition || action.condition(row)" :type="action.type || 'primary'"
+                :link="action.link !== false" size="small" @click="handleAction(action.key, row)">
                 {{ action.label }}
               </el-button>
             </template>
@@ -69,29 +51,16 @@
 
     <!-- Pagination -->
     <div class="pagination-container">
-      <el-pagination
-        v-model:current-page="currentPageModel"
-        v-model:page-size="pageSizeModel"
-        :page-sizes="pageSizes"
-        :total="total"
-        layout="total, sizes, prev, pager, next, jumper"
-        background
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
+      <el-pagination v-model:current-page="currentPageModel" v-model:page-size="pageSizeModel" :page-sizes="pageSizes"
+        :total="total" layout="total, sizes, prev, pager, next, jumper" background @size-change="handleSizeChange"
+        @current-change="handleCurrentChange" />
     </div>
 
     <!-- Column Settings Drawer -->
     <el-drawer v-model="drawerVisible" title="列设置" direction="rtl" size="320px">
       <div class="column-settings">
-        <el-switch
-          v-for="col in columns"
-          :key="col.key"
-          v-model="col.visible"
-          :active-text="col.label"
-          class="column-toggle"
-          @change="handleColumnChange"
-        />
+        <el-switch v-for="col in columns" :key="col.key" v-model="col.visible" :active-text="col.label"
+          class="column-toggle" @change="handleColumnChange" />
       </div>
       <template #footer>
         <el-button @click="drawerVisible = false">关闭</el-button>
@@ -102,7 +71,6 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { Setting } from '@element-plus/icons-vue'
 import type { DataTableProps, DataTableEmits } from './types'
 import { logger } from '@/utils/logger'
 
@@ -114,17 +82,21 @@ const props = withDefaults(defineProps<DataTableProps>(), {
   pageSizes: () => [10, 20, 50, 100],
   title: '',
   storageKey: 'data-table-columns',
-  showColumnSettings: true,
-  showSelection: true,
+  hideColumnSettings: false,
+  hideSelection: true,
+  hideExport: true,
   rowKey: 'id',
   actions: () => [],
   treeProps: undefined,
   defaultExpandAll: false,
 })
 
+
 const emit = defineEmits<DataTableEmits>()
 
 const drawerVisible = ref(false)
+const selectedRowKeys = ref<Set<any>>(new Set())
+const exportLoading = ref(false)
 
 const currentPageModel = computed({
   get: () => props.currentPage,
@@ -149,8 +121,30 @@ const actionsWidth = computed(() => {
   return Math.max(80, count * 50)
 })
 
+const rowClassName = ({ row }: { row: any }) => {
+  const rowKey = props.rowKey || 'id'
+  if (selectedRowKeys.value.has(row[rowKey])) {
+    return 'table-row-selected'
+  }
+  return ''
+}
+
 const handleSelectionChange = (selection: any[]) => {
+  selectedRowKeys.value.clear()
+  selection.forEach((item: any) => {
+    const rowKey = props.rowKey || 'id'
+    selectedRowKeys.value.add(item[rowKey])
+  })
   emit('selection-change', selection)
+}
+
+const handleExport = async () => {
+  exportLoading.value = true
+  try {
+    await emit('export')
+  } finally {
+    exportLoading.value = false
+  }
 }
 
 const handleSizeChange = (size: number) => {
@@ -220,81 +214,123 @@ onMounted(() => {
 }
 
 .table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  height: 64px;
+
+  .table-title {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 12px 16px;
-    background-color: var(--el-bg-color);
+    gap: 12px;
 
-    .table-title {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-
-      h3 {
-        font-size: 16px;
-        font-weight: 500;
-        color: var(--el-text-color-primary);
-        margin: 0;
-      }
-
-      .total-count {
-        font-size: 14px;
-        color: var(--el-text-color-secondary);
-      }
+    h3 {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--el-text-color-primary);
+      margin: 0;
     }
 
-    .table-actions {
-      display: flex;
-      gap: 8px;
+    .total-count {
+      font-size: 14px;
+      color: var(--el-text-color-secondary);
     }
   }
 
-  .table-container {
-    flex: 1;
-  }
-
-  .pagination-container {
+  .table-actions {
     display: flex;
-    justify-content: flex-end;
-    padding: 12px 16px;
+    gap: 8px;
+  }
+}
+
+.table-container {
+  flex: 1;
+
+  :deep(.table_1_column_1) {
+    text-align: center;
   }
 
-  .column-settings {
-    padding: 16px 0;
+  :deep(.el-table__header th.el-table__cell:first-child),
+  :deep(.el-table__header .el-checkbox) {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
-    .column-toggle {
-      margin-bottom: 16px;
-      display: block;
+  :deep(.el-table .el-checkbox__input) {
+    width: 18px !important;
+    height: 18px !important;
 
-      &:last-child {
-        margin-bottom: 0;
+    .el-checkbox__inner {
+      border-radius: 5px;
+      border: 1px solid var(--el-text-color-secondary);
+    }
+
+    &.is-indeterminate .el-checkbox__inner {
+      background-color: var(--el-color-primary);
+      border-color: var(--el-color-primary);
+
+      &::before {
+        content: "";
+        position: absolute;
+        display: block;
+        background-color: var(--el-checkbox-checked-icon-color);
+        height: 2px;
+        transform: scale(0.5);
+        left: 0;
+        right: 0;
+        top: 5px;
       }
     }
+
+    &.is-checked .el-checkbox__inner {
+      background-color: transparent;
+      border-color: var(--el-color-primary);
+
+    }
+
+    &.is-checked .el-checkbox__inner::after {
+      transform: scaleY(1);
+      border-color: var(--el-checkbox-checked-icon-color);
+    }
+
+    .el-checkbox__inner::after {
+      box-sizing: content-box;
+      content: "";
+      width: 20px;
+      height: 20px;
+      position: absolute;
+      left: -3px;
+      top: -7px;
+      border: none;
+      background-image: url('@/assets/check.png');
+      background-size: 100% 100%;
+      background-position: center;
+      transform: none;
+      transform-origin: center;
+      transform: scaleY(0);
+    }
   }
+}
 
-  // :deep(.el-table) {
-  //   .el-table__header th {
-  //     background-color: var(--el-table-header-bg-color);
-  //     color: var(--el-table-header-text-color);
-  //     font-weight: 500;
-  //     font-size: 14px;
-  //   }
+.pagination-container {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 16px;
 
-  //   .el-table__body td {
-  //     font-size: 13px;
-  //     color: var(--el-table-text-color);
-  //   }
-  // }
+}
 
-  // :deep(.el-drawer__header) {
-  //   margin-bottom: 0;
-  //   padding-bottom: 16px;
-  //   border-bottom: 1px solid var(--el-border-color);
-  // }
+.column-settings {
+  padding: 16px 0;
 
-  // :deep(.el-drawer__footer) {
-  //   padding: 16px;
-  //   border-top: 1px solid var(--el-border-color);
-  // }
+  .column-toggle {
+    margin-bottom: 16px;
+    display: block;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
 </style>

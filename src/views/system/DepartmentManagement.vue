@@ -13,7 +13,7 @@
       @action="handleTableAction"
     >
       <template #extra-actions>
-        <el-button type="primary" size="small" @click="handleAdd" :icon="Plus"> 新增部门 </el-button>
+        <el-button type="primary" link @click="handleAdd" :icon="Plus"> 新增部门 </el-button>
       </template>
       <template #cell-status="{ row }">
         <el-tag :type="row.status === '启用' ? 'primary' : 'danger'" size="small">

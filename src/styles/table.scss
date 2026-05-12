@@ -13,6 +13,12 @@
     line-height: 1.5;
     min-width: 100%;
 
+    th.el-table__cell.is-leaf,
+    td.el-table__cell {
+      border-bottom: none;
+      height: 60px;
+    }
+
     // 表头样式
     .el-table__header-wrapper {
       .el-table__header {
@@ -37,6 +43,16 @@
 
       .el-table__empty-text {
         color: var(--el-text-color-secondary);
+      }
+    }
+
+    // 选中行背景色
+    .el-table__row.is-selected,
+    .el-table__row.table-row-selected {
+      background-color: #007EFF0D !important;
+
+      >td.el-table__cell {
+        background-color: #007EFF0D !important;
       }
     }
   }

@@ -14,7 +14,7 @@
       @selection-change="handleSelectionChange"
     >
       <template #extra-actions>
-        <el-button type="primary" size="small" @click="handleAddCustomer" :icon="Plus"> 新增客户 </el-button>
+        <el-button type="primary" link @click="handleAddCustomer" :icon="Plus"> 新增客户 </el-button>
       </template>
       <template #cell-accountStatus="{ row }">
         <StatusTag :status="row.accountStatus" size="small" />

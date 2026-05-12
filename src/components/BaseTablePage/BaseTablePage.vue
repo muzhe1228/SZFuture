@@ -8,9 +8,9 @@
     <!-- Data Table -->
     <DataTable :columns="columns" :data="data" :loading="localLoading" :total="pagination.total"
       :current-page="pagination.currentPage" :page-size="pagination.pageSize" :page-sizes="pageSizes" :title="title"
-      :storage-key="storageKey ? `${storageKey}-table` : undefined" :show-column-settings="showColumnSettings"
-      :show-selection="showSelection" :actions="actions" :row-key="rowKey" @page-change="handlePageChange"
-      @selection-change="handleSelectionChange" @action="handleAction">
+      :storage-key="storageKey ? `${storageKey}-table` : undefined" :hide-column-settings="hideColumnSettings"
+      :hide-selection="hideSelection" :hide-export="hideExport" :actions="actions" :row-key="rowKey" @page-change="handlePageChange"
+      @selection-change="handleSelectionChange" @action="handleAction" @export="handleExport">
       <!-- 传递所有插槽给 DataTable 组件 -->
       <template v-for="(_, slotName) in $slots" :key="slotName" v-slot:[slotName]="scope">
         <slot :name="slotName" v-bind="scope"></slot>
@@ -45,10 +45,12 @@ const props = defineProps<{
   title: string
   // 存储键
   storageKey?: string
-  // 是否显示列设置
-  showColumnSettings?: boolean
-  // 是否显示选择框
-  showSelection?: boolean
+  // 是否隐藏列设置
+  hideColumnSettings?: boolean
+  // 是否隐藏选择框
+  hideSelection?: boolean
+  // 是否隐藏导出按钮
+  hideExport?: boolean
   // 行键
   rowKey?: string
   // 分页大小选项
@@ -61,6 +63,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   // 操作事件
   (e: 'action', action: string, row: any): void
+  // 导出事件
+  (e: 'export', searchParams?: Record<string, any>): void
   // 选择变化事件
   (e: 'selection-change', selection: any[]): void
   // 搜索事件
@@ -75,6 +79,7 @@ const emit = defineEmits<{
 const localLoading = ref(false)
 const data = ref<any[]>([])
 const selectedRows = ref<any[]>([])
+const currentSearchParams = ref<Record<string, any>>({})
 
 const pagination = reactive({
   currentPage: 1,
@@ -86,17 +91,18 @@ const pagination = reactive({
 const searchFields = props.searchFields || []
 const pageSizes = props.pageSizes || [10, 20, 50, 100]
 const rowKey = props.rowKey || 'id'
-const showColumnSettings = props.showColumnSettings !== false
-const showSelection = props.showSelection || false
+console.log(props)
 
 // Methods
 const handleSearch = async (formData: Record<string, any>) => {
+  currentSearchParams.value = formData
   pagination.currentPage = 1
   await loadData(formData)
   emit('search', formData)
 }
 
 const handleReset = async () => {
+  currentSearchParams.value = {}
   pagination.currentPage = 1
   await loadData()
   emit('reset')
@@ -105,8 +111,12 @@ const handleReset = async () => {
 const handlePageChange = (page: number, size: number) => {
   pagination.currentPage = page
   pagination.pageSize = size
-  loadData()
+  loadData(currentSearchParams.value)
   emit('page-change', page, size)
+}
+
+const handleExport = () => {
+  emit('export', currentSearchParams.value)
 }
 
 const handleSelectionChange = (selection: any[]) => {

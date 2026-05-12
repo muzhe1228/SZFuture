@@ -23,11 +23,11 @@ NProgress.inc(0.2)
 const nprogressStyle = document.createElement('style')
 nprogressStyle.textContent = `
   #nprogress .bar {
-    background: #f59e0b !important;
+    background: #416BCB !important;
     height: 3px !important;
   }
   #nprogress .peg {
-    box-shadow: 0 0 10px #f59e0b, 0 0 5px #f59e0b !important;
+    box-shadow: 0 0 10px #416BCB, 0 0 5px #416BCB !important;
   }
 `
 document.head.appendChild(nprogressStyle)

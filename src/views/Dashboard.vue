@@ -6,403 +6,448 @@
         <!-- Welcome Card -->
         <el-card class="welcome-card" shadow="never">
           <div class="welcome-content">
-            <el-avatar :size="60" class="avatar">
-              <img :src="currentUser.avatar" />
-              <!-- <el-icon :size="36"><User /></el-icon> -->
-            </el-avatar>
-            <div class="welcome-text">
-              <h2>Hi, {{ currentUser.name }}, 开始您一天的工作吧!</h2>
-              <p>所属部门: {{ currentUser.department }} | {{ currentUser.role }}</p>
-              <p class="last-login">上次登陆时间: {{ lastLoginTime }}</p>
-            </div>
+            <h2 class="welcome-content-title">Hi, {{ currentUser.name }}, 开始您一天的工作吧!</h2>
+            <p class="welcome-content-department">所属部门: {{ currentUser.department }} | {{ currentUser.role }}</p>
+            <p class="welcome-content-last-login">上次登陆时间: {{ lastLoginTime }}</p>
           </div>
         </el-card>
 
         <!-- Data Statistics Card -->
-        <el-card class="stats-card" shadow="never">
-          <template #header>
-            <div class="card-header">数据统计</div>
-          </template>
+        <div class="stats-card">
+          <div class="stats-card-header">数据统计</div>
           <div class="stats-grid">
             <div v-for="stat in statistics" :key="stat.label" class="stat-item">
-              <div class="stat-value">
-                {{ stat.value }}
-                <el-icon class="stat-arrow"><ArrowUp /></el-icon>
-              </div>
               <div class="stat-label">{{ stat.label }}</div>
+              <div class="stat-value">{{ stat.value }}</div>
             </div>
           </div>
-        </el-card>
+        </div>
 
         <!-- Message Notifications Card -->
-        <el-card class="messages-card" shadow="never">
-          <template #header>
-            <div class="card-header">消息通知</div>
-          </template>
-          <div class="message-list">
-            <div v-for="msg in messages" :key="msg.id" class="message-item">
-              <div class="message-info">
-                <span class="message-text">{{ msg.content }}</span>
-                <span class="message-time">{{ msg.time }}</span>
-              </div>
-              <el-button type="primary" link @click="handleViewMessage(msg)"> 查看处理 </el-button>
-            </div>
-          </div>
-        </el-card>
+        <div class="message-card">
+          <div class="message-card-header">消息通知</div>
+          <ul class="message-table-header">
+            <li>发生时间</li>
+            <li>客户</li>
+            <li>事件</li>
+            <li>操作</li>
+          </ul>
+        </div>
+        <div class="message-table-body">
+          <ul v-for="msg in messages" :key="msg.id" class="message-table-item">
+            <li>{{ msg.time }}</li>
+            <li>{{ msg.customerName }}</li>
+            <li>授权还有<span class="expiry-days">{{ msg.expiryDays }}</span>天到期</li>
+            <li><el-button type="primary" link @click="handleViewMessage(msg)"> 处理 </el-button></li>
+          </ul>
+        </div>
       </div>
 
       <!-- Right Column -->
       <div class="right-column">
-        <div class="chart-section-title">统计报表</div>
+        <div class="chart-header">
+          <div class="chart-section-title">统计报表</div>
+          <div class="chart-filters">
+            <el-select v-model="expirationFilter" border-radius="var(--el-border-radius-circle)" placeholder="请选择"
+              class="filter-select">
+              <el-option label="产品1" value="product1" />
+              <el-option label="产品2" value="product2" />
+            </el-select>
 
-        <!-- Activation Rate Chart -->
-        <el-card class="chart-card" shadow="never">
-          <template #header>
-            <div class="chart-header">
-              <span class="chart-title">激活率统计</span>
-              <div class="chart-filters">
-                <el-select v-model="activationFilter" placeholder="请选择" size="small" class="filter-select">
-                  <el-option label="产品1" value="product1" />
-                  <el-option label="产品2" value="product2" />
-                </el-select>
-                <el-radio-group v-model="activationTimeRange" size="small">
-                  <el-radio-button value="day">日</el-radio-button>
-                  <el-radio-button value="month">月</el-radio-button>
-                  <el-radio-button value="year">年</el-radio-button>
-                </el-radio-group>
-                <el-date-picker
-                  v-model="activationDateRange"
-                  type="daterange"
-                  range-separator="至"
-                  start-placeholder="开始日期"
-                  end-placeholder="结束日期"
-                  size="small"
-                  class="date-range-picker"
-                />
-              </div>
-            </div>
-          </template>
+            <el-date-picker v-model="expirationDateRange" type="daterange" range-separator="至" start-placeholder="开始日期"
+              end-placeholder="结束日期" class="date-range-picker" />
+
+            <el-button type="primary" link>导出</el-button>
+          </div>
+        </div>
+
+
+        <div class="chart-wrapper">
           <div class="chart-container">
-            <div class="chart-label">激活率</div>
+            <div class="chart-label">激活率统计</div>
             <v-chart class="chart" :option="activationChartOption" autoresize />
           </div>
-        </el-card>
-
-        <!-- Expiration Rate Chart -->
-        <el-card class="chart-card" shadow="never">
-          <template #header>
-            <div class="chart-header">
-              <span class="chart-title">过期率统计</span>
-              <div class="chart-filters">
-                <el-select v-model="expirationFilter" placeholder="请选择" size="small" class="filter-select">
-                  <el-option label="产品1" value="product1" />
-                  <el-option label="产品2" value="product2" />
-                </el-select>
-                <el-radio-group v-model="expirationTimeRange" size="small">
-                  <el-radio-button value="day">日</el-radio-button>
-                  <el-radio-button value="month">月</el-radio-button>
-                  <el-radio-button value="year">年</el-radio-button>
-                </el-radio-group>
-                <el-date-picker
-                  v-model="expirationDateRange"
-                  type="daterange"
-                  range-separator="至"
-                  start-placeholder="开始日期"
-                  end-placeholder="结束日期"
-                  size="small"
-                  class="date-range-picker"
-                />
-              </div>
-            </div>
-          </template>
           <div class="chart-container">
-            <div class="chart-label">过期率</div>
+            <div class="chart-label">过期率统计</div>
             <v-chart class="chart" :option="expirationChartOption" autoresize />
           </div>
-        </el-card>
+
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { ref, computed } from 'vue'
-  import { ArrowUp } from '@element-plus/icons-vue'
-  import { use } from 'echarts/core'
-  import { CanvasRenderer } from 'echarts/renderers'
-  import { LineChart } from 'echarts/charts'
-  import { TitleComponent, TooltipComponent, LegendComponent, GridComponent } from 'echarts/components'
-  import VChart from 'vue-echarts'
-  import type { Message } from '@/types/index'
-  import { useUserStore } from '@/stores/user'
+import { ref, computed } from 'vue'
+import { use } from 'echarts/core'
+import { CanvasRenderer } from 'echarts/renderers'
+import { LineChart } from 'echarts/charts'
+import { TitleComponent, TooltipComponent, LegendComponent, GridComponent } from 'echarts/components'
+import VChart from 'vue-echarts'
+import type { Message } from '@/types/index'
+import { useUserStore } from '@/stores/user'
+import { createRoundedRectPath } from '@/utils/common'
 
-  use([CanvasRenderer, LineChart, TitleComponent, TooltipComponent, LegendComponent, GridComponent])
+use([CanvasRenderer, LineChart, TitleComponent, TooltipComponent, LegendComponent, GridComponent])
 
-  interface StatItem {
-    label: string
-    value: number
-  }
+interface StatItem {
+  label: string
+  value: number
+}
 
-  interface MessageItem extends Message {
-    content: string
-    time: string
-  }
+interface MessageItem extends Message {
+  expiryDays: number
+  time: string
+}
 
-  // Get user info from store
-  const userStore = useUserStore()
+// Get user info from store
+const userStore = useUserStore()
 
-  // Mock current user data as fallback
-  const currentUser = ref({
-    name: userStore.userInfo?.username || '张三',
-    department: '研发部',
-    role: userStore.userInfo?.role || '系统管理员',
-    avatar: userStore.userInfo?.avatar || '',
-  })
+// Mock current user data as fallback
+const currentUser = ref({
+  name: userStore.userInfo?.username || '张三',
+  department: '研发部',
+  role: userStore.userInfo?.role || '系统管理员',
+  avatar: userStore.userInfo?.avatar || '',
+})
 
-  const lastLoginTime = ref(userStore.userInfo?.lastLoginTime || '2026-03-26 10:39:19')
+const lastLoginTime = ref(userStore.userInfo?.lastLoginTime || '2026-03-26 10:39:19')
 
-  // Mock statistics data
-  const statistics = ref<StatItem[]>([
-    { label: '客户数量', value: 276 },
-    { label: '订单数量', value: 276 },
-    { label: '试用数量', value: 276 },
-    { label: '授权数量', value: 276 },
-    { label: '临期授权', value: 276 },
-  ])
+// Mock statistics data
+const statistics = ref<StatItem[]>([
+  { label: '客户量', value: 276 },
+  { label: '订单量', value: 146 },
+  { label: '试用量', value: 976 },
+  { label: '授权量', value: 855 },
+  { label: '临期授权', value: 342 },
+])
 
-  // Mock messages data
-  const messages = ref<MessageItem[]>([
+// Mock messages data
+const messages = ref<MessageItem[]>([
+  {
+    id: 1,
+    customerName: '张三',
+    phone: '138****1234',
+    expiryTime: 7,
+    status: '未处理',
+    startDate: '2025-04-01',
+    endDate: '2026-04-01',
+    expiryDays: 2,
+    time: '2026-04-01 10:00:00',
+  },
+  {
+    id: 2,
+    customerName: '李四',
+    phone: '139****5678',
+    expiryTime: 3,
+    status: '未处理',
+    startDate: '2025-04-05',
+    endDate: '2026-04-05',
+    expiryDays: 2,
+    time: '2026-04-02 14:30:00',
+  },
+  {
+    id: 3,
+    customerName: '王五',
+    phone: '136****9012',
+    expiryTime: 1,
+    status: '未处理',
+    startDate: '2025-04-10',
+    endDate: '2026-04-10',
+    expiryDays: 3,
+    time: '2026-04-03 09:15:00',
+  },
+  {
+    id: 4,
+    customerName: '王五',
+    phone: '136****9012',
+    expiryTime: 1,
+    status: '未处理',
+    startDate: '2025-04-10',
+    endDate: '2026-04-10',
+    expiryDays: 3,
+    time: '2026-04-03 09:15:00',
+  },
+  {
+    id: 5,
+    customerName: '王五',
+    phone: '136****9012',
+    expiryTime: 1,
+    status: '未处理',
+    startDate: '2025-04-10',
+    endDate: '2026-04-10',
+    expiryDays: 3,
+    time: '2026-04-03 09:15:00',
+  },
+])
+
+// Chart filters
+const expirationFilter = ref('product1')
+const expirationDateRange = ref<[Date, Date] | null>(null)
+
+// Mock chart data
+const months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
+
+const activationChartOption = computed(() => ({
+  tooltip: {
+    trigger: 'axis' as const,
+  },
+  legend: {
+    data: ['产品1', '产品2'],
+    top: 0,
+    right: '4%',
+    icon: createRoundedRectPath(16, 12, 6),
+    itemWidth: 16,
+    itemHeight: 12,
+    itemGap: 20,
+    textStyle: {
+      color: '#1D2129',
+      fontSize: 12,
+    },
+    selectedMode: true,
+    selected: {
+      '产品1': true,
+      '产品2': true,
+    },
+    inactiveColor: '#ccc',
+  },
+  grid: {
+    left: '3%',
+    right: '4%',
+    top: '15%',
+    bottom: '3%',
+    containLabel: true,
+  },
+  xAxis: {
+    type: 'category' as const,
+    boundaryGap: false,
+    data: months,
+  },
+  yAxis: {
+    type: 'value' as const,
+    axisLabel: {
+      formatter: '{value}%',
+    },
+  },
+  series: [
     {
-      id: 1,
-      customerName: '张三',
-      phone: '138****1234',
-      expiryTime: 7,
-      status: '未处理',
-      startDate: '2025-04-01',
-      endDate: '2026-04-01',
-      content: '客户【张三】【138****1234】：授权还有7天到期',
-      time: '2026-04-01 10:00:00',
+      name: '产品1',
+      type: 'line' as const,
+      smooth: true,
+      data: [30, 35, 42, 48, 55, 62, 68, 75, 80, 85, 88, 92],
+      symbol: 'none',
+      itemStyle: { color: '#165DFF' },
+      lineStyle: { width: 2, shadowBlur: 4, shadowColor: 'rgba(64, 158, 255, 0.5)', shadowOffsetY: 2 },
+      areaStyle: {
+        color: {
+          type: 'linear',
+          x: 0,
+          y: 0,
+          x2: 0,
+          y2: 1,
+          colorStops: [
+            { offset: 0, color: 'rgba(64, 158, 255, 0.35)' },
+            { offset: 1, color: 'rgba(64, 158, 255, 0.02)' },
+          ],
+        },
+      },
     },
     {
-      id: 2,
-      customerName: '李四',
-      phone: '139****5678',
-      expiryTime: 3,
-      status: '未处理',
-      startDate: '2025-04-05',
-      endDate: '2026-04-05',
-      content: '客户【李四】【139****5678】：授权还有3天到期',
-      time: '2026-04-02 14:30:00',
+      name: '产品2',
+      type: 'line' as const,
+      smooth: true,
+      data: [20, 25, 30, 38, 45, 52, 58, 65, 72, 78, 82, 86],
+      symbol: 'none',
+      itemStyle: { color: '#14C9C9' },
+      lineStyle: { width: 2, shadowBlur: 4, shadowColor: 'rgba(0, 180, 160, 0.5)', shadowOffsetY: 2 },
+      areaStyle: {
+        color: {
+          type: 'linear',
+          x: 0,
+          y: 0,
+          x2: 0,
+          y2: 1,
+          colorStops: [
+            { offset: 0, color: 'rgba(0, 180, 160, 0.35)' },
+            { offset: 1, color: 'rgba(0, 180, 160, 0.02)' },
+          ],
+        },
+      },
+    },
+  ],
+}))
+
+const expirationChartOption = computed(() => ({
+  tooltip: {
+    trigger: 'axis' as const,
+  },
+  legend: {
+    data: ['产品1', '产品2'],
+    top: 0,
+    right: '4%',
+    icon: createRoundedRectPath(16, 12, 6),
+    itemWidth: 16,
+    itemHeight: 12,
+    itemGap: 20,
+    textStyle: {
+      color: '#1D2129',
+      fontSize: 12,
+    },
+    selectedMode: true,
+    selected: {
+      '产品1': true,
+      '产品2': true,
+    },
+    inactiveColor: '#ccc',
+  },
+  grid: {
+    left: '3%',
+    right: '4%',
+    top: '15%',
+    bottom: '3%',
+    containLabel: true,
+  },
+  xAxis: {
+    type: 'category' as const,
+    boundaryGap: false,
+    data: months,
+  },
+  yAxis: {
+    type: 'value' as const,
+    axisLabel: {
+      formatter: '{value}%',
+    },
+  },
+  series: [
+    {
+      name: '产品1',
+      type: 'line' as const,
+      smooth: true,
+      data: [15, 12, 10, 8, 12, 10, 7, 5, 8, 6, 4, 3],
+      symbol: 'none',
+      itemStyle: { color: '#165DFF' },
+      lineStyle: { width: 2, shadowBlur: 4, shadowColor: 'rgba(64, 158, 255, 0.5)', shadowOffsetY: 2 },
+      areaStyle: {
+        color: {
+          type: 'linear',
+          x: 0,
+          y: 0,
+          x2: 0,
+          y2: 1,
+          colorStops: [
+            { offset: 0, color: 'rgba(64, 158, 255, 0.35)' },
+            { offset: 1, color: 'rgba(64, 158, 255, 0.02)' },
+          ],
+        },
+      },
     },
     {
-      id: 3,
-      customerName: '王五',
-      phone: '136****9012',
-      expiryTime: 1,
-      status: '未处理',
-      startDate: '2025-04-10',
-      endDate: '2026-04-10',
-      content: '客户【王五】【136****9012】：授权还有1天到期',
-      time: '2026-04-03 09:15:00',
-    },
-  ])
-
-  // Chart filters
-  const activationFilter = ref('product1')
-  const activationTimeRange = ref<'day' | 'month' | 'year'>('month')
-  const activationDateRange = ref<[Date, Date] | null>(null)
-
-  const expirationFilter = ref('product1')
-  const expirationTimeRange = ref<'day' | 'month' | 'year'>('month')
-  const expirationDateRange = ref<[Date, Date] | null>(null)
-
-  // Mock chart data
-  const months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
-
-  const activationChartOption = computed(() => ({
-    tooltip: {
-      trigger: 'axis' as const,
-    },
-    legend: {
-      data: ['产品1', '产品2'],
-      top: 0,
-      right: '4%',
-    },
-    grid: {
-      left: '3%',
-      right: '4%',
-      top: '15%',
-      bottom: '3%',
-      containLabel: true,
-    },
-    xAxis: {
-      type: 'category' as const,
-      boundaryGap: false,
-      data: months,
-    },
-    yAxis: {
-      type: 'value' as const,
-      axisLabel: {
-        formatter: '{value}%',
+      name: '产品2',
+      type: 'line' as const,
+      smooth: true,
+      data: [18, 15, 12, 10, 14, 11, 9, 6, 10, 7, 5, 4],
+      symbol: 'none',
+      itemStyle: { color: '#14C9C9' },
+      lineStyle: { width: 2, shadowBlur: 4, shadowColor: 'rgba(0, 180, 160, 0.5)', shadowOffsetY: 2 },
+      areaStyle: {
+        color: {
+          type: 'linear',
+          x: 0,
+          y: 0,
+          x2: 0,
+          y2: 1,
+          colorStops: [
+            { offset: 0, color: 'rgba(0, 180, 160, 0.35)' },
+            { offset: 1, color: 'rgba(0, 180, 160, 0.02)' },
+          ],
+        },
       },
     },
-    series: [
-      {
-        name: '产品1',
-        type: 'line' as const,
-        smooth: true,
-        data: [30, 35, 42, 48, 55, 62, 68, 75, 80, 85, 88, 92],
-        symbol: 'none',
-        itemStyle: { color: '#409EFF' },
-        lineStyle: { width: 3 },
-      },
-      {
-        name: '产品2',
-        type: 'line' as const,
-        smooth: true,
-        data: [20, 25, 30, 38, 45, 52, 58, 65, 72, 78, 82, 86],
-        symbol: 'none',
-        itemStyle: { color: '#00B4A0' },
-        lineStyle: { width: 3 },
-      },
-    ],
-  }))
+  ],
+}))
 
-  const expirationChartOption = computed(() => ({
-    tooltip: {
-      trigger: 'axis' as const,
-    },
-    legend: {
-      data: ['产品1', '产品2'],
-      top: 0,
-      right: '10%',
-    },
-    grid: {
-      left: '3%',
-      right: '4%',
-      top: '15%',
-      bottom: '3%',
-      containLabel: true,
-    },
-    xAxis: {
-      type: 'category' as const,
-      boundaryGap: false,
-      data: months,
-    },
-    yAxis: {
-      type: 'value' as const,
-      axisLabel: {
-        formatter: '{value}%',
-      },
-    },
-    series: [
-      {
-        name: '产品1',
-        type: 'line' as const,
-        smooth: true,
-        data: [15, 12, 10, 8, 12, 10, 7, 5, 8, 6, 4, 3],
-        symbol: 'none',
-        itemStyle: { color: '#409EFF' },
-        lineStyle: { width: 3 },
-      },
-      {
-        name: '产品2',
-        type: 'line' as const,
-        smooth: true,
-        data: [18, 15, 12, 10, 14, 11, 9, 6, 10, 7, 5, 4],
-        symbol: 'none',
-        itemStyle: { color: '#00B4A0' },
-        lineStyle: { width: 3 },
-      },
-    ],
-  }))
-
-  const handleViewMessage = (_msg: MessageItem) => {
-    // Navigate to message detail or open dialog
-  }
+const handleViewMessage = (_msg: MessageItem) => {
+  // Navigate to message detail or open dialog
+}
 </script>
 
 <style lang="scss" scoped>
-  .dashboard {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    overflow-y: auto;
-    border-radius: 8px;
-  }
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  border-radius: 8px;
+}
 
-  .dashboard-content {
-    display: flex;
-    height: 100%;
-    gap: 16px;
-  }
+.dashboard-content {
+  display: flex;
+  height: 100%;
+  gap: 16px;
+}
 
-  .left-column {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    min-width: 520px;
-  }
-
-  .right-column {
-    flex: 1.5;
-    display: flex;
-    flex-direction: column;
-    background-color: var(--el-bg-color);
-    padding: 16px;
-    gap: 16px;
-    min-width: 560px;
-    border-radius: 4px;
-  }
+.left-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 520px;
 
   // Welcome Card
   .welcome-card {
+    background-color: var(--bg-main-color);
+    color: var(--el-color-white);
+    padding: 22px;
+    border-radius: 24px;
+    position: relative;
+    min-height: 148px;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: -120px;
+      right: -50px;
+      width: 235px;
+      height: 235px;
+      background: rgba(255, 255, 255, 0.16);
+      border-radius: 120px;
+    }
+
     :deep(.el-card__body) {
-      padding: 16px;
+      padding: 0;
     }
 
     .welcome-content {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
+      line-height: 1;
+      font-size: 18px;
 
-    .avatar {
-      background-color: var(--el-color-primary);
-      flex-shrink: 0;
-    }
-
-    .welcome-text {
-      h2 {
-        font-size: 20px;
+      &-title {
+        font-size: 22px;
         font-weight: 500;
-        margin-bottom: 8px;
+        margin-bottom: 28px;
       }
 
       p {
-        font-size: 14px;
-        color: var(--el-text-color-regular);
-        margin-bottom: 4px;
+        font-weight: 300;
+      }
 
-        &.last-login {
-          color: var(--el-text-color-secondary);
-          margin-top: 4px;
-        }
+      &-department {
+        margin-bottom: 16px;
       }
     }
+
   }
 
   // Stats Card
   .stats-card {
-    :deep(.el-card__header) {
-      padding: 16px 20px;
-      border-bottom: 1px solid #ebeef5;
-    }
+    min-height: 226px;
+    transition: transform .5s linear;
 
-    .card-header {
-      font-size: 16px;
+    &-header {
+      font-size: 20px;
       font-weight: 500;
+      padding: 16px 18px;
     }
 
     .stats-grid {
@@ -412,166 +457,196 @@
     }
 
     .stat-item {
+      cursor: pointer;
       text-align: center;
       padding: 16px 8px;
-      background-color: var(--el-bg-color);
-      border-radius: 8px;
+      border-radius: 24px;
       transition: transform 0.2s;
+      background: linear-gradient(180deg, rgba(65, 107, 203, 0.3) 0%, rgba(65, 107, 203, 0) 100%);
+
+      .stat-label {
+        font-size: 18px;
+        height: 40px;
+        line-height: 40px;
+        color: var(--el-color-primary);
+      }
+
+      .stat-value {
+        font-size: 32px;
+        padding: 24px 0;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        color: var(--el-color-primary);
+      }
+
+      &:nth-child(even) {
+        background: linear-gradient(180deg, rgba(20, 201, 201, 0.3) 0%, rgba(20, 201, 201, 0) 100%);
+
+        .stat-label,
+        .stat-value {
+          color: #14A8A8;
+        }
+      }
 
       &:hover {
-        transform: translateY(-2px);
+        transform: translateY(-4px);
       }
-    }
-
-    .stat-value {
-      font-size: 28px;
-      font-weight: 600;
-      color: var(--el-color-primary);
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-    }
-
-    .stat-arrow {
-      color: #67c23a;
-      font-size: 16px;
-    }
-
-    .stat-label {
-      font-size: 14px;
     }
   }
 
   // Messages Card
-  .messages-card {
+  .message-card {
+    min-height: 104px;
+
+    &-header {
+      font-size: 20px;
+      font-weight: 500;
+      padding: 16px 18px;
+    }
+
+    .message-table-header {
+      display: grid;
+      grid-template-columns: 2fr 1fr 2fr 1fr;
+      height: 44px;
+      border-radius: 22px;
+      text-align: center;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      background-color: #475E8C1A;
+      color: var(--bg-main-color);
+      font-size: 18px;
+    }
+  }
+
+  .message-table-body {
     flex: 1;
-    :deep(.el-card__header) {
-      padding: 16px 20px;
-      border-bottom: 1px solid #ebeef5;
-    }
+    position: relative;
+    padding: 16px;
+    background-color: var(--el-bg-color);
+    border-radius: 22px;
+    overflow-y: auto;
+    font-size: 14px;
 
-    .card-header {
-      font-size: 16px;
-      font-weight: 500;
-    }
-
-    .message-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 16px 0;
-      border-bottom: 1px solid #ebeef5;
-
-      &:last-child {
-        border-bottom: none;
-      }
-    }
-
-    .message-info {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      flex: 1;
-    }
-
-    .message-text {
-      font-size: 14px;
-    }
-
-    .message-time {
-      font-size: 12px;
-      color: var(--el-text-color-secondary);
+    .expiry-days {
+      padding: 0 4px;
+      color: #FF4D4F;
     }
   }
 
-  // Right Column Charts
-  .chart-section-title {
+  .message-table-item {
+    display: grid;
+    grid-template-columns: 2fr 1fr 2fr 1fr;
+    align-items: center;
+    text-align: center;
+    min-height: 40px;
+    margin-bottom: 20px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.right-column {
+  flex: 1.8;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 0 0 16px;
+  gap: 12px;
+  min-width: 560px;
+  border-radius: 4px;
+
+.chart-section-title {
+  font-size: 18px;
+  font-weight: 500;
+  padding: 4px 0;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .chart-filters {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding-right: 16px;
+  }
+
+  .filter-select {
+    width: 136px;
+  }
+
+  .date-range-picker {
+    width: 348px;
+  }
+}
+
+.chart-wrapper {
+  flex: 1;
+  background-color: var(--el-bg-color);
+  border-radius: 22px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  gap: 12px;
+  overflow-y: auto;
+
+  .chart-container {
+    flex: 1;
+    position: relative;
+    min-height: 240px;
+    margin-top: 14px;
+
+    &:last-child {
+      margin-top: 30px;
+    }
+  }
+
+  .chart-label {
+    position: absolute;
+    top: 4px;
+    left: 10px;
     font-size: 18px;
-    font-weight: 500;
-    padding: 4px 0;
+    z-index: 10;
   }
 
-  .chart-card {
-    border: none;
-    :deep(.el-card__header) {
-      padding: 16px;
-      border-bottom: none;
-    }
+  .chart {
+    height: 100%;
+    width: 100%;
+  }
+}
+}
 
-    .chart-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-
-    .chart-title {
-      font-size: 16px;
-      font-weight: 500;
-    }
-
-    .chart-filters {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .filter-select {
-      width: 120px;
-    }
-
-    .date-range-picker {
-      width: 260px;
-    }
-
-    .chart-container {
-      position: relative;
-      height: 240px;
-    }
-
-    .chart-label {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      font-size: 14px;
-      font-weight: 500;
-
-      z-index: 10;
-    }
-
-    .chart {
-      height: 100%;
-      width: 100%;
-    }
+@media (max-width: 1200px) {
+  .dashboard-content {
+    flex-direction: column;
   }
 
-  // Responsive adjustments
-  @media (max-width: 1200px) {
-    .dashboard-content {
-      flex-direction: column;
-    }
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
 
-    .stats-grid {
-      grid-template-columns: repeat(3, 1fr) !important;
-    }
+@media (max-width: 768px) {
+  .dashboard {
+    padding: 12px;
   }
 
-  @media (max-width: 768px) {
-    .dashboard {
-      padding: 12px;
-    }
-
-    .stats-grid {
-      grid-template-columns: repeat(2, 1fr) !important;
-    }
-
-    .chart-filters {
-      flex-direction: column;
-      align-items: flex-start !important;
-    }
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
   }
+
+  .chart-filters {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+}
 </style>

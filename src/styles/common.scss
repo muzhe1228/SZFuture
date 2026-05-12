@@ -14,9 +14,78 @@
 }
 
 // Input number styles
-.el-input-number.is-without-controls .el-input__wrapper{
-   padding: 1px 11px !important;
+.el-input-number.is-without-controls .el-input__wrapper {
+  padding: 1px 11px !important;
 }
+
 :root {
   --text-white: #fff;
+  --bg-main-color: #475E8C;
+
+  // 自定义列表项样式
+  li {
+    list-style: none;
+  }
+
+  // 自定义输入框和选择器样式
+  .el-input__wrapper,
+  .el-select__wrapper {
+    border-radius: 16px;
+    box-shadow: none;
+  }
+
+  .el-select__wrapper.is-focused,
+  .el-input__wrapper.is-focused,
+  .el-input__wrapper.is-focus,
+  .el-input__wrapper.is-active,
+  .el-date-editor.el-input__wrapper:hover,
+  .el-input__wrapper:hover,
+  .el-select__wrapper.is-hovering:not(.is-focused),
+  .el-input__wrapper.is-hovering:not(.is-focused) {
+    box-shadow: 0 0 0 1px var(--el-color-primary) inset !important;
+  }
+
+  // 自定义子菜单样式
+  .sub-menu {
+    .el-sub-menu__title:hover {
+      background-color: #e6eaf2b3;
+      color: #475e8ce6 !important;
+    }
+  }
+
+  // 自定义菜单样式
+  .el-popper.sub-menu-popper {
+
+    border-radius: 12px;
+    overflow: hidden;
+
+    .el-menu {
+      padding: 0;
+      min-width: 140px;
+    }
+
+    .el-menu-item {
+      display: block;
+      text-align: center;
+
+      &:hover {
+        background-color: #e6eaf2b3;
+        color: #475e8ce6 !important;
+      }
+
+      &.is-active {
+        background-color: #E6EAF2;
+      }
+    }
+
+    &.el-menu--collapse {
+      .el-sub-menu.is-active {
+        background-color: #E6EAF2 !important;
+      }
+    }
+  }
+
+  .el-button{
+    border-radius: 10px;
+  }
 }

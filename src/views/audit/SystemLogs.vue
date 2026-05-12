@@ -47,7 +47,7 @@
       @selection-change="handleSelectionChange"
     >
       <template #extra-actions>
-        <el-button type="danger" size="small" :disabled="selectedRows.length === 0" @click="handleBatchDelete">
+        <el-button type="danger" link :disabled="selectedRows.length === 0" @click="handleBatchDelete">
           删除日志
         </el-button>
       </template>

@@ -18,7 +18,7 @@ export function setupMessageMock() {
     for (let i = 0; i < pageSize; i++) {
       list.push({
         id: (page - 1) * pageSize + i + 1,
-        title: Random.cname() + Random.pick(['科技有限公司', '信息技术有限公司', '网络技术有限公司']),
+        title: +Random.cname() + Random.pick(['科技有限公司', '信息技术有限公司', '网络技术有限公司']),
         // phone: Mock.mock('1@string("number", 10)'),
         phone: Mocks(/1[3-9]\d{9}/),
         type: Random.pick(messageTypes),

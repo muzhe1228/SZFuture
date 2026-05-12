@@ -14,7 +14,7 @@
       @selection-change="handleSelectionChange"
     >
       <template #extra-actions>
-        <el-button type="primary" size="small" @click="handleAddOrder" :icon="Plus"> 新增订单 </el-button>
+        <el-button type="primary" link @click="handleAddOrder" :icon="Plus"> 新增订单 </el-button>
       </template>
     </BaseTablePage>
 

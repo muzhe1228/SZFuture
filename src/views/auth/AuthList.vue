@@ -17,14 +17,14 @@
         <StatusTag :status="row.status" size="small" />
       </template>
       <template #extra-actions>
-        <el-button type="danger" size="small" @click="handleBatchImport" :icon="Upload"> 批量导入许可 </el-button>
-        <el-button type="primary" size="small" @click="handleBatchFreeze" :disabled="selectedAuths.length === 0">
+        <el-button type="danger" link @click="handleBatchImport" :icon="Upload"> 批量导入许可 </el-button>
+        <el-button type="primary" link @click="handleBatchFreeze" :disabled="selectedAuths.length === 0">
           授权冻结
         </el-button>
-        <el-button type="warning" size="small" @click="handleBatchExtend" :disabled="selectedAuths.length === 0">
+        <el-button type="warning" link @click="handleBatchExtend" :disabled="selectedAuths.length === 0">
           授权延期
         </el-button>
-        <el-button type="info" size="small" @click="handleBatchVoid" :disabled="selectedAuths.length === 0">
+        <el-button type="info" link @click="handleBatchVoid" :disabled="selectedAuths.length === 0">
           授权作废
         </el-button>
       </template>

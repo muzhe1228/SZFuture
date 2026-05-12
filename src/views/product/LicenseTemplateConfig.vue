@@ -20,10 +20,10 @@
         </span>
       </template>
       <template #extra-actions>
-        <el-button type="primary" size="small" @click="handleAdd" :icon="Plus"> 新增模版 </el-button>
+        <el-button type="primary" link @click="handleAdd" :icon="Plus"> 新增模版 </el-button>
         <el-button
           type="danger"
-          size="small"
+          link
           plain
           :icon="Delete"
           :disabled="selectedRows.length === 0"

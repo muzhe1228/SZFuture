@@ -5,9 +5,14 @@
       <div class="logo">
         <span v-if="!isCollapse" class="logo-text">深圳未来</span>
         <span v-else class="logo-text-short">未来</span>
+        <el-icon class="collapse-btn" @click="toggleCollapse">
+          <Fold v-if="!isCollapse" />
+          <Expand v-else />
+        </el-icon>
       </div>
-      <el-menu text-color="var(--text-white)" active-text-color="#475E8C" background background-color="#6378A1"
-        :default-active="activeMenu" :collapse="isCollapse" :collapse-transition="false" router class="sidebar-menu">
+      <el-menu menu-trigger="click" text-color="var(--text-white)" active-text-color="#475E8C" background
+        background-color="#6378A1" :default-active="activeMenu" :collapse="isCollapse" :collapse-transition="false"
+        router class="sidebar-menu">
         <template v-for="item in filteredMenuItems" :key="item.index">
           <el-menu-item v-if="!item.children" :index="item.index">
             <el-icon>
@@ -15,7 +20,7 @@
             </el-icon>
             <template #title>{{ item.label }}</template>
           </el-menu-item>
-          <el-sub-menu v-else :index="item.index">
+          <el-sub-menu popper-class="sub-menu-popper" v-else :index="item.index" class="sub-menu">
             <template #title>
               <el-icon>
                 <component :is="getIcon(item.icon)" />
@@ -36,35 +41,21 @@
       <!-- Header -->
       <el-header class="header">
         <div class="header-left">
-          <el-icon class="collapse-btn" @click="toggleCollapse">
-            <Fold v-if="!isCollapse" />
-            <Expand v-else />
-          </el-icon>
-          <el-breadcrumb separator="/">
-            <el-breadcrumb-item v-for="item in breadcrumbs" :key="item.path"
-              :to="item.path ? { path: item.path } : undefined">
-              {{ item.title }}
-            </el-breadcrumb-item>
-          </el-breadcrumb>
+          <h3>{{ menuName }}</h3>
         </div>
         <div class="header-right">
-          <el-tooltip content="全屏" placement="bottom">
-            <el-icon class="header-icon" @click="toggleFullscreen">
-              <FullScreen />
-            </el-icon>
-          </el-tooltip>
-          <el-tooltip :content="isDark ? '切换到浅色模式' : '切换到深色模式'" placement="bottom">
+
+          <!-- <el-tooltip :content="isDark ? '切换到浅色模式' : '切换到深色模式'" placement="bottom">
             <el-icon class="header-icon" @click="toggleTheme">
               <Sunny v-if="isDark" />
               <Moon v-else />
             </el-icon>
-          </el-tooltip>
+          </el-tooltip> -->
           <el-dropdown trigger="click" @command="handleCommand">
             <div class="user-info">
               <!-- <el-icon><UserFilled /></el-icon> -->
-              <el-avatar :size="24" class="avatar">
-                <img :src="userStore.userInfo?.avatar" />
-              </el-avatar>
+              <el-avatar style="border-radius: 12px;" :size="30" :fit="'cover'" class="avatar" shape="square"
+                :src="userStore.userInfo?.avatar" />
               <span class="user-name">{{ userStore.userInfo?.username || '测试用户' }}</span>
             </div>
             <template #dropdown>
@@ -74,11 +65,17 @@
               </el-dropdown-menu>
             </template>
           </el-dropdown>
+          <el-tooltip content="全屏" placement="bottom">
+            <img class="header-icon" src="@/assets/Fullscreen.png" alt="全屏" @click="toggleFullscreen" />
+            <!-- <el-icon class="header-icon" @click="toggleFullscreen">
+              <FullScreen />
+            </el-icon> -->
+          </el-tooltip>
         </div>
       </el-header>
 
       <!-- Tab Bar -->
-      <TabBar />
+      <!-- <TabBar /> -->
 
       <!-- Content -->
       <el-main class="main-content">
@@ -111,7 +108,7 @@ import { useTabStore } from '@/stores/tabStore'
 import { clearUserInfo as clearPermissionUserInfo } from '@/utils/permission'
 import { usePermission } from '@/composables/usePermission'
 import { menuItems, type MenuItem } from '@/config/menu'
-import TabBar from '@/components/TabBar'
+// import TabBar from '@/components/TabBar'
 import RouteTransition from '@/components/RouteTransition'
 
 const route = useRoute()
@@ -159,7 +156,7 @@ const getPermissionedChildren = (children?: MenuItem[]) => {
   if (!children) return []
   return children.filter((child) => hasPermission(child.permission))
 }
-// 切换主题
+// 切换主题 - 预留功能，后续启用
 const toggleTheme = () => {
   isDark.value = !isDark.value
   if (isDark.value) {
@@ -188,76 +185,57 @@ loadTheme()
 
 const activeMenu = computed(() => route.path)
 
-const breadcrumbs = computed(() => {
-  const breadcrumbList = []
-
-  // Add home breadcrumb
-  breadcrumbList.push({
-    path: '/',
-    title: '首页',
-  })
-
-  // Add parent menu breadcrumbs based on route path
-  const pathSegments = route.path.split('/').filter(Boolean)
-  let currentPath = ''
-
-  pathSegments.forEach((segment) => {
-    currentPath += `/${segment}`
-
-    // Map segment to menu name based on full path
-    let menuName = segment
-
-    // Handle specific paths
-    if (currentPath === '/auth') {
-      menuName = '授权管理'
-    } else if (currentPath === '/auth/trials') {
-      menuName = '试用列表'
-    } else if (currentPath === '/auth/list') {
-      menuName = '授权列表'
-    } else if (currentPath === '/auth/orders') {
-      menuName = '订单列表'
-    } else if (currentPath === '/auth/customers') {
-      menuName = '客户列表'
-    } else if (currentPath === '/product') {
-      menuName = '产品管理'
-    } else if (currentPath === '/product/modules') {
-      menuName = '产品模块配置'
-    } else if (currentPath === '/product/templates') {
-      menuName = '许可模版配置'
-    } else if (currentPath === '/system') {
-      menuName = '系统管理'
-    } else if (currentPath === '/system/users') {
-      menuName = '用户管理'
-    } else if (currentPath === '/system/roles') {
-      menuName = '角色管理'
-    } else if (currentPath === '/system/departments') {
-      menuName = '部门管理'
-    } else if (currentPath === '/system/config') {
-      menuName = '系统配置'
-    } else if (currentPath === '/audit') {
-      menuName = '运维管理'
-    } else if (currentPath === '/audit/operations') {
-      menuName = '操作日志'
-    } else if (currentPath === '/audit/system') {
-      menuName = '系统日志'
-    } else if (currentPath === '/approval') {
-      menuName = '审批管理'
-    } else if (currentPath === '/approval/list') {
-      menuName = '审批列表'
-    } else if (currentPath === '/dashboard') {
-      menuName = '工作台'
-    } else if (currentPath === '/messages') {
-      menuName = '消息'
-    }
-
-    breadcrumbList.push({
-      path: currentPath,
-      title: menuName,
-    })
-  })
-
-  return breadcrumbList
+const menuName = computed(() => {
+  let currentPath = route.path
+  let menuName = currentPath
+  // Handle specific paths
+  if (currentPath === '/auth') {
+    menuName = '授权管理'
+  } else if (currentPath === '/auth/trials') {
+    menuName = '试用列表'
+  } else if (currentPath === '/auth/list') {
+    menuName = '授权列表'
+  } else if (currentPath === '/auth/orders') {
+    menuName = '订单列表'
+  } else if (currentPath === '/auth/customers') {
+    menuName = '客户列表'
+  } else if (currentPath === '/product') {
+    menuName = '产品管理'
+  } else if (currentPath === '/product/modules') {
+    menuName = '产品模块配置'
+  } else if (currentPath === '/product/templates') {
+    menuName = '许可模版配置'
+  } else if (currentPath === '/system') {
+    menuName = '系统管理'
+  } else if (currentPath === '/system/users') {
+    menuName = '用户管理'
+  } else if (currentPath === '/system/roles') {
+    menuName = '角色管理'
+  } else if (currentPath === '/system/departments') {
+    menuName = '部门管理'
+  } else if (currentPath === '/system/config') {
+    menuName = '系统配置'
+  } else if (currentPath === '/audit') {
+    menuName = '运维管理'
+  } else if (currentPath === '/audit/operations') {
+    menuName = '操作日志'
+  } else if (currentPath === '/audit/system') {
+    menuName = '系统日志'
+  } else if (currentPath === '/approval') {
+    menuName = '审批管理'
+  } else if (currentPath === '/approval/list') {
+    menuName = '审批列表'
+  } else if (currentPath === '/dashboard') {
+    menuName = '工作台'
+  } else if (currentPath === '/messages') {
+    menuName = '消息'
+  }
+  return menuName
 })
+
+// 预留功能占位引用，避免 TypeScript 未使用变量警告
+const _reserved = { toggleTheme, FullScreen, Sunny, Moon }
+void _reserved
 
 const toggleCollapse = () => {
   isCollapse.value = !isCollapse.value
@@ -307,15 +285,18 @@ const handleCommand = (command: string) => {
 .layout-container {
   height: 100vh;
   width: 100%;
+  background-color: var(--el-bg-color-page);
 }
 
+
 .sidebar {
+  position: relative;
   overflow: hidden;
   transition: width 0.3s;
   height: 100%;
   display: flex;
   flex-direction: column;
-  background-color: #475E8C;
+  background-color: var(--bg-main-color);
 
   .logo {
     height: 129px;
@@ -335,14 +316,43 @@ const handleCommand = (command: string) => {
       font-size: 16px;
       font-weight: bold;
     }
+
+    .collapse-btn {
+      position: absolute;
+      top: 0;
+      right: 0;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--text-white);
+      width: 64px;
+      padding: 20px;
+      text-align: center;
+
+      &:hover {
+        color: var(--el-color-primary);
+      }
+    }
   }
 
   .sidebar-menu {
     border-right: none;
     overflow-y: auto;
 
-    .el-menu-item.is-active {
-      background-color: #E6EAF2;
+    .el-menu-item {
+      &:hover {
+        background-color: #e6eaf2b3;
+        color: #475e8ce6 !important;
+      }
+
+      &.is-active {
+        background-color: #E6EAF2;
+      }
+    }
+
+    &.el-menu--collapse {
+      .el-sub-menu.is-active {
+        background-color: #E6EAF2 !important;
+      }
     }
 
     &:not(.el-menu--collapse) {
@@ -363,38 +373,32 @@ const handleCommand = (command: string) => {
   align-items: center;
   justify-content: space-between;
   background-color: var(--el-bg-color);
-  border-bottom: 1px solid var(--el-border-color);
   padding: 0 20px;
-  height: 60px;
+  height: 55px;
+  border-bottom-right-radius: 48px;
+  box-shadow: 0px 0px 20px 0px #EEEEEE;
 
   .header-left {
     display: flex;
     align-items: center;
     gap: 12px;
-
-    .collapse-btn {
-      font-size: 20px;
-      cursor: pointer;
-      color: var(--el-text-color-regular);
-
-      &:hover {
-        color: var(--el-color-primary);
-      }
-    }
   }
 
   .header-right {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 20px;
+    padding-right: 40px;
 
     .header-icon {
       font-size: 20px;
       cursor: pointer;
       color: var(--el-text-color-regular);
+      transition: transform 0.3s;
+      width: 18px;
 
       &:hover {
-        color: var(--el-color-primary);
+        transform: scale(1.1);
       }
     }
 
@@ -403,17 +407,16 @@ const handleCommand = (command: string) => {
       align-items: center;
       gap: 6px;
       cursor: pointer;
-      color: var(--el-text-color-regular);
 
       .user-name {
-        font-size: 14px;
+        font-size: 18px;
+        color: var(--el-text-color-primary);
       }
     }
   }
 }
 
 .main-content {
-  background-color: var(--el-bg-color-page);
   padding: 16px;
   flex: 1;
   overflow: auto;
