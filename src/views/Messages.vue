@@ -95,12 +95,17 @@ const handleTableAction = (action: string, row: ExtendedMessage) => {
   }
 }
 
-const handleExport = async (searchParams?: Record<string, any>) => {
+const handleExport = async (params?: { searchParams?: Record<string, any>; fields?: string[]; format?: string }) => {
   try {
+    const { searchParams, fields, format = 'xlsx' } = params || {}
     // const response = await request({
     //   url: '/api/message/export',
     //   method: 'get',
-    //   params: searchParams || {},
+    //   params: {
+    //     ...searchParams,
+    //     fields: fields?.join(','),
+    //     format,
+    //   },
     //   responseType: 'blob',
     // })
 
@@ -113,7 +118,10 @@ const handleExport = async (searchParams?: Record<string, any>) => {
     // link.click()
     // document.body.removeChild(link)
     // window.URL.revokeObjectURL(url)
-    console.log(searchParams)
+    console.log('=== 导出参数 ===')
+    console.log('搜索条件:', searchParams)
+    console.log('选中字段:', fields)
+    console.log('导出格式:', format)
     ElMessage.success('导出成功')
   } catch (error) {
     ElMessage.error('导出失败')

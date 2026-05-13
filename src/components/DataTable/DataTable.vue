@@ -8,7 +8,7 @@
       <div class="table-actions">
         <slot name="extra-actions-right"></slot>
         <el-button v-if="!hideExport" type="primary" link :loading="exportLoading" :disabled="exportLoading"
-          icon="Download" @click="handleExport">
+          icon="Download" @click="openExportModal">
           导出
         </el-button>
         <el-button v-if="!hideColumnSettings" link icon="Tools" @click="handleColumnSettings">
@@ -62,22 +62,36 @@
     </div>
 
     <!-- Column Settings Drawer -->
-    <el-drawer v-model="drawerVisible" title="列设置" direction="rtl" size="320px">
+    <el-drawer v-model="drawerVisible" title="列设置" direction="rtl" size="360px">
       <div class="column-settings">
-        <el-switch v-for="col in columns" :key="col.key" v-model="col.visible" :active-text="col.label"
-          class="column-toggle" @change="handleColumnChange" />
+        <div class="column-settings-header">
+          <span class="col-name">列表</span>
+          <span class="col-show">显示</span>
+          <span class="col-sort">排序</span>
+        </div>
+        <div class="column-settings-body">
+          <div v-for="col in columns" :key="col.key" class="column-item">
+            <span class="col-item">{{ col.label }}</span>
+            <span class="col-item"><el-switch v-model="col.visible" @change="handleColumnChange" /></span>
+            <span class="col-item"><el-switch v-model="col.sortable" disabled /></span>
+          </div>
+        </div>
       </div>
       <template #footer>
         <el-button @click="drawerVisible = false">关闭</el-button>
       </template>
     </el-drawer>
+
+    <!-- Export Modal -->
+    <ExportModal v-model="exportModalVisible" :fields="exportFields" @export="handleExportWithFields" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import type { DataTableProps, DataTableEmits, IconType } from './types'
 import { logger } from '@/utils/logger'
+import ExportModal from '../ExportModal'
 import IconActive from '@/assets/icons/iconActive.png'
 import IconShow from '@/assets/icons/iconShow.png'
 import IconDel from '@/assets/icons/iconDel.png'
@@ -116,7 +130,7 @@ const props = withDefaults(defineProps<DataTableProps>(), {
   storageKey: 'data-table-columns',
   hideColumnSettings: false,
   hideSelection: true,
-  hideExport: true,
+  hideExport: false,
   rowKey: 'id',
   actions: () => [],
   treeProps: undefined,
@@ -129,6 +143,7 @@ const emit = defineEmits<DataTableEmits>()
 const drawerVisible = ref(false)
 const selectedRowKeys = ref<Set<any>>(new Set())
 const exportLoading = ref(false)
+const exportModalVisible = ref(false)
 
 const currentPageModel = computed({
   get: () => props.currentPage,
@@ -146,6 +161,15 @@ const visibleColumns = computed(() => {
 
 const visibleActions = computed(() => {
   return props.actions || []
+})
+
+const exportFields = computed(() => {
+  return visibleColumns.value
+    .filter(col => col.key !== 'actions' && col.key !== 'selection')
+    .map(col => ({
+      key: col.prop || col.key,
+      label: col.label
+    }))
 })
 
 const actionsWidth = computed(() => {
@@ -170,14 +194,20 @@ const handleSelectionChange = (selection: any[]) => {
   emit('selection-change', selection)
 }
 
-const handleExport = async () => {
+const openExportModal = () => {
+  exportModalVisible.value = true
+}
+
+const handleExportWithFields = (params: { fields: string[]; format: string }) => {
   exportLoading.value = true
-  try {
-    await emit('export')
-  } finally {
+  emit('export', params)
+}
+
+watch(exportModalVisible, (val) => {
+  if (!val) {
     exportLoading.value = false
   }
-}
+})
 
 const handleSizeChange = (size: number) => {
   emit('page-change', props.currentPage, size)
@@ -349,7 +379,8 @@ onMounted(() => {
   .icon {
     width: 22px;
     transition: transform 0.3s ease-in-out;
-    &.IconApproval{
+
+    &.IconApproval {
       width: 19px;
     }
 
@@ -367,14 +398,43 @@ onMounted(() => {
 }
 
 .column-settings {
-  padding: 16px 0;
+  padding: 0;
 
-  .column-toggle {
-    margin-bottom: 16px;
-    display: block;
+  .column-settings-header {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    align-items: center;
+    padding: 12px 20px;
+    background-color: #007EFF0D;
+    font-weight: 500;
+    color: #606266;
+    font-size: 14px;
+    text-align: center;
 
-    &:last-child {
-      margin-bottom: 0;
+    .col-show,
+    .col-sort {
+      text-align: center;
+    }
+  }
+
+  .column-settings-body {
+    padding: 8px 0;
+
+    .column-item {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      align-items: center;
+      padding: 12px 20px;
+
+      &:hover {
+        background-color: #f5f7fa;
+      }
+
+      .col-item {
+        font-size: 14px;
+        color: #303133;
+        text-align: center;
+      }
     }
   }
 }

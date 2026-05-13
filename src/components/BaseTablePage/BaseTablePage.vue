@@ -64,7 +64,7 @@ const emit = defineEmits<{
   // 操作事件
   (e: 'action', action: string, row: any): void
   // 导出事件
-  (e: 'export', searchParams?: Record<string, any>): void
+  (e: 'export', params?: { searchParams?: Record<string, any>; fields?: string[]; format?: string }): void
   // 选择变化事件
   (e: 'selection-change', selection: any[]): void
   // 搜索事件
@@ -115,8 +115,11 @@ const handlePageChange = (page: number, size: number) => {
   emit('page-change', page, size)
 }
 
-const handleExport = () => {
-  emit('export', currentSearchParams.value)
+const handleExport = (exportParams?: { fields?: string[]; format?: string }) => {
+  emit('export', {
+    searchParams: currentSearchParams.value,
+    ...exportParams
+  })
 }
 
 const handleSelectionChange = (selection: any[]) => {

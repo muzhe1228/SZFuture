@@ -65,5 +65,5 @@ export interface DataTableEmits {
   (e: 'selection-change', selection: any[]): void
   (e: 'column-settings'): void
   (e: 'action', action: string, row: any): void
-  (e: 'export'): void
+  (e: 'export', params?: { fields: string[]; format: string }): void
 }
