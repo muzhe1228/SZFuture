@@ -21,7 +21,7 @@
           <el-checkbox
             v-for="field in fields"
             :key="field.key"
-            :label="field.key"
+            :value="field.key"
           >
             {{ field.label }}
           </el-checkbox>
@@ -31,8 +31,8 @@
       <div class="format-section">
         <span class="section-title">导出格式</span>
         <el-radio-group v-model="exportFormat">
-          <el-radio label="xlsx">Excel (.xlsx)</el-radio>
-          <el-radio label="csv">CSV (.csv)</el-radio>
+          <el-radio value="xlsx">Excel (.xlsx)</el-radio>
+          <el-radio value="csv">CSV (.csv)</el-radio>
         </el-radio-group>
       </div>
     </div>
