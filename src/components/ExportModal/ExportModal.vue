@@ -1,9 +1,12 @@
 <template>
-  <el-dialog
-    v-model="localVisible"
+  <BaseDialog
+    :model-value="modelValue"
     title="导出数据"
     width="640px"
-    :before-close="handleClose"
+    :confirm-loading="exportLoading"
+    @update:model-value="(val) => emit('update:modelValue', val)"
+    @confirm="handleExport"
+    @cancel="handleCancel"
   >
     <div class="export-modal">
       <div class="field-section">
@@ -36,18 +39,12 @@
         </el-radio-group>
       </div>
     </div>
-
-    <template #footer>
-      <el-button @click="handleClose">取消</el-button>
-      <el-button type="primary" @click="handleExport" :loading="exportLoading">
-        导出
-      </el-button>
-    </template>
-  </el-dialog>
+  </BaseDialog>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { BaseDialog } from '@/components/BaseDialog'
 
 interface ExportField {
   key: string
@@ -63,13 +60,12 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void
   (e: 'export', params: { fields: string[]; format: string }): void
 }>()
-const localVisible = ref(props.modelValue)
+
 const selectedFields = ref<string[]>([])
 const exportFormat = ref('xlsx')
 const exportLoading = ref(false)
 
 watch(() => props.modelValue, (val) => {
-  localVisible.value = val
   if (val) {
     selectedFields.value = props.fields.map(f => f.key)
   }
@@ -88,9 +84,7 @@ const isIndeterminate = computed(() => {
   return selectedFields.value.length > 0 && selectedFields.value.length < props.fields.length
 })
 
-const handleClose = () => {
-  localVisible.value = false
-  emit('update:modelValue', false)
+const handleCancel = () => {
 }
 
 const handleExport = async () => {
@@ -105,8 +99,6 @@ const handleExport = async () => {
     })
   } finally {
     exportLoading.value = false
-    localVisible.value = false
-    emit('update:modelValue', false)
   }
 }
 </script>

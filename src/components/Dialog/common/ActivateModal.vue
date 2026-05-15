@@ -2,10 +2,11 @@
   <BaseDialog
     :model-value="modelValue"
     :title="title"
-    width="520px"
+    width="460px"
     :close-on-click-modal="false"
     confirm-text="生成激活码"
-    confirm-type="success"
+    :show-cancel-button="false"
+    confirm-type="primary"
     :confirm-loading="loading"
     @update:model-value="(val) => emit('update:modelValue', val)"
     @confirm="handleSubmit"
@@ -16,7 +17,7 @@
         <el-form-item :label="firstLabel">
           <el-input v-model="form.key" placeholder="请输入密钥" clearable />
         </el-form-item>
-        <el-form-item label="设备指纹">
+        <el-form-item label="授权激活码">
           <el-input v-model="form.deviceFingerprint" placeholder="请输入设备指纹" clearable />
         </el-form-item>
       </el-form>
@@ -85,6 +86,7 @@
       return
     }
     loading.value = true
+    console.log(form)
     try {
       const result = await request.post(props.apiUrl, {
         id: props.itemId,

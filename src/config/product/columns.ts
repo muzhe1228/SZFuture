@@ -30,9 +30,10 @@ export const licenseTemplateColumns: ColumnConfig[] = [
     key: 'status',
     label: '状态',
     prop: 'status',
-    width: '100', // 固定宽度
+    width: '100',
     visible: true,
-    hasTemplate: true, // 是否使用自定义模板
+    hasTemplate: true,
+    viewType: 'status',
   },
   {
     key: 'createTime',
@@ -54,7 +55,7 @@ export const productModuleColumns: ColumnConfig[] = [
     prop: 'name',
     minWidth: '200',
     visible: true,
-    showOverflowTooltip: true, // 显示溢出提示
+    showOverflowTooltip: true,
   },
   {
     key: 'type',
@@ -63,6 +64,7 @@ export const productModuleColumns: ColumnConfig[] = [
     width: '100',
     visible: true,
     hasTemplate: true,
+    viewType: 'status',
   },
   {
     key: 'status',
@@ -71,6 +73,7 @@ export const productModuleColumns: ColumnConfig[] = [
     width: '100',
     visible: true,
     hasTemplate: true,
+    viewType: 'status',
   },
   {
     key: 'description',

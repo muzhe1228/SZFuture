@@ -13,6 +13,20 @@
     line-height: 1.5;
     min-width: 100%;
 
+    .el-table__cell {
+      .cell {
+        .el-button {
+          margin-left: 0;
+          margin-right: 6px;
+
+          &:last-child {
+            margin-right: 0;
+          }
+        }
+      }
+
+    }
+
     th.el-table__cell.is-leaf,
     td.el-table__cell {
       border-bottom: none;
@@ -46,14 +60,18 @@
       }
     }
 
+    .el-table__body tr.hover-row>td.el-table__cell,
+    .el-table__body tr.hover-row.current-row>td.el-table__cell,
+    .el-table__body tr.hover-row.el-table__row--striped>td.el-table__cell,
+    .el-table__body tr.hover-row.el-table__row--striped.current-row>td.el-table__cell {
+      // background-color: #6c6c6f !important;
+      background-color: #f5f5ff !important;
+    }
+
     // 选中行背景色
     .el-table__row.is-selected,
     .el-table__row.table-row-selected {
-      background-color: #007EFF0D !important;
-
-      >td.el-table__cell {
-        background-color: #007EFF0D !important;
-      }
+      background-color: rgb(244, 248, 255) !important;
     }
   }
 }
@@ -85,7 +103,6 @@
     }
   }
 }
-
 
 // 响应式调整
 @media (max-width: 768px) {

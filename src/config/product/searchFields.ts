@@ -26,8 +26,13 @@ export const licenseTemplateSearchFields: SearchField[] = [
   {
     prop: 'licenseType',
     label: '许可类型',
-    type: 'input',
-    placeholder: '请输入',
+    type: 'select',
+    placeholder: '请选择',
+    options: [
+      // 下拉选项
+      { label: '启用', value: '启用' },
+      { label: '停用', value: '停用' },
+    ],
   },
   {
     prop: 'status',

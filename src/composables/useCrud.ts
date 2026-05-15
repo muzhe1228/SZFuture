@@ -21,9 +21,13 @@ export function useCrud<T extends { id?: number; name?: string }>(
   options: CrudOptions<T> = { fetchList: async () => {} }
 ) {
   const modalVisible = ref(false)
+  const deleteModalVisible = ref(false)
+  const batchDeleteModalVisible = ref(false)
   const isEditMode = ref(false)
   const editingId = ref<number | null>(null)
   const currentItem = ref<T | null>(null)
+  const currentDeleteItem = ref<T | null>(null)
+  const selectedItems = ref<T[]>([])
 
   const defaultMessages = {
     create: '新增成功',
@@ -48,16 +52,22 @@ export function useCrud<T extends { id?: number; name?: string }>(
   }
 
   const handleView = (item: T) => {
-    ElMessage.info(`查看: ${item.name || item.id}`)
+    isEditMode.value = false
+    editingId.value = item.id ?? null
+    currentItem.value = { ...item }
+    modalVisible.value = true
   }
 
-  const handleDelete = async (item: T) => {
+  const handleDelete = (item: T) => {
+    currentDeleteItem.value = item
+    deleteModalVisible.value = true
+  }
+
+  const confirmDelete = async () => {
+    const item = currentDeleteItem.value
+    if (!item) return
+
     try {
-      await ElMessageBox.confirm(`确定要删除 "${item.name || '该项'}" 吗？`, '删除确认', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning',
-      })
       if (options.deleteApi && item.id) {
         await options.deleteApi(item.id)
       } else if (options.batchDeleteApi && item.id) {
@@ -65,15 +75,24 @@ export function useCrud<T extends { id?: number; name?: string }>(
       }
       ElMessage.success(defaultMessages.delete)
       await options.fetchList()
-    } catch {
-      // User cancelled
+    } catch (error: any) {
+      ElMessage.error(error.message || '删除失败')
+    } finally {
+      deleteModalVisible.value = false
+      currentDeleteItem.value = null
     }
   }
 
-  const handleBatchDelete = async (selectedItems: T[]) => {
-    if (selectedItems.length === 0) return
+  const handleBatchDelete = (items: T[]) => {
+    selectedItems.value = items
+    batchDeleteModalVisible.value = true
+  }
 
-    const ids = selectedItems.filter((item) => item.id).map((item) => item.id!)
+  const confirmBatchDelete = async () => {
+    const items = selectedItems.value
+    if (items.length === 0) return
+
+    const ids = items.filter((item) => item.id).map((item) => item.id!)
 
     if (ids.length === 0) {
       ElMessage.warning('请选择有效的项目')
@@ -81,18 +100,16 @@ export function useCrud<T extends { id?: number; name?: string }>(
     }
 
     try {
-      await ElMessageBox.confirm(`确定要删除选中的 ${selectedItems.length} 项吗？`, '删除确认', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning',
-      })
       if (options.batchDeleteApi) {
         await options.batchDeleteApi(ids)
       }
       ElMessage.success(defaultMessages.batchDelete)
       await options.fetchList()
-    } catch {
-      // User cancelled
+    } catch (error: any) {
+      ElMessage.error(error.message || '删除失败')
+    } finally {
+      batchDeleteModalVisible.value = false
+      selectedItems.value = []
     }
   }
 
@@ -136,14 +153,20 @@ export function useCrud<T extends { id?: number; name?: string }>(
 
   return {
     modalVisible,
+    deleteModalVisible,
+    batchDeleteModalVisible,
     isEditMode,
     editingId,
     currentItem,
+    currentDeleteItem,
+    selectedItems,
     handleAdd,
     handleEdit,
     handleView,
     handleDelete,
+    confirmDelete,
     handleBatchDelete,
+    confirmBatchDelete,
     handleSubmit,
     handleClose,
     openModal,

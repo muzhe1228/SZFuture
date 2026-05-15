@@ -1,9 +1,11 @@
 <template>
   <BaseDialog
     v-model="dialogVisible"
-    :title="isEditMode ? '编辑用户' : '新增用户'"
+    :title="isEditMode ? '编辑用户' : (viewMode ? '查看用户' : '新增用户')"
     width="680px"
     :close-on-click-modal="false"
+    :show-cancel-button="!viewMode"
+    :show-confirm-button="!viewMode"
     @close="handleClose"
   >
     <el-form
@@ -13,16 +15,17 @@
       label-width="100px"
       label-position="right"
       class="user-form"
+      :disabled="viewMode"
     >
       <el-row :gutter="24">
         <el-col :span="12">
           <el-form-item label="姓名" prop="name">
-            <el-input v-model="form.name" placeholder="请输入姓名" />
+            <el-input v-model="form.name" placeholder="请输入姓名" :disabled="viewMode" />
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item label="用户名" prop="username">
-            <el-input v-model="form.username" placeholder="请输入用户名" />
+            <el-input v-model="form.username" placeholder="请输入用户名" :disabled="viewMode" />
           </el-form-item>
         </el-col>
       </el-row>
@@ -34,6 +37,7 @@
           :show-file-list="false"
           :auto-upload="false"
           :on-change="handleAvatarChange"
+          :disabled="viewMode"
         >
           <img v-if="form.avatar" :src="form.avatar" class="avatar-preview" />
           <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
@@ -43,14 +47,14 @@
       <el-row :gutter="24">
         <el-col :span="12">
           <el-form-item label="归属部门" prop="department">
-            <el-select v-model="form.department" placeholder="请选择归属部门" filterable style="width: 100%">
+            <el-select v-model="form.department" placeholder="请选择归属部门" filterable style="width: 100%" :disabled="viewMode">
               <el-option v-for="dept in departmentOptions" :key="dept.value" :label="dept.label" :value="dept.value" />
             </el-select>
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item label="手机号码" prop="phone">
-            <el-input v-model="form.phone" placeholder="请输入手机号码" />
+            <el-input v-model="form.phone" placeholder="请输入手机号码" :disabled="viewMode" />
           </el-form-item>
         </el-col>
       </el-row>
@@ -58,12 +62,12 @@
       <el-row :gutter="24">
         <el-col :span="12">
           <el-form-item label="工作邮箱">
-            <el-input v-model="form.email" placeholder="请输入工作邮箱" />
+            <el-input v-model="form.email" placeholder="请输入工作邮箱" :disabled="viewMode" />
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item label="用户性别">
-            <el-radio-group v-model="form.gender">
+            <el-radio-group v-model="form.gender" :disabled="viewMode">
               <el-radio value="男">男</el-radio>
               <el-radio value="女">女</el-radio>
               <el-radio value="保密">保密</el-radio>
@@ -75,7 +79,7 @@
       <el-row :gutter="24">
         <el-col :span="12">
           <el-form-item label="用户岗位">
-            <el-input v-model="form.position" placeholder="请输入用户岗位" />
+            <el-input v-model="form.position" placeholder="请输入用户岗位" :disabled="viewMode" />
           </el-form-item>
         </el-col>
         <el-col :span="12">
@@ -87,6 +91,7 @@
               collapse-tags
               collapse-tags-tooltip
               style="width: 100%"
+              :disabled="viewMode"
             >
               <el-option v-for="perm in permissionOptions" :key="perm.value" :label="perm.label" :value="perm.value" />
             </el-select>
@@ -95,11 +100,11 @@
       </el-row>
 
       <el-form-item label="用户状态" prop="status">
-        <el-switch v-model="form.statusEnabled" active-text="启用" inactive-text="禁用" inline-prompt />
+        <el-switch v-model="form.statusEnabled" active-text="启用" inactive-text="禁用" inline-prompt :disabled="viewMode" />
       </el-form-item>
 
       <el-form-item label="用户备注">
-        <el-input v-model="form.remarks" type="textarea" :rows="3" placeholder="请输入用户备注" />
+        <el-input v-model="form.remarks" type="textarea" :rows="3" placeholder="请输入用户备注" :disabled="viewMode" />
       </el-form-item>
     </el-form>
 
@@ -142,6 +147,7 @@
   const props = defineProps<{
     modelValue: boolean
     isEditMode: boolean
+    viewMode: boolean
     user: User | null
     departmentOptions: Option[]
     permissionOptions: Option[]

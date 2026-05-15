@@ -1,60 +1,55 @@
 <template>
-  <BaseDialog v-model="dialogVisible" title="模块详情" width="520px" :close-on-click-modal="false">
-    <el-descriptions :column="1" border v-if="module">
-      <el-descriptions-item label="名称">{{ module.name }}</el-descriptions-item>
-      <el-descriptions-item label="类型">
-        <el-tag :type="getTypeTagType(module.type)" size="small">
-          {{ module.type }}
-        </el-tag>
-      </el-descriptions-item>
-      <el-descriptions-item label="状态">{{ module.status }}</el-descriptions-item>
-      <el-descriptions-item label="说明">{{ module.description || '--' }}</el-descriptions-item>
-    </el-descriptions>
-    <template #footer>
-      <div class="dialog-footer">
-        <el-button @click="dialogVisible = false">关闭</el-button>
-      </div>
-    </template>
+  <BaseDialog
+    :model-value="modelValue"
+    title="模块详情"
+    width="520px"
+    :close-on-click-modal="false"
+    confirm-text="关闭"
+    :show-cancel-button="false"
+    :show-confirm-button="false"
+    @update:model-value="(val) => emit('update:modelValue', val)"
+    @confirm="handleConfirm"
+  >
+    <div class="view-modal" v-if="module">
+      <DetailItem label="名称" :value="module.name" />
+      <DetailItem label="类型" :value="module.type" type="status" :status-map="typeMap" />
+      <DetailItem label="状态" :value="module.status" />
+      <DetailItem label="说明" :value="module.description || '--'" />
+    </div>
   </BaseDialog>
 </template>
 
 <script setup lang="ts">
-  import { computed } from 'vue'
-  import { BaseDialog } from '@/components/BaseDialog'
-  import type { ProductModule } from '@/types/index'
+import { BaseDialog } from '@/components/BaseDialog'
+import { DetailItem } from '@/components/DetailItem'
+import type { ProductModule } from '@/types/index'
 
-  const props = defineProps<{
-    modelValue: boolean
-    module: ProductModule | null
-  }>()
+interface Props {
+  modelValue: boolean
+  module: ProductModule | null
+}
 
-  const emit = defineEmits<{
-    'update:modelValue': [value: boolean]
-  }>()
+defineProps<Props>()
 
-  const dialogVisible = computed({
-    get: () => props.modelValue,
-    set: (value) => emit('update:modelValue', value),
-  })
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: boolean): void
+}>()
 
-  const getTypeTagType = (type: string): 'primary' | 'warning' | 'success' => {
-    switch (type) {
-      case '产品':
-        return 'primary'
-      case '版本':
-        return 'warning'
-      case '功能':
-        return 'success'
-      default:
-        return 'primary'
-    }
-  }
+const typeMap = {
+  产品: 'primary',
+  版本: 'warning',
+  功能: 'success',
+}
+
+const handleConfirm = () => {
+  emit('update:modelValue', false)
+}
 </script>
 
 <style lang="scss" scoped>
-  .dialog-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
+.view-modal {
+  .el-descriptions {
+    --el-descriptions-item-bordered-label-background: #fafafa;
   }
+}
 </style>

@@ -15,6 +15,9 @@
     >
       <template #extra-actions>
         <el-button type="primary" link @click="handleAddCustomer" :icon="Plus"> 新增客户 </el-button>
+        <el-button type="danger" link plain @click="handleBatchDelete" :disabled="selectedCustomers.length === 0">
+          批量删除
+        </el-button>
       </template>
       <template #cell-accountStatus="{ row }">
         <StatusTag :status="row.accountStatus" size="small" />
@@ -35,7 +38,26 @@
     <!-- View Customer Modal -->
     <CustomerDetail v-model="viewModalVisible" :customer="currentCustomer" />
 
-    
+    <!-- Download Customer Modal -->
+    <CustomerDownloadModal v-model="downloadModalVisible" :customer="currentCustomer" @download="handleDownloadSubmit" />
+
+    <!-- Delete Customer Modal -->
+    <DeleteModal 
+      v-model="deleteModalVisible" 
+      :title-text="currentCustomer?.name"
+      :delete-api="deleteCustomerApi"
+      :id="currentCustomer?.id"
+      @success="handleDeleteSuccess"
+    />
+
+    <!-- Batch Delete Modal -->
+    <DeleteModal 
+      mode="batch"
+      v-model="batchDeleteModalVisible" 
+      :title-text="selectedCustomers.length"
+      @confirm="confirmBatchDelete"
+    />
+
   </div>
 </template>
 
@@ -43,12 +65,14 @@
   import { ref } from 'vue'
   import { Plus } from '@element-plus/icons-vue'
   import type { Customer } from '@/types/index'
-  import { ElMessage, ElMessageBox } from 'element-plus'
+  import { ElMessage } from 'element-plus'
   import request from '@/utils/request'
   import { BaseTablePage } from '@/components/BaseTablePage'
   import { StatusTag } from '@/components/StatusTag'
   import CustomerForm from '@/components/Dialog/CustomerList/CustomerForm.vue'
   import CustomerDetail from '@/components/Dialog/CustomerList/CustomerDetail.vue'
+  import CustomerDownloadModal from '@/components/Dialog/CustomerList/CustomerDownloadModal.vue'
+  import DeleteModal from '@/components/Dialog/common/DeleteModal.vue'
   import type { ActionButton } from '@/components/DataTable/types'
   import { customerColumns } from '@/config/auth/columns'
   import { customerSearchFields } from '@/config/auth/searchFields'
@@ -128,6 +152,10 @@
   // ─── Add / Edit Customer Modal ───────────────────────────────────────
 
   const customerModalVisible = ref(false)
+  const viewModalVisible = ref(false)
+  const downloadModalVisible = ref(false)
+  const deleteModalVisible = ref(false)
+  const batchDeleteModalVisible = ref(false)
   const isEditMode = ref(false)
 
   const handleAddCustomer = () => {
@@ -154,8 +182,6 @@
 
   // ─── View Modal ──────────────────────────────────────────────────────
 
-  const viewModalVisible = ref(false)
-
   const handleView = (row: Customer) => {
     currentCustomer.value = row
     viewModalVisible.value = true
@@ -164,24 +190,49 @@
   // ─── Download ────────────────────────────────────────────────────────
 
   const handleDownload = (row: Customer) => {
-    ElMessage.success(`正在下载客户资料: ${row.name}`)
+    currentCustomer.value = row
+    downloadModalVisible.value = true
+  }
+
+  const handleDownloadSubmit = (customerName: string) => {
+    ElMessage.success(`正在下载客户资料: ${customerName}`)
   }
 
   // ─── Delete ───────────────────────────────────────────────────
 
   const handleDelete = (row: Customer) => {
-    ElMessageBox.confirm(`确定要删除客户【${row.name}】吗？`, '确认删除', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    })
-      .then(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 600))
-        ElMessage.success('客户删除成功')
-      })
-      .catch(() => {
-        // User cancelled
-      })
+    currentCustomer.value = row
+    deleteModalVisible.value = true
+  }
+
+  const deleteCustomerApi = async (id: number) => {
+    await request.delete('/api/customer/delete', { params: { id } })
+  }
+
+  const handleDeleteSuccess = () => {
+    // 删除成功后的处理，如刷新列表
+  }
+
+  // ─── Batch Delete ──────────────────────────────────────────────────────
+
+  const handleBatchDelete = () => {
+    if (selectedCustomers.value.length === 0) {
+      ElMessage.warning('请先选择要删除的客户')
+      return
+    }
+    batchDeleteModalVisible.value = true
+  }
+
+  const confirmBatchDelete = async () => {
+    try {
+      const ids = selectedCustomers.value.map((customer) => customer.id)
+      await request.delete('/api/customer/delete', { params: { ids: ids.join(',') } })
+      ElMessage.success('批量删除成功')
+    } catch {
+      ElMessage.error('删除失败')
+    } finally {
+      batchDeleteModalVisible.value = false
+    }
   }
 </script>
 

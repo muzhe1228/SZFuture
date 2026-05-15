@@ -124,7 +124,7 @@ export interface LicenseTemplate {
   version: string
   status: '启用' | '停用'
   createTime: string
-  productModuleId?: number
+  productModuleId?: string
   licenseType?: '订阅' | '永久' | '试用'
   validityPeriod?: number
   floatingLicense?: boolean

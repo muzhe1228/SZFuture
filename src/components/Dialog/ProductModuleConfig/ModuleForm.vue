@@ -19,7 +19,7 @@
       label-position="right"
       class="module-form"
     >
-      <el-form-item label="*模块类型:" prop="type">
+      <el-form-item label="模块类型" prop="type">
         <el-radio-group v-model="form.type" @change="handleTypeChange">
           <el-radio-button label="产品" value="产品" />
           <el-radio-button label="版本" value="版本" />
@@ -27,15 +27,15 @@
         </el-radio-group>
       </el-form-item>
 
-      <el-form-item label="*产品名称:" prop="name" v-if="form.type === '产品'">
+      <el-form-item label="产品名称" prop="name" v-if="form.type === '产品'">
         <el-input v-model="form.name" placeholder="请输入菜单名称" />
       </el-form-item>
 
-      <el-form-item label="*版本名称:" prop="name" v-if="form.type === '版本'">
+      <el-form-item label="版本名称" prop="name" v-if="form.type === '版本'">
         <el-input v-model="form.name" placeholder="请输入版本名称" />
       </el-form-item>
 
-      <el-form-item label="*上级菜单:" prop="parentId" v-if="form.type !== '产品'">
+      <el-form-item label="上级菜单" prop="parentId" v-if="form.type !== '产品'">
         <el-select v-model="form.parentId" placeholder="请选择上级菜单" filterable style="width: 100%">
           <el-option
             v-for="option in parentMenuOptions"
@@ -46,7 +46,7 @@
         </el-select>
       </el-form-item>
 
-      <el-form-item label="*功能设置:" prop="functionSettings" v-if="form.type === '模块'">
+      <el-form-item label="功能设置" prop="functionSettings" v-if="form.type === '模块'">
         <div class="function-grid">
           <div v-for="func in functionSettingsList" :key="func.id" class="function-item">
             <el-checkbox v-model="func.checked" @change="handleFunctionToggle">
@@ -56,18 +56,14 @@
           </div>
         </div>
       </el-form-item>
-
-      <el-form-item label="*状态:" prop="status" v-if="form.type === '产品'">
-        <el-switch v-model="form.statusEnabled" active-text="启用" inactive-text="停用" inline-prompt />
-      </el-form-item>
-      <el-form-item label="*状态:" prop="status" v-else>
+      <el-form-item label="状态" required prop="statusEnabled">
         <el-radio-group v-model="form.statusEnabled">
           <el-radio-button :label="true">启用</el-radio-button>
           <el-radio-button :label="false">停用</el-radio-button>
         </el-radio-group>
       </el-form-item>
 
-      <el-form-item label="说明:">
+      <el-form-item label="说明" required prop="description">
         <el-input v-model="form.description" type="textarea" :rows="4" placeholder="请输入说明" resize="none" />
       </el-form-item>
     </el-form>

@@ -37,12 +37,21 @@
         </el-button>
       </template>
     </BaseTablePage>
+
+    <!-- Delete Log Modal -->
+    <DeleteModal 
+      v-model="deleteModalVisible" 
+      :title-text="deleteModalTitle"
+      :delete-api="deleteLogApi"
+      :id="currentLog?.id"
+      @success="handleDeleteSuccess"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { LineChart, PieChart } from 'echarts/charts'
@@ -50,6 +59,7 @@ import { TooltipComponent, LegendComponent, GridComponent } from 'echarts/compon
 import VChart from 'vue-echarts'
 import SearchForm from '@/components/SearchForm'
 import { BaseTablePage } from '@/components/BaseTablePage'
+import DeleteModal from '@/components/Dialog/common/DeleteModal.vue'
 import type { ActionButton } from '@/components/DataTable/types'
 import { systemLogColumns } from '@/config/audit/columns'
 import { systemLogSearchFields } from '@/config/audit/searchFields'
@@ -62,11 +72,20 @@ use([CanvasRenderer, LineChart, PieChart, TooltipComponent, LegendComponent, Gri
 const tableLoading = ref(false)
 const selectedRows = ref<AccessLog[]>([])
 const tablePageRef = ref<any>(null)
+const deleteModalVisible = ref(false)
+const currentLog = ref<AccessLog | null>(null)
+
+const deleteModalTitle = computed(() => {
+  if (currentLog.value) {
+    return `确定要删除用户 "${currentLog.value.user}" 的日志记录吗？`
+  }
+  return `确定要删除选中的 ${selectedRows.value.length} 条日志记录吗？`
+})
 
 // 表格列配置已移至 @/config/audit/columns.ts
 const columns = ref(systemLogColumns)
 
-const tableActions: ActionButton[] = [{ key: 'delete', label: '删除', type: 'danger' }]
+const tableActions: ActionButton[] = [{ key: 'delete', label: '删除', type: 'danger',icon: 'IconDel' }]
 
 // 搜索字段配置已移至 @/config/audit/searchFields.ts
 const searchFields = systemLogSearchFields
@@ -273,31 +292,28 @@ const handleTableAction = (action: string, row: AccessLog) => {
 }
 
 const handleDelete = async (row: AccessLog) => {
-  try {
-    await ElMessageBox.confirm(`确定要删除用户 "${row.user}" 的日志记录吗？`, '删除确认', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    })
-    ElMessage.success('删除成功')
-  } catch {
-    // User cancelled
-  }
+  currentLog.value = row
+  deleteModalVisible.value = true
 }
 
 const handleBatchDelete = async () => {
   if (selectedRows.value.length === 0) return
-  try {
-    await ElMessageBox.confirm(`确定要删除选中的 ${selectedRows.value.length} 条日志记录吗？`, '删除确认', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    })
-    selectedRows.value = []
-    ElMessage.success('批量删除成功')
-  } catch {
-    // User cancelled
+  currentLog.value = null
+  deleteModalVisible.value = true
+}
+
+const deleteLogApi = async () => {
+  if (currentLog.value) {
+    await request.delete('/api/log/access/delete', { params: { id: currentLog.value.id } })
+  } else {
+    const ids = selectedRows.value.map(r => r.id)
+    await request.delete('/api/log/access/delete', { params: { ids: ids.join(',') } })
   }
+}
+
+const handleDeleteSuccess = () => {
+  currentLog.value = null
+  selectedRows.value = []
 }
 </script>
 

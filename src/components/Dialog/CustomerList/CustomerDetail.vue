@@ -1,65 +1,58 @@
 <template>
-  <BaseDialog v-model="dialogVisible" title="客户详情" width="520px" :close-on-click-modal="false">
+  <BaseDialog
+    :model-value="modelValue"
+    title="客户详情"
+    width="520px"
+    :close-on-click-modal="false"
+    confirm-text="关闭"
+    :show-cancel-button="false"
+    :show-confirm-button="false"
+    @update:model-value="(val) => emit('update:modelValue', val)"
+    @confirm="handleConfirm"
+  >
     <div class="view-modal" v-if="customer">
-      <el-descriptions :column="2" border>
-        <el-descriptions-item label="客户名称" :span="2">{{ customer.name }}</el-descriptions-item>
-        <el-descriptions-item label="联系人">{{ customer.contact }}</el-descriptions-item>
-        <el-descriptions-item label="手机号">{{ customer.phone }}</el-descriptions-item>
-        <el-descriptions-item label="邮箱" :span="2">{{ customer.email || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="销售负责人" :span="2">{{ customer.salesOwner || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="账户状态">
-          <el-tag :type="getStatusType(customer.accountStatus)" size="small">{{ customer.accountStatus }}</el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="创建日期">{{ customer.createDate }}</el-descriptions-item>
-      </el-descriptions>
+      <DetailItem label="客户名称" :value="customer.name" />
+      <DetailItem label="联系人" :value="customer.contact" />
+      <DetailItem label="手机号" :value="customer.phone" />
+      <DetailItem label="邮箱" :value="customer.email || '-'" />
+      <DetailItem label="销售负责人" :value="customer.salesOwner || '-'" />
+      <DetailItem label="账户状态" :value="customer.accountStatus" type="status" :status-map="statusMap" />
+      <DetailItem label="创建日期" :value="customer.createDate" />
     </div>
-    <template #footer>
-      <div class="dialog-footer">
-        <el-button @click="dialogVisible = false">关闭</el-button>
-      </div>
-    </template>
   </BaseDialog>
 </template>
 
 <script setup lang="ts">
-  import { computed } from 'vue'
-  import { BaseDialog } from '@/components/BaseDialog'
-  import type { Customer } from '@/types/index'
+import { BaseDialog } from '@/components/BaseDialog'
+import { DetailItem } from '@/components/DetailItem'
+import type { Customer } from '@/types/index'
 
-  const props = defineProps<{
-    modelValue: boolean
-    customer: Customer | null
-  }>()
+interface Props {
+  modelValue: boolean
+  customer: Customer | null
+}
 
-  const emit = defineEmits<{
-    'update:modelValue': [value: boolean]
-  }>()
+defineProps<Props>()
 
-  const dialogVisible = computed({
-    get: () => props.modelValue,
-    set: (value) => emit('update:modelValue', value),
-  })
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: boolean): void
+}>()
 
-  const getStatusType = (status: string) => {
-    const map: Record<string, string> = {
-      正常: 'success',
-      冻结: 'warning',
-      关闭: 'danger',
-    }
-    return (map[status] || 'info') as any
-  }
+const statusMap = {
+  正常: 'success',
+  冻结: 'warning',
+  关闭: 'danger',
+}
+
+const handleConfirm = () => {
+  emit('update:modelValue', false)
+}
 </script>
 
 <style lang="scss" scoped>
-  .dialog-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
+.view-modal {
+  .el-descriptions {
+    --el-descriptions-item-bordered-label-background: #fafafa;
   }
-
-  .view-modal {
-    .el-descriptions {
-      --el-descriptions-item-bordered-label-background: #fafafa;
-    }
-  }
+}
 </style>

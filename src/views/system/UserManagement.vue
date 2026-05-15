@@ -53,15 +53,29 @@
       </BaseTablePage>
     </div>
 
-    <!-- Add/Edit User Modal -->
-    <UserForm v-model="modalVisible" :is-edit-mode="isEditMode" :user="currentItem"
+    <!-- Add/Edit/View User Modal -->
+    <UserForm v-model="modalVisible" :is-edit-mode="isEditMode" :view-mode="!isEditMode && currentItem !== null" :user="currentItem"
       :department-options="departmentOptions" :permission-options="permissionOptions" @submit="handleSubmit"
       @close="handleClose" />
+
+    <!-- Delete User Modal -->
+    <DeleteModal 
+      v-model="deleteModalVisible" 
+      :title-text="deleteModalTitle"
+      @confirm="confirmDelete"
+    />
+
+    <!-- Batch Delete Modal -->
+    <DeleteModal 
+      v-model="batchDeleteModalVisible" 
+      :title-text="`确定要删除选中的 ${selectedItems.length} 个用户吗？`"
+      @confirm="confirmBatchDelete"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { Plus, Upload, OfficeBuilding, Folder, Search } from '@element-plus/icons-vue'
 import type { User, OrgTreeNode } from '@/types/index'
 import { ElMessage } from 'element-plus'
@@ -69,6 +83,7 @@ import type { ElTree } from 'element-plus'
 import { BaseTablePage } from '@/components/BaseTablePage'
 import { StatusTag } from '@/components/StatusTag'
 import UserForm from '@/components/Dialog/UserManagement/UserForm.vue'
+import DeleteModal from '@/components/Dialog/common/DeleteModal.vue'
 import type { ActionButton } from '@/components/DataTable/types'
 import { userColumns } from '@/config/system/columns'
 import { userSearchFields } from '@/config/system/searchFields'
@@ -171,13 +186,19 @@ const refreshList = async () => {
 
 const {
   modalVisible,
+  deleteModalVisible,
+  batchDeleteModalVisible,
   isEditMode,
   currentItem,
+  currentDeleteItem,
+  selectedItems,
   handleAdd,
   handleEdit,
   handleView,
   handleDelete,
+  confirmDelete,
   handleBatchDelete,
+  confirmBatchDelete,
   handleSubmit,
   handleClose,
 } = useCrud<User>({
@@ -218,6 +239,11 @@ const {
       })
     }
   },
+})
+
+const deleteModalTitle = computed(() => {
+  const name = currentDeleteItem.value?.name || currentDeleteItem.value?.username || ''
+  return `确定要删除用户 "${name}" 吗？`
 })
 
 const fetchData = async (formData?: Record<string, any>, page: number = 1, pageSize: number = 20) => {

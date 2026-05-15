@@ -1,9 +1,11 @@
 <template>
   <BaseDialog
     v-model="dialogVisible"
-    :title="isEditMode ? '编辑部门' : '新增部门'"
+    :title="isEditMode ? '编辑部门' : (viewMode ? '查看部门' : '新增部门')"
     width="520px"
     :close-on-click-modal="false"
+    :show-cancel-button="!viewMode"
+    :show-confirm-button="!viewMode"
     @close="handleClose"
   >
     <el-form
@@ -13,13 +15,14 @@
       label-width="100px"
       label-position="right"
       class="dept-form"
+      :disabled="viewMode"
     >
       <el-form-item label="部门名称" prop="name">
-        <el-input v-model="form.name" placeholder="请输入" />
+        <el-input v-model="form.name" placeholder="请输入" :disabled="viewMode" />
       </el-form-item>
 
       <el-form-item label="上级部门" prop="parentId">
-        <el-select v-model="form.parentId" placeholder="请选择" filterable style="width: 100%">
+        <el-select v-model="form.parentId" placeholder="请选择" filterable style="width: 100%" :disabled="viewMode">
           <el-option v-for="dept in parentDeptOptions" :key="dept.value" :label="dept.label" :value="dept.value" />
         </el-select>
       </el-form-item>
@@ -33,15 +36,16 @@
           :controls="false"
           align="left"
           style="width: 100%"
+          :disabled="viewMode"
         />
       </el-form-item>
 
       <el-form-item label="部门状态" prop="statusEnabled">
-        <el-switch v-model="form.statusEnabled" active-text="启用" inactive-text="禁用" inline-prompt />
+        <el-switch v-model="form.statusEnabled" active-text="启用" inactive-text="禁用" inline-prompt :disabled="viewMode" />
       </el-form-item>
 
       <el-form-item label="部门备注">
-        <el-input v-model="form.remarks" type="textarea" :rows="4" placeholder="请输入" resize="none" />
+        <el-input v-model="form.remarks" type="textarea" :rows="4" placeholder="请输入" resize="none" :disabled="viewMode" />
       </el-form-item>
     </el-form>
 
@@ -77,6 +81,7 @@
   const props = defineProps<{
     modelValue: boolean
     isEditMode: boolean
+    viewMode: boolean
     department: Department | null
     parentDeptOptions: ParentDeptOption[]
   }>()

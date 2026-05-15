@@ -18,15 +18,33 @@
 
     <!-- Message Detail Modal -->
     <MessageDetail v-model="detailModalVisible" :message="currentMessage" @confirm="handleMessageConfirm" />
+
+    <!-- Delete Message Modal -->
+    <DeleteModal 
+      v-model="deleteModalVisible" 
+      :title-text="currentMessage?.customerName"
+      :delete-api="deleteMessageApi"
+      :id="currentMessage?.id"
+      @success="handleDeleteSuccess"
+    />
+
+    <!-- Batch Delete Modal -->
+    <DeleteModal 
+      mode="batch"
+      v-model="batchDeleteModalVisible" 
+      :title-text="selectedMessages.length"
+      @confirm="confirmBatchDelete"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
 import type { Message } from '@/types/index'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { BaseTablePage } from '@/components/BaseTablePage'
 import MessageDetail from '@/components/Dialog/Messages/MessageDetail.vue'
+import DeleteModal from '@/components/Dialog/common/DeleteModal.vue'
 import type { ActionButton } from '@/components/DataTable/types'
 import { messageColumns } from '@/config/common/columns'
 import { messageSearchFields } from '@/config/common/searchFields'
@@ -131,6 +149,8 @@ const handleExport = async (params?: { searchParams?: Record<string, any>; field
 // ─── Message Detail Modal ─────────────────────────────────────────────
 
 const detailModalVisible = ref(false)
+const deleteModalVisible = ref(false)
+const batchDeleteModalVisible = ref(false)
 const currentMessage = ref<ExtendedMessage | null>(null)
 
 const handleView = (row: ExtendedMessage) => {
@@ -145,47 +165,42 @@ const handleMessageConfirm = () => {
 // ─── Delete ───────────────────────────────────────────────────────────
 
 const handleDelete = (row: ExtendedMessage) => {
-  ElMessageBox.confirm(`确定要删除【${row.customerName}】的消息吗？`, '确认删除', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning',
-  })
-    .then(async () => {
-      try {
-        const result = await request.delete(`/api/message/delete`, { params: { id: row.id } })
-        if (result.code === 200) {
-          ElMessage.success('删除成功')
-        }
-      } catch {
-        ElMessage.error('删除失败')
-      }
-    })
-    .catch(() => {
-      // User cancelled
-    })
+  currentMessage.value = row
+  deleteModalVisible.value = true
+}
+
+const deleteMessageApi = async (id: number) => {
+  const result = await request.delete('/api/message/delete', { params: { id } })
+  if (result.code !== 200) {
+    throw new Error('删除失败')
+  }
+}
+
+const handleDeleteSuccess = () => {
+  // 删除成功后的处理，如刷新列表
+  console.log('删除成功')
 }
 
 const handleBatchDelete = () => {
-  if (selectedMessages.value.length === 0) return
-  ElMessageBox.confirm(`确定要删除选中的 ${selectedMessages.value.length} 条消息吗？`, '确认删除', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning',
-  })
-    .then(async () => {
-      try {
-        const ids = selectedMessages.value.map((m) => m.id)
-        const result = await request.delete(`/api/message/delete`, { params: { ids: ids.join(',') } })
-        if (result.code === 200) {
-          ElMessage.success('批量删除成功')
-        }
-      } catch {
-        ElMessage.error('删除失败')
-      }
-    })
-    .catch(() => {
-      // User cancelled
-    })
+  if (selectedMessages.value.length === 0) {
+    ElMessage.warning('请先选择要删除的消息')
+    return
+  }
+  batchDeleteModalVisible.value = true
+}
+
+const confirmBatchDelete = async () => {
+  try {
+    const ids = selectedMessages.value.map((m) => m.id)
+    const result = await request.delete('/api/message/delete', { params: { ids: ids.join(',') } })
+    if (result.code === 200) {
+      ElMessage.success('批量删除成功')
+    }
+  } catch {
+    ElMessage.error('删除失败')
+  } finally {
+    batchDeleteModalVisible.value = false
+  }
 }
 </script>
 

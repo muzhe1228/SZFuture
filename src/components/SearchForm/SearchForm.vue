@@ -17,47 +17,10 @@
 
     <template v-for="field in visibleFields" :key="field.prop">
       <el-form-item :label="field.label" :prop="field.prop">
-        <!-- Input -->
-        <el-input v-if="field.type === 'input'" v-model="formData[field.prop]"
-          :placeholder="field.placeholder || `请输入${field.label}`" :clearable="field.clearable !== false"
-          :style="{ width: field.width || '180px' }" />
-
-        <!-- Select -->
-        <el-select v-else-if="field.type === 'select'" v-model="formData[field.prop]"
-          :placeholder="field.placeholder || `请选择${field.label}`" :clearable="field.clearable !== false"
-          :multiple="field.multiple" :loading="loadingOptions[field.prop]" :style="{ width: field.width || '180px' }">
-          <el-option v-for="opt in fieldOptions[field.prop]" :key="opt.value" :label="opt.label" :value="opt.value" />
-        </el-select>
-
-        <!-- Date -->
-        <el-date-picker v-else-if="field.type === 'date'" v-model="formData[field.prop]" type="date"
-          :placeholder="field.placeholder || `请选择${field.label}`" :clearable="field.clearable !== false"
-          value-format="YYYY-MM-DD" :style="{ width: field.width || '180px' }" />
-
-        <!-- Date Range -->
-        <el-date-picker v-else-if="field.type === 'daterange'" v-model="formData[field.prop]" type="daterange"
-          :placeholder="field.placeholder || `请选择${field.label}`" :clearable="field.clearable !== false"
-          value-format="YYYY-MM-DD" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期"
-          :style="{ width: field.width || '320px' }" />
-
-        <!-- DateTime -->
-        <el-date-picker v-else-if="field.type === 'datetime'" v-model="formData[field.prop]" type="datetime"
-          :placeholder="field.placeholder || `请选择${field.label}`" :clearable="field.clearable !== false"
-          value-format="YYYY-MM-DD HH:mm:ss" :style="{ width: field.width || '180px' }" />
-
-        <!-- DateTime Range -->
-        <el-date-picker v-else-if="field.type === 'datetimerange'" v-model="formData[field.prop]" type="datetimerange"
-          :placeholder="field.placeholder || `请选择${field.label}`" :clearable="field.clearable !== false"
-          value-format="YYYY-MM-DD HH:mm:ss" range-separator="至" start-placeholder="开始时间" end-placeholder="结束时间"
-          :style="{ width: field.width || '320px' }" />
-
-        <!-- Number -->
-        <el-input-number v-else-if="field.type === 'number'" v-model="formData[field.prop]"
-          :placeholder="field.placeholder" :clearable="field.clearable" :min="field.min" :max="field.max"
-          :style="{ width: field.width || '180px' }" />
-
-        <!-- Custom slot -->
-        <slot v-else-if="field.type === 'custom'" :name="field.prop" :field="field" :form-data="formData" />
+        <component :is="getFieldComponent(field)" v-bind="getFieldProps(field)">
+          <el-option v-if="field.type === 'select'" v-for="opt in fieldOptions[field.prop]" :key="opt.value"
+            :label="opt.label" :value="opt.value" />
+        </component>
       </el-form-item>
     </template>
     <!-- Column Settings Drawer -->
@@ -74,11 +37,103 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch, computed } from 'vue'
+import { ref, reactive, onMounted, watch, computed, h } from 'vue'
 import type { FormInstance } from 'element-plus'
+import { ElInput, ElSelect, ElDatePicker, ElInputNumber } from 'element-plus'
 import type { SearchField, SearchFieldOption } from './types'
 import { logger } from '@/utils/logger'
 
+// 字段组件映射
+const fieldComponentMap: Record<string, any> = {
+  input: ElInput,
+  select: ElSelect,
+  date: ElDatePicker,
+  daterange: ElDatePicker,
+  datetime: ElDatePicker,
+  datetimerange: ElDatePicker,
+  number: ElInputNumber,
+}
+
+// 默认字段属性
+const fieldDefaultProps: Record<string, Record<string, any>> = {
+  input: { clearable: true },
+  select: { clearable: true },
+  date: { clearable: true, type: 'date', valueFormat: 'YYYY-MM-DD' },
+  daterange: {
+    clearable: true,
+    type: 'daterange',
+    valueFormat: 'YYYY-MM-DD',
+    rangeSeparator: '至',
+    startPlaceholder: '开始日期',
+    endPlaceholder: '结束日期'
+  },
+  datetime: { clearable: true, type: 'datetime', valueFormat: 'YYYY-MM-DD HH:mm:ss' },
+  datetimerange: {
+    clearable: true,
+    type: 'daterange',
+    valueFormat: 'YYYY-MM-DD',
+    rangeSeparator: '至',
+    startPlaceholder: '开始日期',
+    endPlaceholder: '结束日期'
+  },
+  number: {},
+}
+
+// 默认字段宽度
+const fieldDefaultWidths: Record<string, string> = {
+  input: '180px',
+  select: '180px',
+  date: '180px',
+  daterange: '320px',
+  datetime: '180px',
+  datetimerange: '340px',
+  number: '180px',
+}
+
+// 获取字段组件
+const getFieldComponent = (field: SearchField) => {
+  if (field.type === 'custom') {
+    return {
+      render() {
+        return h('slot', { name: field.prop, field, formData })
+      }
+    }
+  }
+  return fieldComponentMap[field.type]
+}
+
+// 获取字段属性
+const getFieldProps = (field: SearchField) => {
+  const type = field.type
+  const defaultProps = fieldDefaultProps[type] || {}
+  const width = field.width || fieldDefaultWidths[type] || '180px'
+
+  const baseProps: Record<string, any> = {
+    modelValue: formData[field.prop],
+    'onUpdate:modelValue': (val: any) => { formData[field.prop] = val },
+    placeholder: field.placeholder || (type === 'input' ? `请输入${field.label}` : `请选择${field.label}`),
+    style: { width },
+  }
+
+  if (type === 'select') {
+    baseProps.multiple = field.multiple
+    baseProps.loading = loadingOptions.value[field.prop]
+  }
+
+  if (type === 'number') {
+    baseProps.min = field.min
+    baseProps.max = field.max
+    baseProps.clearable = field.clearable
+  }
+
+  if ('clearable' in field) {
+    baseProps.clearable = field.clearable
+  }
+
+  return { ...defaultProps, ...baseProps }
+}
+
+// 定义属性
 interface Props {
   fields: SearchField[]
   storageKey?: string
@@ -92,6 +147,7 @@ interface Props {
   resetLoading?: boolean
 }
 
+// 定义属性
 const props = withDefaults(defineProps<Props>(), {
   storageKey: 'search-form-columns',
   showColumnSettings: true,
@@ -104,6 +160,7 @@ const props = withDefaults(defineProps<Props>(), {
   resetLoading: false,
 })
 
+// 定义事件
 const emit = defineEmits<{
   search: [formData: Record<string, any>]
   reset: []
@@ -282,21 +339,6 @@ defineExpose({
     margin-bottom: 18px;
     margin-right: 18px;
   }
-
-  :deep(.el-select__wrapper),
-  :deep(.el-input__wrapper),
-  :deep(.el-select .el-input__wrapper) {
-    background-color: #F0F5FA;
-    border-radius: 8px;
-  }
-
-  :deep(.el-input__inner::placeholder),
-  :deep(.el-select__placeholder),
-  :deep(.el-picker__input::placeholder) {
-    // color: var(--el-text-color-secondary);
-    font-size: 12px;
-  }
-
 }
 
 .search-form-actions {

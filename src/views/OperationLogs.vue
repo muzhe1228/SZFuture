@@ -32,13 +32,23 @@
         </el-tooltip>
       </template>
     </BaseTablePage>
+
+    <!-- Delete Log Modal -->
+    <DeleteModal 
+      v-model="deleteModalVisible" 
+      :title-text="deleteModalTitle"
+      :delete-api="deleteLogApi"
+      :id="currentLog?.id"
+      @success="handleDeleteSuccess"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-  import { ref } from 'vue'
-  import { ElMessage, ElMessageBox } from 'element-plus'
+  import { ref, computed } from 'vue'
+  import { ElMessage } from 'element-plus'
   import { BaseTablePage } from '@/components/BaseTablePage'
+  import DeleteModal from '@/components/Dialog/common/DeleteModal.vue'
   import type { ActionButton } from '@/components/DataTable/types'
   import { operationLogColumns } from '@/config/audit/columns'
   import { operationLogSearchFields } from '@/config/audit/searchFields'
@@ -46,6 +56,15 @@
   import request from '@/utils/request'
 
   const selectedRows = ref<OperationLog[]>([])
+  const deleteModalVisible = ref(false)
+  const currentLog = ref<OperationLog | null>(null)
+
+  const deleteModalTitle = computed(() => {
+    if (currentLog.value) {
+      return `确定要删除操作人 "${currentLog.value.operator}" 的日志记录吗？`
+    }
+    return `确定要删除选中的 ${selectedRows.value.length} 条日志记录吗？`
+  })
 
   // ─── Table Config ─────────────────────────────────────────────────────
 
@@ -102,19 +121,19 @@
   }
 
   const handleDelete = async (row: OperationLog) => {
-    try {
-      await ElMessageBox.confirm(`确定要删除操作人 "${row.operator}" 的日志记录吗？`, '删除确认', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning',
-      })
-      const result = await request.delete(`/api/log/operation/delete`, { params: { id: row.id } })
-      if (result.code === 200) {
-        ElMessage.success('删除成功')
-      }
-    } catch {
-      // User cancelled
+    currentLog.value = row
+    deleteModalVisible.value = true
+  }
+
+  const deleteLogApi = async (id: number) => {
+    const result = await request.delete('/api/log/operation/delete', { params: { id } })
+    if (result.code !== 200) {
+      throw new Error('删除失败')
     }
+  }
+
+  const handleDeleteSuccess = () => {
+    currentLog.value = null
   }
 </script>
 

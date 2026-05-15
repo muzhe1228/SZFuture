@@ -7,12 +7,12 @@
       </div>
       <div class="table-actions">
         <slot name="extra-actions-right"></slot>
+        <el-button v-if="!hideColumnSettings" link icon="Tools" @click="handleColumnSettings">
+          列配置
+        </el-button>
         <el-button v-if="!hideExport" type="primary" link :loading="exportLoading" :disabled="exportLoading"
           icon="Download" @click="openExportModal">
           导出
-        </el-button>
-        <el-button v-if="!hideColumnSettings" link icon="Tools" @click="handleColumnSettings">
-          列配置
         </el-button>
       </div>
     </div>
@@ -40,12 +40,10 @@
           <template #default="{ row }">
             <template v-for="action in visibleActions" :key="action.key">
               <el-button v-if="!action.condition || action.condition(row)" :type="action.type || 'primary'"
-                :link="action.link !== false" size="small" @click="handleAction(action.key, row)">
+                :link="action.link !== false" size="small" @click="handleAction(action.key, row)"
+                @mouseenter="action.icon && loadIcon(action.icon)">
                 <el-tooltip :content="action.label" placement="top">
                   <img :src="iconMap[action.icon as IconType]" alt="icon" :class="['icon', action.icon]" />
-                  <!-- <span class="label">
-                  {{ action.label }}
-                </span> -->
                 </el-tooltip>
               </el-button>
             </template>
@@ -62,22 +60,32 @@
     </div>
 
     <!-- Column Settings Drawer -->
-    <el-drawer v-model="drawerVisible" title="列设置" direction="rtl" size="360px">
+    <el-drawer v-model="drawerVisible" title="列设置" direction="rtl" size="400px">
       <div class="column-settings">
         <div class="column-settings-header">
           <span class="col-name">列表</span>
           <span class="col-show">显示</span>
           <span class="col-sort">排序</span>
         </div>
-        <div class="column-settings-body">
-          <div v-for="col in columns" :key="col.key" class="column-item">
-            <span class="col-item">{{ col.label }}</span>
-            <span class="col-item"><el-switch v-model="col.visible" @change="handleColumnChange" /></span>
-            <span class="col-item"><el-switch v-model="col.sortable" disabled /></span>
-          </div>
-        </div>
+        <draggable v-model="localColumns" item-key="key" handle=".drag-handle" ghost-class="ghost" @end="handleDragEnd"
+          class="column-settings-body">
+          <template #item="{ element: col }">
+            <div class="column-item">
+              <span class="col-name">{{ col.label }}</span>
+              <span class="col-show">
+                <el-switch v-model="col.visible" @change="handleColumnChange" />
+              </span>
+              <span class="col-sort drag-handle">
+                <el-icon :size="16">
+                  <Rank />
+                </el-icon>
+              </span>
+            </div>
+          </template>
+        </draggable>
       </div>
       <template #footer>
+        <el-button @click="handleResetAll">默认设置</el-button>
         <el-button @click="drawerVisible = false">关闭</el-button>
       </template>
     </el-drawer>
@@ -88,38 +96,78 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, reactive } from 'vue'
+import { Rank } from '@element-plus/icons-vue'
 import type { DataTableProps, DataTableEmits, IconType } from './types'
 import { logger } from '@/utils/logger'
+import draggable from 'vuedraggable'
 import ExportModal from '../ExportModal'
-import IconActive from '@/assets/icons/iconActive.png'
-import IconShow from '@/assets/icons/iconShow.png'
-import IconDel from '@/assets/icons/iconDel.png'
-import IconDownload from '@/assets/icons/iconDownload.png'
-import IconApproval from '@/assets/icons/iconApproval.png'
-import IconCopy from '@/assets/icons/iconCopy.png'
-import IconDelay from '@/assets/icons/iconDelay.png'
-import IconEdit from '@/assets/icons/iconEdit.png'
-import IconFreeze from '@/assets/icons/iconFreeze.png'
-import IconRefresh from '@/assets/icons/iconRefresh.png'
-import IconUpload from '@/assets/icons/iconUpload.png'
-import IconVoid from '@/assets/icons/iconVoid.png'
 
-const iconMap: Record<string, string> = {
-  IconActive,
-  IconShow,
-  IconDel,
-  IconDownload,
-  IconApproval,
-  IconCopy,
-  IconDelay,
-  IconEdit,
-  IconFreeze,
-  IconRefresh,
-  IconUpload,
-  IconVoid,
+const iconCache = ref<Record<string, string>>({})
+const iconLoading = ref<Set<string>>(new Set())
+
+// 加载图标
+const getIcon = async (iconName: string): Promise<string> => {
+  if (iconCache.value[iconName]) {
+    return iconCache.value[iconName]
+  }
+
+  // 如果图标正在加载中，等待加载完成
+  if (iconLoading.value.has(iconName)) {
+    await new Promise(resolve => {
+      const check = () => {
+        if (!iconLoading.value.has(iconName)) {
+          resolve(undefined)
+        } else {
+          setTimeout(check, 50)
+        }
+      }
+      check()
+    })
+    return iconCache.value[iconName] || ''
+  }
+
+  iconLoading.value.add(iconName)
+
+  try {
+    const iconModules: Record<string, () => Promise<{ default: string }>> = {
+      IconActive: () => import('@/assets/icons/iconActive.png'),
+      IconShow: () => import('@/assets/icons/iconShow.png'),
+      IconDel: () => import('@/assets/icons/iconDel.png'),
+      IconDownload: () => import('@/assets/icons/iconDownload.png'),
+      IconApproval: () => import('@/assets/icons/iconApproval.png'),
+      IconCopy: () => import('@/assets/icons/iconCopy.png'),
+      IconDelay: () => import('@/assets/icons/iconDelay.png'),
+      IconEdit: () => import('@/assets/icons/iconEdit.png'),
+      IconFreeze: () => import('@/assets/icons/iconFreeze.png'),
+      IconRefresh: () => import('@/assets/icons/iconRefresh.png'),
+      IconUpload: () => import('@/assets/icons/iconUpload.png'),
+      IconVoid: () => import('@/assets/icons/iconVoid.png'),
+    }
+
+    const loader = iconModules[iconName]
+    if (loader) {
+      const module = await loader()
+      iconCache.value[iconName] = module.default
+    }
+  } catch (e) {
+    logger.error(`Failed to load icon: ${iconName}`, e)
+  } finally {
+    iconLoading.value.delete(iconName)
+  }
+
+  return iconCache.value[iconName] || ''
 }
 
+const iconMap = reactive<Record<string, string>>({})
+
+const loadIcon = async (iconName: string) => {
+  if (!iconMap[iconName]) {
+    iconMap[iconName] = await getIcon(iconName)
+  }
+}
+
+// 定义组件属性
 const props = withDefaults(defineProps<DataTableProps>(), {
   loading: false,
   total: 0,
@@ -139,30 +187,35 @@ const props = withDefaults(defineProps<DataTableProps>(), {
 
 
 const emit = defineEmits<DataTableEmits>()
-
 const drawerVisible = ref(false)
 const selectedRowKeys = ref<Set<any>>(new Set())
 const exportLoading = ref(false)
 const exportModalVisible = ref(false)
+const localColumns = ref([...props.columns])
 
+// 计算当前页码
 const currentPageModel = computed({
   get: () => props.currentPage,
   set: (val) => emit('page-change', val, props.pageSize),
 })
 
+// 计算每页显示数量
 const pageSizeModel = computed({
   get: () => props.pageSize,
   set: (val) => emit('page-change', props.currentPage, val),
 })
 
+// 计算可见列
 const visibleColumns = computed(() => {
-  return props.columns.filter((col) => col.visible !== false)
+  return localColumns.value.filter((col) => col.visible !== false)
 })
 
+// 计算可见操作列
 const visibleActions = computed(() => {
   return props.actions || []
 })
 
+// 计算导出字段
 const exportFields = computed(() => {
   return visibleColumns.value
     .filter(col => col.key !== 'actions' && col.key !== 'selection')
@@ -172,11 +225,14 @@ const exportFields = computed(() => {
     }))
 })
 
+// 计算操作列宽度
 const actionsWidth = computed(() => {
+  // const count = visibleActions.value.length > 4 ? 4 : visibleActions.value.length
   const count = visibleActions.value.length > 4 ? 4 : visibleActions.value.length
   return Math.max(80, count * 50)
 })
 
+// 处理行点击事件
 const rowClassName = ({ row }: { row: any }) => {
   const rowKey = props.rowKey || 'id'
   if (selectedRowKeys.value.has(row[rowKey])) {
@@ -185,6 +241,7 @@ const rowClassName = ({ row }: { row: any }) => {
   return ''
 }
 
+// 处理选择改变改变事件
 const handleSelectionChange = (selection: any[]) => {
   selectedRowKeys.value.clear()
   selection.forEach((item: any) => {
@@ -194,42 +251,61 @@ const handleSelectionChange = (selection: any[]) => {
   emit('selection-change', selection)
 }
 
+// 打开导出弹窗
 const openExportModal = () => {
   exportModalVisible.value = true
 }
 
+// 处理导出点击事件
 const handleExportWithFields = (params: { fields: string[]; format: string }) => {
   exportLoading.value = true
   emit('export', params)
 }
 
+// 监听导出弹窗关闭事件
 watch(exportModalVisible, (val) => {
   if (!val) {
     exportLoading.value = false
   }
 })
 
+// 处理每页显示改变事件
 const handleSizeChange = (size: number) => {
   emit('page-change', props.currentPage, size)
 }
 
+// 处理当前页码改变事件
 const handleCurrentChange = (page: number) => {
   emit('page-change', page, props.pageSize)
 }
 
+// 处理列设置点击事件
 const handleColumnSettings = () => {
   drawerVisible.value = true
   emit('column-settings')
 }
 
+// 处理列显示状态改变事件
 const handleColumnChange = () => {
   saveColumnVisibility()
 }
 
+// 处理列排序结束事件
+const handleDragEnd = () => {
+  const orderMap: Record<string, number> = {}
+  localColumns.value.forEach((col, index) => {
+    orderMap[col.key] = index
+  })
+  localStorage.setItem(`${props.storageKey}-order`, JSON.stringify(orderMap))
+  saveColumnVisibility()
+}
+
+// 处理操作列点击事件
 const handleAction = (action: string, row: any) => {
   emit('action', action, row)
 }
 
+// 获取当前列显示状态
 const loadColumnVisibility = () => {
   if (!props.storageKey) return
   const saved = localStorage.getItem(`${props.storageKey}-visibility`)
@@ -247,6 +323,37 @@ const loadColumnVisibility = () => {
   }
 }
 
+// 获取当前列排序顺序
+const loadColumnOrder = () => {
+  if (!props.storageKey) return
+  const saved = localStorage.getItem(`${props.storageKey}-order`)
+  if (saved) {
+    try {
+      const orderMap = JSON.parse(saved) as Record<string, number>
+      localColumns.value.sort((a, b) => {
+        const orderA = orderMap[a.key] ?? Number.MAX_SAFE_INTEGER
+        const orderB = orderMap[b.key] ?? Number.MAX_SAFE_INTEGER
+        return orderA - orderB
+      })
+    } catch (e) {
+      logger.error('Failed to load column order:', e)
+    }
+  }
+}
+
+// 重置所有设置
+const handleResetAll = () => {
+  if (!props.storageKey) return
+  localStorage.removeItem(`${props.storageKey}-order`)
+  localStorage.removeItem(`${props.storageKey}-visibility`)
+  localColumns.value = props.columns.map(col => ({
+    ...col,
+    visible: true
+  }))
+  saveColumnVisibility()
+}
+
+// 保存列显示状态
 const saveColumnVisibility = () => {
   if (!props.storageKey) return
   const visibility = props.columns.reduce(
@@ -259,8 +366,18 @@ const saveColumnVisibility = () => {
   localStorage.setItem(`${props.storageKey}-visibility`, JSON.stringify(visibility))
 }
 
+// 预加载操作列图标
+const preloadIcons = async () => {
+  const actionIcons = props.actions?.map(action => action.icon).filter(Boolean) as string[]
+  if (actionIcons.length > 0) {
+    await Promise.all(actionIcons.map(icon => loadIcon(icon)))
+  }
+}
+
 onMounted(() => {
   loadColumnVisibility()
+  loadColumnOrder()
+  preloadIcons()
 })
 </script>
 
@@ -343,7 +460,7 @@ onMounted(() => {
         transform: scale(0.5);
         left: 0;
         right: 0;
-        top: 5px;
+        top: 6px;
       }
     }
 
@@ -358,21 +475,25 @@ onMounted(() => {
       border-color: var(--el-checkbox-checked-icon-color);
     }
 
-    .el-checkbox__inner::after {
-      box-sizing: content-box;
-      content: "";
-      width: 20px;
-      height: 20px;
-      position: absolute;
-      left: -3px;
-      top: -7px;
-      border: none;
-      background-image: url('@/assets/check.png');
-      background-size: 100% 100%;
-      background-position: center;
-      transform: none;
-      transform-origin: center;
-      transform: scaleY(0);
+    .el-checkbox__inner {
+      width: 16px;
+      height: 16px;
+      &::after {
+        box-sizing: content-box;
+        content: "";
+        width: 22px;
+        height: 22px;
+        position: absolute;
+        left: -3px;
+        top: -6px;
+        border: none;
+        background-image: url('@/assets/check.png');
+        background-size: 100% 100%;
+        background-position: center;
+        transform: none;
+        transform-origin: center;
+        transform: scaleY(0);
+      }
     }
   }
 
@@ -402,14 +523,13 @@ onMounted(() => {
 
   .column-settings-header {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-columns: 1fr 100px 100px;
     align-items: center;
-    padding: 12px 20px;
+    padding: 12px 16px;
     background-color: #007EFF0D;
     font-weight: 500;
     color: #606266;
     font-size: 14px;
-    text-align: center;
 
     .col-show,
     .col-sort {
@@ -418,23 +538,47 @@ onMounted(() => {
   }
 
   .column-settings-body {
-    padding: 8px 0;
+    padding: 0;
 
     .column-item {
       display: grid;
-      grid-template-columns: 2fr 1fr 1fr;
+      grid-template-columns: 1fr 100px 100px;
       align-items: center;
-      padding: 12px 20px;
+      padding: 12px 16px;
 
       &:hover {
         background-color: #f5f7fa;
       }
 
-      .col-item {
+      .col-name {
         font-size: 14px;
         color: #303133;
-        text-align: center;
       }
+
+      .col-show {
+        display: flex;
+        justify-content: center;
+      }
+
+      .col-sort {
+        display: flex;
+        justify-content: center;
+        cursor: grab;
+        color: #c0c4cc;
+
+        &:hover {
+          color: #409eff;
+        }
+      }
+    }
+
+    .ghost {
+      opacity: 0.5;
+      background-color: #409eff20;
+    }
+
+    .drag {
+      background-color: #409eff10;
     }
   }
 }

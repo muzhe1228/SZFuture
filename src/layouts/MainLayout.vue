@@ -56,7 +56,7 @@
               <!-- <el-icon><UserFilled /></el-icon> -->
               <el-avatar style="border-radius: 12px;" :size="30" :fit="'cover'" class="avatar" shape="square"
                 :src="userStore.userInfo?.avatar" />
-              <span class="user-name">{{ userStore.userInfo?.username || '测试用户' }}</span>
+              <span class="user-name">{{ userStore.userInfo?.userName || '测试用户' }}</span>
             </div>
             <template #dropdown>
               <el-dropdown-menu>
@@ -171,6 +171,7 @@ const toggleTheme = () => {
 // 加载主题偏好
 const loadTheme = () => {
   const savedTheme = localStorage.getItem('theme')
+  console.log('savedTheme', savedTheme)
   if (savedTheme === 'dark') {
     isDark.value = true
     document.documentElement.classList.add('dark')

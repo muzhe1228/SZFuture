@@ -9,7 +9,10 @@ export interface ColumnConfig {
   hasTemplate?: boolean
   sortable?: boolean
   showOverflowTooltip?: boolean
+  order?: number
   formatter?: (row: any, column: ColumnConfig) => string
+  viewField?: boolean
+  viewType?: 'text' | 'status'
   [key: string]: any
 }
 

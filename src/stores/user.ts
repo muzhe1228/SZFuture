@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 interface UserInfo {
-  username: string
+  userName: string
   avatar: string
   role: string
   lastLoginTime: string
@@ -20,6 +20,8 @@ export const useUserStore = defineStore('user', () => {
 
   function setUserInfo(info: Omit<UserInfo, 'lastLoginTime'>) {
     const now = new Date().toISOString().replace('T', ' ').substring(0, 19)
+    console.log(now)
+    console.log(info)
     userInfo.value = {
       ...info,
       lastLoginTime: now,

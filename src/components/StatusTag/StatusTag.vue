@@ -1,11 +1,16 @@
 <template>
-  <el-tag :type="tagType" :size="size" :effect="effect">
+  <span v-if="mode === 'dot'" class="status-dot-wrapper">
+    <span class="status-dot" :class="dotClass"></span>
+    <span class="status-text" :class="textClass">{{ status || '未知' }}</span>
+  </span>
+  <el-tag v-else :type="tagType" :size="size" :effect="effect">
     {{ status || '未知' }}
   </el-tag>
 </template>
 
 <script setup lang="ts">
   import { computed } from 'vue'
+  import { statusMap as defaultStatusMap } from '@/config/statusMap'
 
   // Props
   const props = defineProps<{
@@ -17,34 +22,83 @@
     size?: 'large' | 'medium' | 'small' | 'mini'
     // 标签效果
     effect?: 'dark' | 'light' | 'plain'
+    // 显示模式：tag（标签）或 dot（圆点）
+    mode?: 'tag' | 'dot'
   }>()
-
-  // Default status map
-  const defaultStatusMap: Record<string, string> = {
-    正常: 'success',
-    激活: 'success',
-    已激活: 'warning',
-    未激活: 'info',
-    已冻结: 'danger',
-    冻结: 'warning',
-    已作废: 'info',
-    作废: 'danger',
-    已授权: 'success',
-    未授权: 'info',
-    已过期: 'danger',
-    过期: 'danger',
-    已取消: 'info',
-    关闭: 'danger',
-    禁用: 'warning',
-  }
 
   // Computed properties
   const tagType = computed(() => {
     const map = props.statusMap || defaultStatusMap
     return map[props.status || ''] || 'info'
   })
+
+  const dotClass = computed(() => {
+    const type = tagType.value
+    return `status-dot-${type}`
+  })
+
+  const textClass = computed(() => {
+    const type = tagType.value
+    return `status-text-${type}`
+  })
 </script>
 
 <style lang="scss" scoped>
-  /* 可根据需要添加自定义样式 */
+  .status-dot-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .status-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .status-dot-success {
+    background-color: #67c23a;
+  }
+
+  .status-dot-warning {
+    background-color: #e6a23c;
+  }
+
+  .status-dot-danger {
+    background-color: #f56c6c;
+  }
+
+  .status-dot-info {
+    background-color: #909399;
+  }
+
+  .status-dot-primary {
+    background-color: #409eff;
+  }
+
+  .status-text {
+    font-size: 14px;
+  }
+
+  .status-text-success {
+    color: #67c23a;
+  }
+
+  .status-text-warning {
+    color: #e6a23c;
+  }
+
+  .status-text-danger {
+    color: #f56c6c;
+  }
+
+  .status-text-info {
+    color: #909399;
+  }
+
+  .status-text-primary {
+    color: #409eff;
+  }
 </style>

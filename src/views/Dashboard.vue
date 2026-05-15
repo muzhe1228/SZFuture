@@ -106,7 +106,7 @@ const userStore = useUserStore()
 
 // Mock current user data as fallback
 const currentUser = ref({
-  name: userStore.userInfo?.username || '张三',
+  name: userStore.userInfo?.userName || '张三',
   department: '研发部',
   role: userStore.userInfo?.role || '系统管理员',
   avatar: userStore.userInfo?.avatar || '',

@@ -47,5 +47,6 @@ export const trialColumns: ColumnConfig[] = [
     width: '100', // 固定宽度
     visible: true,
     hasTemplate: true, // 是否使用自定义模板
+    viewType: 'status',
   },
 ]

@@ -1,9 +1,11 @@
 <template>
   <BaseDialog
     v-model="dialogVisible"
-    :title="isEditMode ? '编辑角色' : '新增角色'"
+    :title="isEditMode ? '编辑角色' : (viewMode ? '查看角色' : '新增角色')"
     width="720px"
     :close-on-click-modal="false"
+    :show-cancel-button="!viewMode"
+    :show-confirm-button="!viewMode"
     @close="handleClose"
   >
     <el-form
@@ -13,11 +15,12 @@
       label-width="80px"
       label-position="right"
       class="role-form"
+      :disabled="viewMode"
     >
       <el-row :gutter="24">
         <el-col :span="12">
           <el-form-item label="角色名称" prop="name">
-            <el-input v-model="form.name" placeholder="请输入角色名称" />
+            <el-input v-model="form.name" placeholder="请输入角色名称" :disabled="viewMode" />
           </el-form-item>
         </el-col>
         <el-col :span="12">
@@ -29,28 +32,29 @@
               :controls="false"
               align="left"
               style="width: 100%"
+              :disabled="viewMode"
             />
           </el-form-item>
         </el-col>
       </el-row>
 
       <el-form-item label="描述">
-        <el-input v-model="form.description" type="textarea" :rows="3" placeholder="请填写描述" />
+        <el-input v-model="form.description" type="textarea" :rows="3" placeholder="请填写描述" :disabled="viewMode" />
       </el-form-item>
 
       <el-form-item label="状态" prop="statusEnabled">
-        <el-switch v-model="form.statusEnabled" active-text="启用" inactive-text="停用" inline-prompt />
+        <el-switch v-model="form.statusEnabled" active-text="启用" inactive-text="停用" inline-prompt :disabled="viewMode" />
       </el-form-item>
 
       <!-- Permission Settings -->
-      <div class="permission-section">
+      <div class="permission-section" :class="{ 'view-mode': viewMode }">
         <div class="section-title">权限设置</div>
         <el-table :data="permissionTableData" border class="permission-table" :show-header="true" height="400px">
           <el-table-column prop="category" label="一级目录" width="160" />
           <el-table-column label="菜单" min-width="260">
             <template #default="{ row }">
               <div class="menu-cell">
-                <el-checkbox v-model="row.menuChecked" @change="handleMenuCheck(row)">
+                <el-checkbox v-model="row.menuChecked" @change="handleMenuCheck(row)" :disabled="viewMode">
                   {{ row.menuName }}
                 </el-checkbox>
               </div>
@@ -59,8 +63,8 @@
           <el-table-column label="按钮授权" min-width="280">
             <template #default="{ row }">
               <div class="buttons-cell">
-                <el-checkbox-group v-model="row.selectedButtons">
-                  <el-checkbox v-for="btn in row.buttons" :key="btn" :label="btn" :disabled="!row.menuChecked" />
+                <el-checkbox-group v-model="row.selectedButtons" :disabled="viewMode">
+                  <el-checkbox v-for="btn in row.buttons" :key="btn" :label="btn" :disabled="viewMode || !row.menuChecked" />
                 </el-checkbox-group>
               </div>
             </template>
@@ -103,6 +107,7 @@
   const props = defineProps<{
     modelValue: boolean
     isEditMode: boolean
+    viewMode: boolean
     role: Role | null
   }>()
 

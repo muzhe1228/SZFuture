@@ -17,6 +17,29 @@
 :root {
   --text-white: #fff;
   --bg-main-color: #475E8C;
+  --input-bg-color: #F0F5FA;
+  --main-radius: 12px;
+  --small-radius: 6px;
+  --input-radius: 8px;
+
+  .el-tag {
+    border-radius: 4px;
+    --el-tag-border-color: transparent;
+
+    &.el-tag--success {
+      --el-tag-text-color: #1AAD3A;
+      --el-tag-bg-color: #def2e9;
+      --el-tag-border-color: transparent;
+      --el-tag-hover-color: var(--el-color-success);
+    }
+
+    &.el-tag--danger {
+      --el-tag-text-color: #F04343;
+      --el-tag-bg-color: #faedec;
+      --el-tag-border-color: transparent;
+      --el-tag-hover-color: var(--el-color-danger);
+    }
+  }
 
   // 自定义列表项样式
   li {
@@ -25,9 +48,27 @@
 
   // 自定义输入框和选择器样式
   .el-input__wrapper,
-  .el-select__wrapper {
-    border-radius: 16px;
+  .el-select__wrapper,
+  .el-textarea__inner {
+    border-radius: var(--input-radius);
     box-shadow: none;
+  }
+
+  .el-select__wrapper,
+  .el-input__wrapper,
+  .el-select .el-input__wrapper,
+  .el-textarea .el-textarea__inner {
+    background-color: var(--input-bg-color);
+    border-radius: var(--input-radius);
+  }
+
+  .el-date-editor .el-range-input::placeholder,
+  .el-textarea__inner::placeholder,
+  .el-input__inner::placeholder,
+  .el-select__placeholder,
+  .el-picker__input::placeholder {
+    // color: var(--el-text-color-secondary);
+    font-size: 12px;
   }
 
   .el-select__wrapper.is-focused,
@@ -82,12 +123,17 @@
   }
 
   .el-button {
-    border-radius: 10px;
+    min-width: 80px;
+    border-radius: var(--small-radius);
+
+    &.is-link {
+      min-width: 0;
+    }
   }
 
   .el-dialog {
     border-radius: 12px;
-    padding: 20px;
+    padding: 24px;
   }
 
   .el-drawer {
@@ -96,7 +142,8 @@
       right: 12px;
       height: calc(100% - 24px);
       top: 12px;
-      .el-drawer__body{
+
+      .el-drawer__body {
         padding: 0;
       }
     }

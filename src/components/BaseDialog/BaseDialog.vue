@@ -8,7 +8,7 @@
     <template #footer>
       <slot name="footer">
         <div class="dialog-footer">
-          <el-button v-if="showCancelButton" @click="handleCancel" :loading="cancelLoading">
+          <el-button v-if="showCancelButton" plain @click="handleCancel" :loading="cancelLoading">
             {{ cancelText }}
           </el-button>
           <el-button v-if="showConfirmButton" :type="confirmType" @click="handleConfirm" :loading="confirmLoading"

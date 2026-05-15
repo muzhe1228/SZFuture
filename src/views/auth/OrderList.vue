@@ -6,6 +6,9 @@
       @action="handleTableAction" @selection-change="handleSelectionChange">
       <template #extra-actions>
         <el-button type="primary" link @click="handleAddOrder" :icon="Plus"> 新增订单 </el-button>
+        <el-button type="danger" link plain @click="handleBatchDelete" :disabled="selectedOrders.length === 0">
+          批量删除
+        </el-button>
       </template>
     </BaseTablePage>
 
@@ -15,6 +18,28 @@
     <OrderFormModal v-model="orderModalVisible" :is-edit-mode="isEditMode" :order="currentOrder"
       @submit="handleOrderSubmit" />
 
+    <!-- 2. 订单查看 Modal -->
+    <ViewModal v-model="viewModalVisible" :data="currentOrder || undefined" :title="`订单详情`" :columns="columns" />
+
+    <!-- 3. 订单下载 Modal -->
+    <DownloadModal v-model="downloadModalVisible" :order="currentOrder" @download="handleDownloadSubmit" />
+
+    <!-- 4. 订单删除 Modal -->
+    <DeleteModal 
+      v-model="deleteModalVisible" 
+      :title-text="currentOrder?.orderNo"
+      :delete-api="deleteOrderApi"
+      :id="currentOrder?.id"
+      @success="handleDeleteSuccess"
+    />
+
+    <!-- 5. 批量删除 Modal -->
+    <DeleteModal 
+      mode="batch"
+      v-model="batchDeleteModalVisible" 
+      :title-text="`确定要删除选中的 ${selectedOrders.length} 个订单吗？`"
+      @confirm="confirmBatchDelete"
+    />
 
   </div>
 </template>
@@ -23,10 +48,13 @@
 import { ref } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
 import type { Order } from '@/types/index'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
 import { BaseTablePage } from '@/components/BaseTablePage'
 import OrderFormModal from '@/components/Dialog/OrderList/OrderFormModal.vue'
+import ViewModal from '@/components/Dialog/common/ViewModal.vue'
+import DownloadModal from '@/components/Dialog/OrderList/DownloadModal.vue'
+import DeleteModal from '@/components/Dialog/common/DeleteModal.vue'
 import type { ActionButton } from '@/components/DataTable/types'
 import { orderColumns } from '@/config/auth/columns'
 import { orderSearchFields } from '@/config/auth/searchFields'
@@ -105,6 +133,10 @@ const currentOrder = ref<Order | null>(null)
 // ─── Modal Visibility ─────────────────────────────────────────────────
 
 const orderModalVisible = ref(false)
+const viewModalVisible = ref(false)
+const downloadModalVisible = ref(false)
+const deleteModalVisible = ref(false)
+const batchDeleteModalVisible = ref(false)
 const isEditMode = ref(false)
 
 // ─── Add / Edit Order ────────────────────────────────────────────────
@@ -129,30 +161,56 @@ const handleOrderSubmit = (_order: any) => {
 // ─── Delete Order ─────────────────────────────────────────────────────
 
 const handleDelete = (row: Order) => {
-  ElMessageBox.confirm(`确定要删除订单【${row.orderNo}】吗？`, '确认删除', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning',
-  })
-    .then(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 600))
-      ElMessage.success('订单删除成功')
-    })
-    .catch(() => {
-      // User cancelled
-    })
+  currentOrder.value = row
+  deleteModalVisible.value = true
+}
+
+const deleteOrderApi = async (id: number) => {
+  await request.delete('/api/order/delete', { params: { id } })
+}
+
+const handleDeleteSuccess = () => {
+  // 删除成功后的处理，如刷新列表
 }
 
 // ─── View ────────────────────────────────────────────────────────────
 
 const handleView = (row: Order) => {
-  ElMessage.info(`查看订单: ${row.orderNo}`)
+  currentOrder.value = row
+  viewModalVisible.value = true
 }
 
 // ─── Download ────────────────────────────────────────────────────────
 
 const handleDownload = (row: Order) => {
-  ElMessage.success(`正在下载订单: ${row.orderNo}`)
+  currentOrder.value = row
+  downloadModalVisible.value = true
+}
+
+const handleDownloadSubmit = (orderNo: string) => {
+  ElMessage.success(`正在下载订单: ${orderNo}`)
+}
+
+// ─── Batch Delete ──────────────────────────────────────────────────────
+
+const handleBatchDelete = () => {
+  if (selectedOrders.value.length === 0) {
+    ElMessage.warning('请先选择要删除的订单')
+    return
+  }
+  batchDeleteModalVisible.value = true
+}
+
+const confirmBatchDelete = async () => {
+  try {
+    const ids = selectedOrders.value.map((order) => order.id)
+    await request.delete('/api/order/delete', { params: { ids: ids.join(',') } })
+    ElMessage.success('批量删除成功')
+  } catch {
+    ElMessage.error('删除失败')
+  } finally {
+    batchDeleteModalVisible.value = false
+  }
 }
 </script>
 

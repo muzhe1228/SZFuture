@@ -16,19 +16,34 @@
       </template>
     </BaseTablePage>
 
-    <!-- Add/Edit Role Modal -->
-    <RoleForm v-model="modalVisible" :is-edit-mode="isEditMode" :role="currentItem" @submit="handleSubmit"
+    <!-- Add/Edit/View Role Modal -->
+    <RoleForm v-model="modalVisible" :is-edit-mode="isEditMode" :view-mode="!isEditMode && currentItem !== null" :role="currentItem" @submit="handleSubmit"
       @close="handleClose" />
+
+    <!-- Delete Role Modal -->
+    <DeleteModal 
+      v-model="deleteModalVisible" 
+      :title-text="deleteModalTitle"
+      @confirm="confirmDelete"
+    />
+
+    <!-- Batch Delete Modal -->
+    <DeleteModal 
+      v-model="batchDeleteModalVisible" 
+      :title-text="`确定要删除选中的 ${selectedItems.length} 个角色吗？`"
+      @confirm="confirmBatchDelete"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
 import type { Role } from '@/types/index'
 import { ElMessage } from 'element-plus'
 import { BaseTablePage } from '@/components/BaseTablePage'
 import RoleForm from '@/components/Dialog/RoleManagement/RoleForm.vue'
+import DeleteModal from '@/components/Dialog/common/DeleteModal.vue'
 import type { ActionButton } from '@/components/DataTable/types'
 import { roleColumns } from '@/config/system/columns'
 import { roleSearchFields } from '@/config/system/searchFields'
@@ -57,13 +72,19 @@ const refreshList = async () => { }
 
 const {
   modalVisible,
+  deleteModalVisible,
+  batchDeleteModalVisible,
   isEditMode,
   currentItem,
+  currentDeleteItem,
+  selectedItems,
   handleAdd,
   handleEdit,
   handleView,
   handleDelete,
+  confirmDelete,
   handleBatchDelete,
+  confirmBatchDelete,
   handleSubmit,
   handleClose,
 } = useCrud<Role>({
@@ -90,6 +111,10 @@ const {
       })
     }
   },
+})
+
+const deleteModalTitle = computed(() => {
+  return `确定要删除角色 "${currentDeleteItem.value?.name || ''}" 吗？`
 })
 
 const fetchData = async (formData?: Record<string, any>, page: number = 1, pageSize: number = 20) => {

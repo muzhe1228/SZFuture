@@ -36,10 +36,10 @@
     <ExtendModal v-model="extendModalVisible" @extend="handleExtendSubmit" />
 
     <!-- 5. 授权作废 Modal -->
-    <VoidModal v-model="voidModalVisible" @void="handleVoidSubmit" />
+    <VoidModal v-model="voidModalVisible" :data="currentAuth || undefined" @void="handleVoidSubmit" />
 
     <!-- 6. 授权查看 Modal -->
-    <ViewModal v-model="viewModalVisible" :data="currentAuth || undefined" :title="`产品授权信息`" />
+    <ViewModal v-model="viewModalVisible" :data="currentAuth || undefined" :title="`产品授权信息`" :columns="columns" />
 
     <!-- 7. 授权激活 Modal -->
     <ActivateModal v-model="activateModalVisible" :auth-no="currentAuth?.authNo" @activate="handleActivateSubmit" />

@@ -22,14 +22,22 @@
       </template>
     </BaseTablePage>
 
-    <!-- Add/Edit Department Modal -->
+    <!-- Add/Edit/View Department Modal -->
     <DepartmentForm
       v-model="modalVisible"
       :is-edit-mode="isEditMode"
+      :view-mode="!isEditMode && currentItem !== null"
       :department="currentItem"
       :parent-dept-options="parentDeptOptions"
       @submit="handleSubmit"
       @close="handleClose"
+    />
+
+    <!-- Delete Department Modal -->
+    <DeleteModal 
+      v-model="deleteModalVisible" 
+      :title-text="deleteModalTitle"
+      @confirm="confirmDelete"
     />
   </div>
 </template>
@@ -41,6 +49,7 @@
   import { ElMessage } from 'element-plus'
   import { BaseTablePage } from '@/components/BaseTablePage'
   import DepartmentForm from '@/components/Dialog/DepartmentManagement/DepartmentForm.vue'
+  import DeleteModal from '@/components/Dialog/common/DeleteModal.vue'
   import type { ActionButton } from '@/components/DataTable/types'
   import { departmentColumns } from '@/config/system/columns'
   import { departmentSearchFields } from '@/config/system/searchFields'
@@ -67,12 +76,15 @@
 
   const {
     modalVisible,
+    deleteModalVisible,
     isEditMode,
     currentItem,
+    currentDeleteItem,
     handleAdd,
     handleEdit,
     handleView,
     handleDelete,
+    confirmDelete,
     handleSubmit,
     handleClose,
   } = useCrud<Department>({
@@ -99,6 +111,10 @@
         })
       }
     },
+  })
+
+  const deleteModalTitle = computed(() => {
+    return `确定要删除部门 "${currentDeleteItem.value?.name || ''}" 吗？`
   })
 
   const fetchData = async (_formData?: Record<string, any>) => {

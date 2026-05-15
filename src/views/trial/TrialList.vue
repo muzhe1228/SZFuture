@@ -14,7 +14,7 @@
       @selection-change="handleSelectionChange"
     >
       <template #cell-status="{ row }">
-        <StatusTag :status="row.status" :status-map="statusMap" size="small" />
+        <StatusTag :status="row.status" size="small" />
       </template>
 
       <template #extra-actions>
@@ -33,7 +33,7 @@
     <!-- ==================== Modals ==================== -->
 
     <!-- 1. 产品试用信息 Modal (查看) -->
-    <ViewModal v-model="viewModalVisible" :data="currentTrial" :title="`产品试用信息`" />
+    <ViewModal v-model="viewModalVisible" :data="currentTrial || undefined" :title="`产品试用信息`" :columns="columns" />
 
     <!-- 2. 授权冻结 Modal -->
     <FreezeModal
@@ -66,14 +66,23 @@
     <!-- 5. 授权作废 Modal -->
     <VoidModal v-model="voidModalVisible" :selected-ids="selectedTrials.map((t) => t.id)" @void="handleVoidEvent" />
 
-    
+    <!-- 6. 删除试用 Modal -->
+    <DeleteModal 
+      mode="batch"
+      v-model="deleteModalVisible" 
+      :title-text="selectedTrials.length"
+      :delete-api="deleteTrialApi"
+      :id="selectedTrials.length"
+      @success="handleDeleteSuccess"
+    />
+
   </div>
 </template>
 
 <script setup lang="ts">
   import { ref } from 'vue'
   import type { Trial } from '@/types/index'
-  import { ElMessage, ElMessageBox } from 'element-plus'
+  import { ElMessage } from 'element-plus'
   import { BaseTablePage } from '@/components/BaseTablePage'
   import { StatusTag } from '@/components/StatusTag'
   import ViewModal from '@/components/Dialog/common/ViewModal.vue'
@@ -81,6 +90,7 @@
   import UnfreezeModal from '@/components/Dialog/common/UnfreezeModal.vue'
   import ActivateModal from '@/components/Dialog/common/ActivateModal.vue'
   import VoidModal from '@/components/Dialog/common/VoidModal.vue'
+  import DeleteModal from '@/components/Dialog/common/DeleteModal.vue'
   import type { ActionButton } from '@/components/DataTable/types'
   import { trialColumns } from '@/config/trial/columns'
   import { trialSearchFields } from '@/config/trial/searchFields'
@@ -113,15 +123,6 @@
 
   // 搜索字段配置已移至 @/config/trial/searchFields.ts
   const searchFields = trialSearchFields
-
-  // ─── Status Tag Type ──────────────────────────────────────────────────
-
-  const statusMap = {
-    已激活: 'warning',
-    未激活: 'info',
-    已过期: 'info',
-    已冻结: 'danger',
-  }
 
   // ─── Table Data ───────────────────────────────────────────────────────
 
@@ -173,6 +174,7 @@
   // ─── 1. View Modal ───────────────────────────────────────────────────
 
   const viewModalVisible = ref(false)
+  const deleteModalVisible = ref(false)
 
   const handleView = (row: TrialExtended) => {
     currentTrial.value = row
@@ -226,29 +228,20 @@
 
   const handleBatchDelete = () => {
     if (selectedTrials.value.length === 0) return
-    ElMessageBox.confirm(`确定要删除选中的 ${selectedTrials.value.length} 条试用记录吗？`, '确认删除', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
+    deleteModalVisible.value = true
+  }
+
+  const deleteTrialApi = async () => {
+    const result = await request.delete('/api/trial/delete', {
+      data: { ids: selectedTrials.value.map((t) => t.id) },
     })
-      .then(async () => {
-        try {
-          const result = await request.delete('/api/trial/delete', {
-            data: { ids: selectedTrials.value.map((t) => t.id) },
-          })
-          if (result.code === 200) {
-            ElMessage.success(`已成功删除 ${selectedTrials.value.length} 条试用记录`)
-            selectedTrials.value = []
-          } else {
-            ElMessage.error(result.message || '删除失败')
-          }
-        } catch {
-          ElMessage.error('删除失败')
-        }
-      })
-      .catch(() => {
-        // User cancelled
-      })
+    if (result.code !== 200) {
+      throw new Error(result.message || '删除失败')
+    }
+  }
+
+  const handleDeleteSuccess = () => {
+    selectedTrials.value = []
   }
 
   // ─── Event Handlers for Modals ───────────────────────────────────────

@@ -8,25 +8,16 @@ export const orderSearchFields: SearchField[] = [
   {
     prop: 'customerName', // 字段属性名
     label: '客户名称', // 字段显示名称
-    type: 'select', // 字段类型
-    placeholder: '请选择', // 占位符
-    options: [
-      // 下拉选项
-      { label: 'xx科技有限公司', value: 'xx科技有限公司' },
-      { label: '测试客户A', value: '测试客户A' },
-      { label: '测试客户B', value: '测试客户B' },
-    ],
+    type: 'input', // 字段类型
+    placeholder: '请输入', // 占位符
+    clearable: true,
   },
   {
     prop: 'orderNo',
     label: '订单编号',
-    type: 'select',
-    placeholder: '请选择',
-    options: [
-      { label: 'SGZZ-20210906-001', value: 'SGZZ-20210906-001' },
-      { label: 'SGZZ-20210907-002', value: 'SGZZ-20210907-002' },
-      { label: 'SGZZ-20210908-003', value: 'SGZZ-20210908-003' },
-    ],
+    type: 'input', // 字段类型
+    placeholder: '请输入', // 占位符
+    clearable: true,
   },
   {
     prop: 'product',
@@ -60,13 +51,8 @@ export const customerSearchFields: SearchField[] = [
   {
     prop: 'customerName',
     label: '客户名称',
-    type: 'select',
-    placeholder: '请选择',
-    options: [
-      { label: '客户名称客户名称', value: '客户名称客户名称' },
-      { label: '测试客户A', value: '测试客户A' },
-      { label: '测试客户B', value: '测试客户B' },
-    ],
+    type: 'input',
+    placeholder: '请输入',
   },
   {
     prop: 'accountStatus',
@@ -89,13 +75,8 @@ export const authSearchFields: SearchField[] = [
   {
     prop: 'customerName',
     label: '客户名称',
-    type: 'select',
-    placeholder: '请选择',
-    options: [
-      { label: '客户名称客户名称', value: '客户名称客户名称' },
-      { label: '测试客户A', value: '测试客户A' },
-      { label: '测试客户B', value: '测试客户B' },
-    ],
+    type: 'input',
+    placeholder: '请输入',
   },
   {
     prop: 'orderNo',
